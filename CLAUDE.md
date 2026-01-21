@@ -114,6 +114,20 @@ t('batch.processing', { current: 5, total: 10, note: 'My Note' })
 - Phase 2 (planned): `zh`, `de`
 - Phase 3 (planned): `fr`, `ja`
 
+## Documentation
+
+**CRITICAL: README.md must always be in English.**
+
+The main `README.md` file is the source of truth for project documentation and must be written in English. When making changes to documentation:
+
+1. Always update `README.md` (English) first
+2. Immediately propagate changes to all localized README files:
+   - `README_ES.md` (Spanish)
+   - Future: `README_ZH.md`, `README_DE.md`, etc.
+3. Keep all README versions in sync—no version should have outdated information
+
+This ensures consistency across all documentation and maintains English as the canonical source.
+
 ## Specifications
 
 - `docs/obsidian-claude-plugin-spec.md` - Especificación completa del proyecto

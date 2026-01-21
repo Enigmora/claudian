@@ -20,6 +20,12 @@
 
 ---
 
+## Acerca de
+
+Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente en tu flujo de trabajo de gestión del conocimiento. Chatea con Claude en un panel lateral dedicado, procesa tus notas para obtener sugerencias inteligentes de tags y wikilinks, y usa el Modo Agente para gestionar tu bóveda con comandos en lenguaje natural—todo mientras tu API key se almacena localmente para máxima privacidad.
+
+---
+
 ## Características
 
 | Característica | Descripción |

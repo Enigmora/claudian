@@ -5,6 +5,7 @@ const translations: Translations = {
   // SETTINGS
   // ═══════════════════════════════════════════════════════════════════════════
   'settings.title': 'Claudian - Configuración',
+  'settings.description': 'Plugin de Obsidian para integración con Claude AI, desarrollado por Enigmora. Chatea con Claude, procesa notas para obtener sugerencias inteligentes de tags y wikilinks, y gestiona tu bóveda con lenguaje natural usando el Modo Agente. Privacidad primero: API key almacenada localmente.',
   'settings.language.name': 'Idioma',
   'settings.language.desc': 'Idioma de la interfaz del plugin. "Auto" detecta el idioma de Obsidian.',
   'settings.language.auto': 'Auto (detectar de Obsidian)',
@@ -205,6 +206,87 @@ const translations: Translations = {
   'agent.getNoteInfo': 'Obtener info: {{path}}',
   'agent.findLinks': 'Buscar enlaces a: {{target}}',
   'agent.genericAction': 'Acción: {{action}}',
+  'agent.continuing': 'Continuando respuesta...',
+  'agent.retryWithJson': 'Reintentar con formato JSON',
+  'agent.planningTask': 'Planificando tarea compleja...',
+  'agent.executingSubtask': 'Ejecutando {{current}}/{{total}}: {{description}}',
+  'agent.subtask.preparation': 'Preparar estructura',
+  'agent.subtask.execution': 'Ejecutar tarea principal',
+  'agent.planSummary.header': 'Tarea completada: {{completed}}/{{total}} subtareas',
+  'agent.planSummary.successful': '**Exitosas:**',
+  'agent.planSummary.failed': '**Fallidas:**',
+  'agent.planningPrompt': `Divide esta tarea compleja en subtareas que puedan completarse con máximo {{maxActions}} acciones cada una.
+
+TAREA: {{request}}
+
+Acciones totales estimadas: {{estimatedActions}}
+Máximo de subtareas permitidas: {{maxSubtasks}}
+
+Responde con JSON:
+{
+  "subtasks": [
+    {
+      "id": "subtask-1",
+      "description": "Breve descripción de lo que hace esta subtarea",
+      "prompt": "Instrucción específica para ejecutar esta subtarea",
+      "dependencies": []
+    }
+  ],
+  "estimatedTotalActions": número
+}
+
+IMPORTANTE:
+- Cada subtarea debe ser independiente o tener dependencias claras
+- Ordena las subtareas lógicamente (ej: crear carpetas antes de crear archivos en ellas)
+- Mantén los prompts específicos y accionables`,
+  'agent.reinforcement.reminder': 'Estás en MODO AGENTE. Usa formato JSON para acciones sobre la bóveda.',
+  'agent.reinforcement.canPerformActions': 'SÍ PUEDES crear, modificar y eliminar archivos en esta bóveda. NO digas que no puedes - usa el sistema de acciones.',
+  'agent.reinforcement.useJsonFormat': 'Cuando el usuario solicite acciones sobre la bóveda, responde con JSON conteniendo el array "actions".',
+  'agent.reinforcement.dontForget': 'Recuerda: Tienes capacidad total para gestionar esta bóveda de Obsidian a través del sistema de acciones.',
+  'agent.reinforcement.recoveryPrompt': `El usuario preguntó: "{{message}}"
+
+Estás en MODO AGENTE y PUEDES realizar acciones sobre la bóveda. Por favor responde con el formato JSON apropiado:
+{
+  "actions": [{"action": "...", "params": {...}}],
+  "message": "...",
+  "requiresConfirmation": false
+}`,
+  'agent.retryPrompt.confusion': 'SÍ PUEDES crear y modificar archivos en esta bóveda. Por favor proporciona las acciones en formato JSON según tus instrucciones.',
+  'agent.retryPrompt.missingJson': `Describiste acciones pero no proporcionaste el formato JSON. Basándote en lo que dijiste: "{{context}}..."
+
+Por favor proporciona las acciones EXACTAS como JSON:
+{
+  "actions": [{"action": "nombre-accion", "params": {...}}],
+  "message": "Descripción de lo que se hará",
+  "requiresConfirmation": false
+}`,
+  'agent.retryPrompt.incompleteJson': 'Tu respuesta fue cortada. Por favor continúa y completa la estructura JSON.',
+  'agent.retryPrompt.generic': 'Por favor proporciona las acciones de la bóveda en el formato JSON requerido con los campos "actions", "message" y "requiresConfirmation".',
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WARNINGS AND VALIDATION
+  // ═══════════════════════════════════════════════════════════════════════════
+  'warning.modelConfusion': 'El modelo parece confundido sobre sus capacidades. Puede realizar acciones de bóveda en Modo Agente.',
+  'warning.actionClaimsNoJson': 'La respuesta afirma haber realizado acciones pero no se encontraron acciones ejecutables.',
+  'warning.emptyActionsArray': 'La respuesta contiene un array de acciones vacío.',
+  'warning.incompleteJson': 'La respuesta JSON parece estar incompleta o truncada.',
+  'warning.actionMismatch': 'Las acciones declaradas no coinciden con las proporcionadas: {{mismatches}}',
+  'suggestion.remindAgentMode': 'Intenta recordarle al modelo que el Modo Agente está activo.',
+  'suggestion.requestJsonFormat': 'Solicita la respuesta en formato JSON apropiado.',
+  'suggestion.requestContinuation': 'Solicita al modelo que continúe y complete su respuesta.',
+  'validation.valid': 'Respuesta validada exitosamente.',
+  'validation.validWithNotes': 'Respuesta válida con notas menores.',
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SETTINGS - PHASE 2
+  // ═══════════════════════════════════════════════════════════════════════════
+  'settings.section.advanced': 'Opciones Avanzadas del Agente',
+  'settings.autoContinue.name': 'Auto-continuar respuestas truncadas',
+  'settings.autoContinue.desc': 'Solicitar automáticamente continuación cuando una respuesta parece cortada.',
+  'settings.autoPlan.name': 'Auto-planificar tareas complejas',
+  'settings.autoPlan.desc': 'Dividir automáticamente tareas complejas en subtareas más pequeñas.',
+  'settings.contextReinforce.name': 'Reforzar contexto del agente',
+  'settings.contextReinforce.desc': 'Agregar recordatorios para evitar que el modelo olvide el Modo Agente en conversaciones largas.',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // EXTRACTION TEMPLATES

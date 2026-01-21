@@ -1,0 +1,205 @@
+/**
+ * Context Reinforcer
+ * Ensures the model doesn't "forget" it's in agent mode during long conversations
+ * by injecting reminders and reinforcement into prompts.
+ */
+
+import { Message } from './claude-client';
+import { t } from './i18n';
+
+export interface ReinforcementConfig {
+  /** Number of messages after which to start reinforcing */
+  reinforceAfterMessages: number;
+  /** Whether to inject inline reminders in user messages */
+  injectInlineReminders: boolean;
+  /** Whether to add reinforcement to system prompt */
+  reinforceSystemPrompt: boolean;
+}
+
+export const DEFAULT_REINFORCEMENT_CONFIG: ReinforcementConfig = {
+  reinforceAfterMessages: 6,
+  injectInlineReminders: true,
+  reinforceSystemPrompt: true
+};
+
+export interface ConversationAnalysis {
+  messageCount: number;
+  lastAgentActionIndex: number;
+  hasRecentAgentAction: boolean;
+  consecutiveNonActionResponses: number;
+  agentModeConfusion: boolean;
+}
+
+export class ContextReinforcer {
+  private config: ReinforcementConfig;
+
+  constructor(config: Partial<ReinforcementConfig> = {}) {
+    this.config = { ...DEFAULT_REINFORCEMENT_CONFIG, ...config };
+  }
+
+  /**
+   * Analyze conversation history to determine reinforcement needs
+   */
+  analyzeConversation(history: Message[]): ConversationAnalysis {
+    const messageCount = history.length;
+    let lastAgentActionIndex = -1;
+    let consecutiveNonActionResponses = 0;
+    let agentModeConfusion = false;
+
+    // Scan through assistant messages to find agent actions
+    for (let i = history.length - 1; i >= 0; i--) {
+      const msg = history[i];
+
+      if (msg.role === 'assistant') {
+        const hasActions = this.hasAgentActions(msg.content);
+        const claimsInability = this.claimsCannotDoActions(msg.content);
+
+        if (hasActions) {
+          if (lastAgentActionIndex === -1) {
+            lastAgentActionIndex = i;
+          }
+          break;
+        } else {
+          consecutiveNonActionResponses++;
+
+          if (claimsInability) {
+            agentModeConfusion = true;
+          }
+        }
+      }
+    }
+
+    const hasRecentAgentAction = lastAgentActionIndex >= 0 &&
+      (history.length - lastAgentActionIndex) <= 4;
+
+    return {
+      messageCount,
+      lastAgentActionIndex,
+      hasRecentAgentAction,
+      consecutiveNonActionResponses,
+      agentModeConfusion
+    };
+  }
+
+  /**
+   * Check if a response contains agent actions (JSON format)
+   */
+  private hasAgentActions(content: string): boolean {
+    return /"actions"\s*:\s*\[/.test(content) && /"action"\s*:/.test(content);
+  }
+
+  /**
+   * Check if the model claims it cannot perform actions
+   */
+  private claimsCannotDoActions(content: string): boolean {
+    const confusionPatterns = [
+      /(?:no puedo|cannot|can't|i'm unable to|no tengo la capacidad)/i,
+      /(?:crear archivos|create files|write files|escribir archivos)/i,
+      /(?:solo puedo|i can only|only able to)/i,
+      /(?:como (?:un )?(?:modelo|asistente|ia)|as an? (?:ai|assistant|model))/i,
+    ];
+
+    return confusionPatterns.some(pattern => pattern.test(content));
+  }
+
+  /**
+   * Get system prompt reinforcement based on conversation analysis
+   */
+  getSystemPromptReinforcement(analysis: ConversationAnalysis): string {
+    if (!this.config.reinforceSystemPrompt) {
+      return '';
+    }
+
+    const parts: string[] = [];
+
+    // Always add basic reminder after threshold
+    if (analysis.messageCount >= this.config.reinforceAfterMessages) {
+      parts.push(t('agent.reinforcement.reminder'));
+    }
+
+    // Strong reinforcement if confusion detected
+    if (analysis.agentModeConfusion) {
+      parts.push(t('agent.reinforcement.canPerformActions'));
+    }
+
+    // Reminder if no recent agent actions in a long conversation
+    if (analysis.messageCount > 8 && !analysis.hasRecentAgentAction) {
+      parts.push(t('agent.reinforcement.useJsonFormat'));
+    }
+
+    // If multiple non-action responses
+    if (analysis.consecutiveNonActionResponses >= 3) {
+      parts.push(t('agent.reinforcement.dontForget'));
+    }
+
+    if (parts.length === 0) {
+      return '';
+    }
+
+    return '\n\n---\nIMPORTANT REMINDER:\n' + parts.join('\n');
+  }
+
+  /**
+   * Enhance user message with agent mode context if needed
+   */
+  enhanceUserMessage(
+    message: string,
+    analysis: ConversationAnalysis
+  ): string {
+    if (!this.config.injectInlineReminders) {
+      return message;
+    }
+
+    // Only inject if we detect potential issues
+    const needsReinforcement =
+      analysis.agentModeConfusion ||
+      (analysis.messageCount >= this.config.reinforceAfterMessages &&
+        analysis.consecutiveNonActionResponses >= 2);
+
+    if (!needsReinforcement) {
+      return message;
+    }
+
+    // Check if message is requesting an action
+    const isActionRequest = this.isActionRequest(message);
+
+    if (isActionRequest) {
+      return `[AGENT MODE ACTIVE - Respond with JSON actions]\n\n${message}`;
+    }
+
+    return message;
+  }
+
+  /**
+   * Check if a user message is requesting vault actions
+   */
+  private isActionRequest(message: string): boolean {
+    const actionPatterns = [
+      /(?:crea|create|genera|generate|haz|make)/i,
+      /(?:mueve|move|mover)/i,
+      /(?:elimina|delete|borra|remove)/i,
+      /(?:renombra|rename)/i,
+      /(?:busca|search|encuentra|find)/i,
+      /(?:lista|list|muestra|show)/i,
+      /(?:agrega|add|añade|append)/i,
+      /(?:carpeta|folder|nota|note|archivo|file)/i,
+    ];
+
+    const matchCount = actionPatterns.filter(p => p.test(message)).length;
+    return matchCount >= 2;
+  }
+
+  /**
+   * Generate a recovery prompt when the model seems confused
+   */
+  generateRecoveryPrompt(originalMessage: string): string {
+    return t('agent.reinforcement.recoveryPrompt', { message: originalMessage });
+  }
+
+  /**
+   * Check if we should attempt auto-recovery
+   */
+  shouldAttemptRecovery(analysis: ConversationAnalysis): boolean {
+    return analysis.agentModeConfusion && analysis.consecutiveNonActionResponses <= 2;
+  }
+}

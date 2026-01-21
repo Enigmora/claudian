@@ -14,6 +14,7 @@ export type Translations = {
   // SETTINGS
   // ═══════════════════════════════════════════════════════════════════════════
   'settings.title': string;
+  'settings.description': string;
   'settings.language.name': string;
   'settings.language.desc': string;
   'settings.language.auto': string;
@@ -214,6 +215,50 @@ export type Translations = {
   'agent.getNoteInfo': string;
   'agent.findLinks': string;
   'agent.genericAction': string;
+  'agent.continuing': string;
+  'agent.retryWithJson': string;
+  'agent.planningTask': string;
+  'agent.executingSubtask': string;
+  'agent.subtask.preparation': string;
+  'agent.subtask.execution': string;
+  'agent.planSummary.header': string;
+  'agent.planSummary.successful': string;
+  'agent.planSummary.failed': string;
+  'agent.planningPrompt': string;
+  'agent.reinforcement.reminder': string;
+  'agent.reinforcement.canPerformActions': string;
+  'agent.reinforcement.useJsonFormat': string;
+  'agent.reinforcement.dontForget': string;
+  'agent.reinforcement.recoveryPrompt': string;
+  'agent.retryPrompt.confusion': string;
+  'agent.retryPrompt.missingJson': string;
+  'agent.retryPrompt.incompleteJson': string;
+  'agent.retryPrompt.generic': string;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WARNINGS AND VALIDATION
+  // ═══════════════════════════════════════════════════════════════════════════
+  'warning.modelConfusion': string;
+  'warning.actionClaimsNoJson': string;
+  'warning.emptyActionsArray': string;
+  'warning.incompleteJson': string;
+  'warning.actionMismatch': string;
+  'suggestion.remindAgentMode': string;
+  'suggestion.requestJsonFormat': string;
+  'suggestion.requestContinuation': string;
+  'validation.valid': string;
+  'validation.validWithNotes': string;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SETTINGS - PHASE 2
+  // ═══════════════════════════════════════════════════════════════════════════
+  'settings.section.advanced': string;
+  'settings.autoContinue.name': string;
+  'settings.autoContinue.desc': string;
+  'settings.autoPlan.name': string;
+  'settings.autoPlan.desc': string;
+  'settings.contextReinforce.name': string;
+  'settings.contextReinforce.desc': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // EXTRACTION TEMPLATES

@@ -5,6 +5,7 @@ const translations: Translations = {
   // SETTINGS
   // ═══════════════════════════════════════════════════════════════════════════
   'settings.title': 'Claudian - Settings',
+  'settings.description': 'Obsidian plugin for Claude AI integration developed by Enigmora. Chat with Claude, process notes for smart tag and wikilink suggestions, and manage your vault with natural language using Agent Mode. Privacy-first: API key stored locally.',
   'settings.language.name': 'Language',
   'settings.language.desc': 'Plugin interface language. "Auto" detects from Obsidian settings.',
   'settings.language.auto': 'Auto (detect from Obsidian)',
@@ -205,6 +206,87 @@ const translations: Translations = {
   'agent.getNoteInfo': 'Get info: {{path}}',
   'agent.findLinks': 'Find links to: {{target}}',
   'agent.genericAction': 'Action: {{action}}',
+  'agent.continuing': 'Continuing response...',
+  'agent.retryWithJson': 'Retry with JSON format',
+  'agent.planningTask': 'Planning complex task...',
+  'agent.executingSubtask': 'Executing {{current}}/{{total}}: {{description}}',
+  'agent.subtask.preparation': 'Prepare structure',
+  'agent.subtask.execution': 'Execute main task',
+  'agent.planSummary.header': 'Task completed: {{completed}}/{{total}} subtasks',
+  'agent.planSummary.successful': '**Successful:**',
+  'agent.planSummary.failed': '**Failed:**',
+  'agent.planningPrompt': `Break down this complex task into subtasks that can each be completed with at most {{maxActions}} actions.
+
+TASK: {{request}}
+
+Estimated total actions needed: {{estimatedActions}}
+Maximum subtasks allowed: {{maxSubtasks}}
+
+Respond with JSON:
+{
+  "subtasks": [
+    {
+      "id": "subtask-1",
+      "description": "Brief description of what this subtask does",
+      "prompt": "Specific instruction to execute this subtask",
+      "dependencies": []
+    }
+  ],
+  "estimatedTotalActions": number
+}
+
+IMPORTANT:
+- Each subtask should be independent or have clear dependencies
+- Order subtasks logically (e.g., create folders before creating files in them)
+- Keep prompts specific and actionable`,
+  'agent.reinforcement.reminder': 'You are in AGENT MODE. Use JSON format for vault actions.',
+  'agent.reinforcement.canPerformActions': 'You CAN create, modify, and delete files in this vault. Do NOT say you cannot - use the actions system.',
+  'agent.reinforcement.useJsonFormat': 'When the user requests vault actions, respond with JSON containing "actions" array.',
+  'agent.reinforcement.dontForget': 'Remember: You have full capability to manage this Obsidian vault through the actions system.',
+  'agent.reinforcement.recoveryPrompt': `The user asked: "{{message}}"
+
+You are in AGENT MODE and CAN perform vault actions. Please respond with the appropriate JSON format:
+{
+  "actions": [{"action": "...", "params": {...}}],
+  "message": "...",
+  "requiresConfirmation": false
+}`,
+  'agent.retryPrompt.confusion': 'You ARE able to create and modify files in this vault. Please provide the actions in JSON format as specified in your instructions.',
+  'agent.retryPrompt.missingJson': `You described actions but didn't provide the JSON format. Based on what you said: "{{context}}..."
+
+Please provide the EXACT actions as JSON:
+{
+  "actions": [{"action": "action-name", "params": {...}}],
+  "message": "Description of what will be done",
+  "requiresConfirmation": false
+}`,
+  'agent.retryPrompt.incompleteJson': 'Your response was cut off. Please continue and complete the JSON structure.',
+  'agent.retryPrompt.generic': 'Please provide vault actions in the required JSON format with "actions", "message", and "requiresConfirmation" fields.',
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WARNINGS AND VALIDATION
+  // ═══════════════════════════════════════════════════════════════════════════
+  'warning.modelConfusion': 'The model seems confused about its capabilities. It can perform vault actions in Agent Mode.',
+  'warning.actionClaimsNoJson': 'The response claims to have performed actions but no executable actions were found.',
+  'warning.emptyActionsArray': 'The response contains an empty actions array.',
+  'warning.incompleteJson': 'The JSON response appears to be incomplete or truncated.',
+  'warning.actionMismatch': 'Claimed actions don\'t match provided actions: {{mismatches}}',
+  'suggestion.remindAgentMode': 'Try reminding the model that Agent Mode is active.',
+  'suggestion.requestJsonFormat': 'Request the response in proper JSON format.',
+  'suggestion.requestContinuation': 'Request the model to continue and complete its response.',
+  'validation.valid': 'Response validated successfully.',
+  'validation.validWithNotes': 'Response valid with minor notes.',
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SETTINGS - PHASE 2
+  // ═══════════════════════════════════════════════════════════════════════════
+  'settings.section.advanced': 'Advanced Agent Options',
+  'settings.autoContinue.name': 'Auto-continue truncated responses',
+  'settings.autoContinue.desc': 'Automatically request continuation when a response appears cut off.',
+  'settings.autoPlan.name': 'Auto-plan complex tasks',
+  'settings.autoPlan.desc': 'Automatically break down complex tasks into smaller subtasks.',
+  'settings.contextReinforce.name': 'Reinforce agent context',
+  'settings.contextReinforce.desc': 'Add reminders to prevent the model from forgetting Agent Mode in long conversations.',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // EXTRACTION TEMPLATES

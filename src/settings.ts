@@ -17,6 +17,10 @@ export interface ClaudeCompanionSettings {
   confirmDestructiveActions: boolean;
   protectedFolders: string[];
   maxActionsPerMessage: number;
+  // Phase 2: Advanced Agent Mode
+  autoContinueOnTruncation: boolean;
+  enableAutoPlan: boolean;
+  enableContextReinforcement: boolean;
 }
 
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
@@ -32,7 +36,11 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   agentModeEnabled: false,
   confirmDestructiveActions: true,
   protectedFolders: ['.obsidian', 'templates', '_templates'],
-  maxActionsPerMessage: 10
+  maxActionsPerMessage: 10,
+  // Phase 2: Advanced Agent Mode
+  autoContinueOnTruncation: true,
+  enableAutoPlan: true,
+  enableContextReinforcement: true
 };
 
 export interface ModelOption {
@@ -60,7 +68,24 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: t('settings.title') });
+    // Header with logo and title
+    const headerEl = containerEl.createDiv({ cls: 'claudian-settings-header' });
+    const logoEl = headerEl.createDiv({ cls: 'claudian-settings-logo' });
+    logoEl.innerHTML = `<svg width="32" height="32" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
+            stroke="#7F52FF"
+            stroke-width="24"
+            stroke-linejoin="round"/>
+      <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
+            fill="#E95D3C"/>
+    </svg>`;
+    headerEl.createEl('h2', { text: t('settings.title') });
+
+    // Description paragraph
+    containerEl.createEl('p', {
+      text: t('settings.description'),
+      cls: 'claudian-settings-description'
+    });
 
     // Language
     new Setting(containerEl)
@@ -261,6 +286,46 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         .setDynamicTooltip()
         .onChange(async (value) => {
           this.plugin.settings.maxActionsPerMessage = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Advanced Section (Phase 2)
+    containerEl.createEl('hr');
+    containerEl.createEl('h3', { text: t('settings.section.advanced') });
+
+    // Auto-continue on truncation
+    new Setting(containerEl)
+      .setName(t('settings.autoContinue.name'))
+      .setDesc(t('settings.autoContinue.desc'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.autoContinueOnTruncation)
+        .onChange(async (value) => {
+          this.plugin.settings.autoContinueOnTruncation = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Enable auto-planning for complex tasks
+    new Setting(containerEl)
+      .setName(t('settings.autoPlan.name'))
+      .setDesc(t('settings.autoPlan.desc'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.enableAutoPlan)
+        .onChange(async (value) => {
+          this.plugin.settings.enableAutoPlan = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Enable context reinforcement
+    new Setting(containerEl)
+      .setName(t('settings.contextReinforce.name'))
+      .setDesc(t('settings.contextReinforce.desc'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.enableContextReinforcement)
+        .onChange(async (value) => {
+          this.plugin.settings.enableContextReinforcement = value;
           await this.plugin.saveSettings();
         })
       );

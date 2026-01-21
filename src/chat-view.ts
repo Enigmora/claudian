@@ -6,6 +6,11 @@ import { AgentMode, AgentResponse } from './agent-mode';
 import { VaultActionExecutor, VaultAction } from './vault-actions';
 import { ConfirmationModal } from './confirmation-modal';
 import { t } from './i18n';
+// Phase 2: Enhanced Agent Mode
+import { TruncationDetector, TruncationDetectionResult } from './truncation-detector';
+import { ContextReinforcer, ConversationAnalysis } from './context-reinforcer';
+import { ResponseValidator, ValidationResult } from './response-validator';
+import { TaskPlanner, TaskPlan, TaskAnalysis } from './task-planner';
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -24,6 +29,13 @@ export class ChatView extends ItemView {
   private isAgentModeActive: boolean = false;
   private agentToggle: HTMLElement;
 
+  // Phase 2: Enhanced Agent Mode
+  private contextReinforcer: ContextReinforcer;
+  private taskPlanner: TaskPlanner;
+  private currentPlan: TaskPlan | null = null;
+  private autoContinueCount: number = 0;
+  private readonly MAX_AUTO_CONTINUES: number = 5;
+
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
     this.plugin = plugin;
@@ -31,6 +43,14 @@ export class ChatView extends ItemView {
     this.executor = new VaultActionExecutor(plugin);
     this.agentMode = new AgentMode(plugin, this.executor, plugin.indexer);
     this.isAgentModeActive = plugin.settings.agentModeEnabled;
+
+    // Phase 2: Initialize enhanced components
+    this.contextReinforcer = new ContextReinforcer();
+    this.taskPlanner = new TaskPlanner({
+      maxActionsPerSubtask: 8,
+      maxSubtasks: 10,
+      enableAutoPlan: plugin.settings.enableAutoPlan
+    });
   }
 
   getViewType(): string {
@@ -267,9 +287,36 @@ export class ChatView extends ItemView {
     cursorEl: HTMLElement
   ): Promise<void> {
     let fullResponse = '';
-    const agentSystemPrompt = this.agentMode.getSystemPrompt();
 
-    await this.client.sendAgentMessageStream(message, agentSystemPrompt, {
+    // Phase 2: Context reinforcement
+    let enhancedMessage = message;
+    let systemPromptAdditions = '';
+
+    if (this.plugin.settings.enableContextReinforcement) {
+      const history = this.client.getHistory();
+      const analysis = this.contextReinforcer.analyzeConversation(history);
+
+      if (analysis.needsReinforcement) {
+        systemPromptAdditions = this.contextReinforcer.getSystemPromptReinforcement(analysis);
+        enhancedMessage = this.contextReinforcer.enhanceUserMessage(message, analysis);
+      }
+    }
+
+    // Phase 2: Task complexity analysis
+    if (this.plugin.settings.enableAutoPlan) {
+      const taskAnalysis = this.taskPlanner.analyzeRequest(message);
+      if (taskAnalysis.suggestPlanning && !this.currentPlan) {
+        // Create a simple plan for complex tasks
+        this.currentPlan = this.taskPlanner.createSimplePlan(message, taskAnalysis);
+      }
+    }
+
+    const agentSystemPrompt = this.agentMode.getSystemPrompt() + systemPromptAdditions;
+
+    // Reset auto-continue counter for new message
+    this.autoContinueCount = 0;
+
+    await this.client.sendAgentMessageStream(enhancedMessage, agentSystemPrompt, {
       onStart: () => {
         // Streaming started
       },
@@ -294,7 +341,48 @@ export class ChatView extends ItemView {
         cursorEl.remove();
         contentEl.empty();
 
-        // Check if it's an agent response with actions
+        // Phase 2: Truncation detection
+        const history = this.client.getHistory();
+        const truncationResult = TruncationDetector.detect({
+          response,
+          isAgentMode: true,
+          history
+        });
+
+        // Phase 2: Response validation
+        const parsedResponse = this.agentMode.parseAgentResponse(response);
+        const validation = ResponseValidator.validate(response, parsedResponse);
+
+        // Handle truncation with auto-continue
+        if (truncationResult.isTruncated &&
+            this.plugin.settings.autoContinueOnTruncation &&
+            this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
+
+          this.autoContinueCount++;
+          await this.handleTruncatedResponse(
+            response,
+            truncationResult,
+            responseEl,
+            contentEl
+          );
+          return;
+        }
+
+        // Handle validation issues (model confusion, missing JSON)
+        if (!validation.isValid && ResponseValidator.shouldRetry(validation) &&
+            this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
+
+          this.autoContinueCount++;
+          await this.handleValidationRetry(
+            response,
+            validation,
+            responseEl,
+            contentEl
+          );
+          return;
+        }
+
+        // Normal processing
         if (this.agentMode.isAgentResponse(response)) {
           await this.handleAgentResponse(response, responseEl, contentEl);
         } else {
@@ -309,6 +397,10 @@ export class ChatView extends ItemView {
           this.addMessageActions(responseEl, response);
         }
 
+        // Reset state after successful completion
+        this.autoContinueCount = 0;
+        this.currentPlan = null;
+
         this.isStreaming = false;
         this.sendButton.disabled = false;
         this.sendButton.setText(t('chat.send'));
@@ -322,6 +414,171 @@ export class ChatView extends ItemView {
           cls: 'claudian-error'
         });
 
+        this.autoContinueCount = 0;
+        this.currentPlan = null;
+
+        this.isStreaming = false;
+        this.sendButton.disabled = false;
+        this.sendButton.setText(t('chat.send'));
+      }
+    });
+  }
+
+  /**
+   * Phase 2: Handle truncated response with auto-continue
+   */
+  private async handleTruncatedResponse(
+    partialResponse: string,
+    truncationResult: TruncationDetectionResult,
+    responseEl: HTMLElement,
+    contentEl: HTMLElement
+  ): Promise<void> {
+    // Show continuation indicator
+    const indicator = contentEl.createDiv({ cls: 'claudian-auto-continue' });
+    indicator.setText(t('agent.continuing'));
+
+    // Generate continuation prompt
+    const continuePrompt = truncationResult.suggestedContinuation || t('agent.retryWithJson');
+
+    // Create new cursor for continuation
+    const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
+
+    let continuationResponse = '';
+    const agentSystemPrompt = this.agentMode.getSystemPrompt();
+
+    await this.client.sendAgentMessageStream(continuePrompt, agentSystemPrompt, {
+      onStart: () => {},
+      onToken: (token) => {
+        continuationResponse += token;
+        cursorEl.remove();
+
+        // Render combined response
+        const combined = TruncationDetector.mergeResponses(partialResponse, continuationResponse);
+        contentEl.empty();
+        MarkdownRenderer.render(this.app, combined, contentEl, '', this);
+        contentEl.appendChild(cursorEl);
+        this.scrollToBottom();
+      },
+      onComplete: async (response) => {
+        cursorEl.remove();
+        indicator.remove();
+
+        // Merge and process complete response
+        const fullResponse = TruncationDetector.mergeResponses(partialResponse, response);
+        contentEl.empty();
+
+        // Check if still truncated
+        const newTruncation = TruncationDetector.detect({
+          response: fullResponse,
+          isAgentMode: true,
+          history: this.client.getHistory()
+        });
+
+        if (newTruncation.isTruncated &&
+            this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
+          this.autoContinueCount++;
+          await this.handleTruncatedResponse(fullResponse, newTruncation, responseEl, contentEl);
+          return;
+        }
+
+        // Process complete response
+        if (this.agentMode.isAgentResponse(fullResponse)) {
+          await this.handleAgentResponse(fullResponse, responseEl, contentEl);
+        } else {
+          MarkdownRenderer.render(this.app, fullResponse, contentEl, '', this);
+          this.addMessageActions(responseEl, fullResponse);
+        }
+
+        this.autoContinueCount = 0;
+        this.isStreaming = false;
+        this.sendButton.disabled = false;
+        this.sendButton.setText(t('chat.send'));
+        this.scrollToBottom();
+      },
+      onError: (error) => {
+        cursorEl.remove();
+        contentEl.createEl('span', {
+          text: t('chat.error', { message: error.message }),
+          cls: 'claudian-error'
+        });
+        this.autoContinueCount = 0;
+        this.isStreaming = false;
+        this.sendButton.disabled = false;
+        this.sendButton.setText(t('chat.send'));
+      }
+    });
+  }
+
+  /**
+   * Phase 2: Handle validation retry when model shows confusion
+   */
+  private async handleValidationRetry(
+    originalResponse: string,
+    validation: ValidationResult,
+    responseEl: HTMLElement,
+    contentEl: HTMLElement
+  ): Promise<void> {
+    // Show retry indicator
+    const indicator = contentEl.createDiv({ cls: 'claudian-validation-retry' });
+    indicator.setText(t('agent.retryWithJson'));
+
+    // Generate retry prompt
+    const retryPrompt = ResponseValidator.generateRetryPrompt(originalResponse, validation);
+
+    // Create cursor for retry response
+    const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
+
+    let retryResponse = '';
+    const agentSystemPrompt = this.agentMode.getSystemPrompt() +
+      '\n\n' + t('agent.reinforcement.reminder');
+
+    await this.client.sendAgentMessageStream(retryPrompt, agentSystemPrompt, {
+      onStart: () => {},
+      onToken: (token) => {
+        retryResponse += token;
+        cursorEl.remove();
+        contentEl.empty();
+        MarkdownRenderer.render(this.app, retryResponse, contentEl, '', this);
+        contentEl.appendChild(cursorEl);
+        this.scrollToBottom();
+      },
+      onComplete: async (response) => {
+        cursorEl.remove();
+        indicator.remove();
+        contentEl.empty();
+
+        // Validate retry response
+        const retryParsed = this.agentMode.parseAgentResponse(response);
+        const retryValidation = ResponseValidator.validate(response, retryParsed);
+
+        if (!retryValidation.isValid && ResponseValidator.shouldRetry(retryValidation) &&
+            this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
+          this.autoContinueCount++;
+          await this.handleValidationRetry(response, retryValidation, responseEl, contentEl);
+          return;
+        }
+
+        // Process response
+        if (this.agentMode.isAgentResponse(response)) {
+          await this.handleAgentResponse(response, responseEl, contentEl);
+        } else {
+          MarkdownRenderer.render(this.app, response, contentEl, '', this);
+          this.addMessageActions(responseEl, response);
+        }
+
+        this.autoContinueCount = 0;
+        this.isStreaming = false;
+        this.sendButton.disabled = false;
+        this.sendButton.setText(t('chat.send'));
+        this.scrollToBottom();
+      },
+      onError: (error) => {
+        cursorEl.remove();
+        contentEl.createEl('span', {
+          text: t('chat.error', { message: error.message }),
+          cls: 'claudian-error'
+        });
+        this.autoContinueCount = 0;
         this.isStreaming = false;
         this.sendButton.disabled = false;
         this.sendButton.setText(t('chat.send'));

@@ -1153,6 +1153,41 @@
 }
 
 /* ==================== */
+/* Settings Header      */
+/* ==================== */
+
+.claudian-settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.claudian-settings-header h2 {
+  margin: 0;
+}
+
+.claudian-settings-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.claudian-settings-logo svg {
+  display: block;
+}
+
+.claudian-settings-description {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* ==================== */
 /* Settings Footer      */
 /* ==================== */
 
@@ -1175,4 +1210,161 @@
 .claudian-settings-footer a:hover {
   color: var(--interactive-accent-hover);
   text-decoration: underline;
+}
+
+/* ==================== */
+/* Phase 2: Enhanced Agent Mode */
+/* ==================== */
+
+/* Auto-continue indicator */
+.claudian-auto-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 8px 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.claudian-auto-continue::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--interactive-accent);
+  border-radius: 50%;
+  animation: blink 1s infinite;
+}
+
+/* Validation retry indicator */
+.claudian-validation-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-modifier-error-hover);
+  border-left: 3px solid var(--text-warning);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--text-normal);
+  margin: 8px 0;
+}
+
+.claudian-validation-retry::before {
+  content: '⚠️';
+}
+
+/* Pulse animation for indicators */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Task planning indicator */
+.claudian-planning-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--interactive-accent);
+  margin: 8px 0;
+}
+
+.claudian-planning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.claudian-planning-header::before {
+  content: '📋';
+}
+
+.claudian-planning-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 24px;
+}
+
+.claudian-planning-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.claudian-planning-step.completed {
+  color: var(--text-success);
+}
+
+.claudian-planning-step.in-progress {
+  color: var(--interactive-accent);
+}
+
+.claudian-planning-step.failed {
+  color: var(--text-error);
+}
+
+.claudian-planning-step::before {
+  content: '○';
+  font-size: 10px;
+}
+
+.claudian-planning-step.completed::before {
+  content: '✓';
+  color: var(--text-success);
+}
+
+.claudian-planning-step.in-progress::before {
+  content: '●';
+  color: var(--interactive-accent);
+  animation: blink 1s infinite;
+}
+
+.claudian-planning-step.failed::before {
+  content: '✗';
+  color: var(--text-error);
+}
+
+/* Context reinforcement badge */
+.claudian-reinforcement-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--background-modifier-border);
+  border-radius: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Truncation warning */
+.claudian-truncation-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-modifier-error-hover);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-normal);
+  margin: 8px 0;
+}
+
+.claudian-truncation-warning::before {
+  content: '⚡';
 }

@@ -425,13 +425,19 @@ CRITICAL - CONTENT GUIDELINES:
 4. Use simple markdown: headers, bullet points, basic formatting only
 5. NO elaborate introductions, NO lengthy explanations, NO filler content
 
-CRITICAL - MULTI-FILE EXECUTION:
-When creating MULTIPLE files (notes or folders), you MUST:
-1. Keep each file's content SHORT and focused (50-100 lines max per note)
-2. Start with the folder structure first (if needed)
-3. Include ALL requested files in the actions array - the system will handle execution
-4. Do NOT generate elaborate content for each file - keep it practical
-5. The system may split your request into smaller batches automatically
+CRITICAL - TASK COMPLETION:
+You MUST include ALL actions needed to COMPLETE the user's request in a SINGLE response:
+1. DO NOT split tasks across multiple messages - include everything in ONE JSON response
+2. If you need to read files before copying/modifying them, include BOTH read AND write actions together
+3. For copy operations: use list-folder first (if needed), then read-note + create-note for each file
+4. The system will execute actions sequentially, so reads happen before writes
+5. Maximum {{maxActions}} actions per message - if task requires more, include as many as possible and the system will auto-continue
+
+CRITICAL - CONTENT GUIDELINES:
+1. Keep note content SHORT and focused (50-100 lines max per note)
+2. AVOID excessive formatting unless explicitly requested
+3. Use simple markdown: headers, bullet points, basic formatting
+4. NO elaborate introductions or filler content
 
 IMPORTANT RULES:
 1. For destructive actions (delete-note, delete-folder, replace-content), use requiresConfirmation: true
@@ -439,7 +445,7 @@ IMPORTANT RULES:
 3. Notes are created with .md extension automatically
 4. If unsure about user intent, ask before acting
 5. For normal conversation (no vault actions), respond normally WITHOUT JSON format
-6. Maximum {{maxActions}} actions per message
+6. NEVER ask user to "continue" - include all actions you can, system handles the rest
 
 VAULT CONTEXT:
 - Total notes: {{noteCount}}

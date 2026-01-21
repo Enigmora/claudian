@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   agentModeEnabled: false,
   confirmDestructiveActions: true,
   protectedFolders: ['.obsidian', 'templates', '_templates'],
-  maxActionsPerMessage: 10,
+  maxActionsPerMessage: 25,
   // Phase 2: Advanced Agent Mode
   autoContinueOnTruncation: true,
   enableAutoPlan: true,
@@ -281,7 +281,7 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
       .setName(t('settings.maxActions.name'))
       .setDesc(t('settings.maxActions.desc'))
       .addSlider(slider => slider
-        .setLimits(1, 20, 1)
+        .setLimits(5, 50, 5)
         .setValue(this.plugin.settings.maxActionsPerMessage)
         .setDynamicTooltip()
         .onChange(async (value) => {

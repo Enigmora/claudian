@@ -656,17 +656,38 @@ export class ChatView extends ItemView {
     let continuationResponse = '';
     const agentSystemPrompt = this.agentMode.getSystemPrompt();
 
+    // JSON detection state for continuation
+    let streamingIndicator: HTMLElement | null = null;
+    let isShowingIndicator = false;
+    let confirmedAsJson = false;
+
     await this.client.sendAgentMessageStream(continuePrompt, agentSystemPrompt, {
       onStart: () => {},
       onToken: (token) => {
         continuationResponse += token;
-        cursorEl.remove();
 
-        // Render combined response
-        const combined = TruncationDetector.mergeResponses(partialResponse, continuationResponse);
-        contentEl.empty();
-        MarkdownRenderer.render(this.app, combined, contentEl, '', this);
-        contentEl.appendChild(cursorEl);
+        // Detect JSON response
+        if (!confirmedAsJson) {
+          confirmedAsJson = this.looksLikeAgentJsonResponse(continuationResponse);
+        }
+
+        if (confirmedAsJson) {
+          // Show streaming indicator instead of raw JSON
+          if (!isShowingIndicator) {
+            cursorEl.remove();
+            contentEl.empty();
+            streamingIndicator = this.createStreamingIndicator(contentEl);
+            isShowingIndicator = true;
+          }
+          this.updateStreamingIndicator(streamingIndicator, continuationResponse);
+        } else {
+          cursorEl.remove();
+          // Render combined response
+          const combined = TruncationDetector.mergeResponses(partialResponse, continuationResponse);
+          contentEl.empty();
+          MarkdownRenderer.render(this.app, combined, contentEl, '', this);
+          contentEl.appendChild(cursorEl);
+        }
         this.scrollToBottom();
       },
       onComplete: async (response) => {
@@ -760,14 +781,36 @@ export class ChatView extends ItemView {
     const agentSystemPrompt = this.agentMode.getSystemPrompt() +
       '\n\n' + t('agent.reinforcement.reminder');
 
+    // JSON detection state for retry
+    let streamingIndicator: HTMLElement | null = null;
+    let isShowingIndicator = false;
+    let confirmedAsJson = false;
+
     await this.client.sendAgentMessageStream(retryPrompt, agentSystemPrompt, {
       onStart: () => {},
       onToken: (token) => {
         retryResponse += token;
-        cursorEl.remove();
-        contentEl.empty();
-        MarkdownRenderer.render(this.app, retryResponse, contentEl, '', this);
-        contentEl.appendChild(cursorEl);
+
+        // Detect JSON response
+        if (!confirmedAsJson) {
+          confirmedAsJson = this.looksLikeAgentJsonResponse(retryResponse);
+        }
+
+        if (confirmedAsJson) {
+          // Show streaming indicator instead of raw JSON
+          if (!isShowingIndicator) {
+            cursorEl.remove();
+            contentEl.empty();
+            streamingIndicator = this.createStreamingIndicator(contentEl);
+            isShowingIndicator = true;
+          }
+          this.updateStreamingIndicator(streamingIndicator, retryResponse);
+        } else {
+          cursorEl.remove();
+          contentEl.empty();
+          MarkdownRenderer.render(this.app, retryResponse, contentEl, '', this);
+          contentEl.appendChild(cursorEl);
+        }
         this.scrollToBottom();
       },
       onComplete: async (response) => {

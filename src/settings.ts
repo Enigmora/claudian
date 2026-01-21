@@ -41,7 +41,7 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Claude Companion - Configuración' });
+    containerEl.createEl('h2', { text: 'Claude Companion by Enigmora - Configuración' });
 
     // API Key
     new Setting(containerEl)

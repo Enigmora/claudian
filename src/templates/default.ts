@@ -22,7 +22,7 @@ status: draft
 ${data.content}
 
 ---
-*Generado con Claude Companion - ${data.date}*
+*Generado con Claude Companion by Enigmora - ${data.date}*
 `;
 }
 

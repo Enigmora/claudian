@@ -70,7 +70,7 @@ export class ClaudeClient {
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion.'));
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
       return;
     }
 
@@ -138,7 +138,7 @@ export class ClaudeClient {
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion.'));
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
       return;
     }
 

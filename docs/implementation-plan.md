@@ -147,7 +147,7 @@ interface ClaudeCompanionSettings {
 **Componentes UI:**
 ```
 ┌─────────────────────────────┐
-│  Claude Companion     [🗑️]  │ ← Header
+│  Claude Companion by Enigmora     [🗑️]  │ ← Header
 ├─────────────────────────────┤
 │                             │
 │  ┌─────────────────────┐   │
@@ -199,7 +199,7 @@ status: draft
 {{content}}
 
 ---
-*Generado con Claude Companion - {{date}}*
+*Generado con Claude Companion by Enigmora - {{date}}*
 ```
 
 **Modal de creación:**

@@ -25,7 +25,7 @@ export class ChatView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claude Companion';
+    return 'Claude Companion by Enigmora';
   }
 
   getIcon(): string {
@@ -39,7 +39,7 @@ export class ChatView extends ItemView {
 
     // Header
     const header = container.createDiv({ cls: 'claude-companion-header' });
-    header.createEl('h4', { text: 'Claude Companion' });
+    header.createEl('h4', { text: 'Claude Companion by Enigmora' });
 
     const clearBtn = header.createEl('button', { cls: 'claude-companion-clear-btn' });
     setIcon(clearBtn, 'trash-2');

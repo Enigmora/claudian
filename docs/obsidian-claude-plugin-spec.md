@@ -229,7 +229,7 @@ esbuild.build({
 ```json
 {
   "id": "obsidian-claude-companion",
-  "name": "Claude Companion",
+  "name": "Claude Companion by Enigmora",
   "version": "0.1.0",
   "minAppVersion": "1.0.0",
   "description": "Chat con Claude y genera notas estructuradas directamente en tu bóveda.",

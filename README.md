@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
 </p>
 
-# Claude Companion
+# Claude Companion by Enigmora
 
 > Plugin de Obsidian para chatear con Claude AI y generar notas estructuradas con wikilinks, tags y YAML frontmatter directamente en tu bóveda.
 
@@ -34,14 +34,14 @@
 2. Crea la carpeta `.obsidian/plugins/obsidian-claude-companion/` en tu bóveda
 3. Copia los archivos descargados a esa carpeta
 4. Reinicia Obsidian o recarga (`Ctrl/Cmd + R`)
-5. Ve a **Settings > Community Plugins** y activa "Claude Companion"
+5. Ve a **Settings > Community Plugins** y activa "Claude Companion by Enigmora"
 
 ---
 
 ## Configuración
 
 1. Obtén tu API key en [console.anthropic.com](https://console.anthropic.com/)
-2. Abre **Settings > Claude Companion**
+2. Abre **Settings > Claude Companion by Enigmora**
 3. Ingresa tu API key
 4. Selecciona el modelo preferido (Claude Sonnet 4 por defecto)
 5. Ajusta las opciones de contexto según el tamaño de tu bóveda

@@ -1,7 +1,7 @@
 {
   "name": "claudian",
   "version": "1.0.0",
-  "description": "The ultimate Claude AI integration for Obsidian. Powered by Claude.",
+  "description": "The ultimate Claude AI integration for Obsidian. Chat with Claude, process notes for smart suggestions, and manage your vault with natural language.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",

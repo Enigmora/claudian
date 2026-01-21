@@ -199,35 +199,6 @@ src/
 
 ---
 
-## Roadmap
-
-### Fase 1: MVP
-- [x] Panel de chat lateral
-- [x] Streaming de respuestas
-- [x] Configuración de API key y modelo
-- [x] Generación de notas desde chat
-
-### Fase 2: Integración con bóveda
-- [x] Comando para procesar nota activa
-- [x] Sugerencias de tags y wikilinks basadas en contenido existente
-- [x] Indexación de títulos de notas para contexto
-- [x] Modal interactivo para aplicar sugerencias
-- [x] Creación de notas atómicas desde sugerencias
-
-### Fase 3: Automatización
-- [x] Templates de extracción personalizados
-- [x] Procesamiento batch de múltiples notas
-- [x] Generación de mapas de conceptos
-
-### Fase 4: Agente de Bóveda
-- [x] Modo agente para gestión de bóveda via chat
-- [x] Acciones: crear, mover, renombrar, eliminar notas/carpetas
-- [x] Búsqueda y modificación de contenido
-- [x] Modal de confirmación para acciones destructivas
-- [x] Configuración de carpetas protegidas
-
----
-
 ## Stack técnico
 
 - **TypeScript** — Tipado estático

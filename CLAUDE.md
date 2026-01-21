@@ -78,3 +78,21 @@ src/
 - `docs/obsidian-claude-plugin-spec.md` - Especificación completa del proyecto
 - `docs/implementation-plan.md` - Plan de implementación por fases
 - `docs/phase-4-vault-agent.md` - Documentación del modo agente
+
+## Git Branching Strategy
+
+**CRITICAL: Never commit directly to `main` branch.**
+
+All changes must go through feature/fix branches and Pull Requests. This ensures code review, CI validation, and a clean commit history.
+
+### Branch Naming Convention
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `feature/` | New features or enhancements | `feature/export-excel` |
+| `feat/` | Alias for feature | `feat/folio-c5` |
+| `fix/` | Bug fixes | `fix/report-form-tests` |
+| `hotfix/` | Urgent production fixes | `hotfix/auth-bypass` |
+| `docs/` | Documentation-only changes | `docs/api-reference` |
+| `refactor/` | Code refactoring (no behavior change) | `refactor/catalog-service` |
+| `test/` | Test-only changes | `test/bunit-coverage` |

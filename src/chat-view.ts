@@ -36,6 +36,9 @@ export class ChatView extends ItemView {
   private autoContinueCount: number = 0;
   private readonly MAX_AUTO_CONTINUES: number = 5;
 
+  // Phase 3: Context Management
+  private currentPartialId: string | null = null;
+
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
     this.plugin = plugin;
@@ -341,7 +344,7 @@ export class ChatView extends ItemView {
         cursorEl.remove();
         contentEl.empty();
 
-        // Phase 2: Truncation detection
+        // Phase 2: Truncation detection - CHECK FIRST before parsing
         const history = this.client.getHistory();
         const truncationResult = TruncationDetector.detect({
           response,
@@ -349,16 +352,16 @@ export class ChatView extends ItemView {
           history
         });
 
-        // Phase 2: Response validation
-        const parsedResponse = this.agentMode.parseAgentResponse(response);
-        const validation = ResponseValidator.validate(response, parsedResponse);
-
-        // Handle truncation with auto-continue
+        // Handle truncation with auto-continue - BEFORE attempting to parse
         if (truncationResult.isTruncated &&
             this.plugin.settings.autoContinueOnTruncation &&
             this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
 
           this.autoContinueCount++;
+
+          // Show partial response while continuing
+          MarkdownRenderer.render(this.app, response, contentEl, '', this);
+
           await this.handleTruncatedResponse(
             response,
             truncationResult,
@@ -367,6 +370,10 @@ export class ChatView extends ItemView {
           );
           return;
         }
+
+        // Only parse and validate AFTER confirming response is complete
+        const parsedResponse = this.agentMode.parseAgentResponse(response);
+        const validation = ResponseValidator.validate(response, parsedResponse);
 
         // Handle validation issues (model confusion, missing JSON)
         if (!validation.isValid && ResponseValidator.shouldRetry(validation) &&
@@ -425,7 +432,15 @@ export class ChatView extends ItemView {
   }
 
   /**
-   * Phase 2: Handle truncated response with auto-continue
+   * Phase 2: Delay helper to avoid rate limits
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Phase 2/3: Handle truncated response with auto-continue
+   * Uses context manager to persist partial responses
    */
   private async handleTruncatedResponse(
     partialResponse: string,
@@ -433,9 +448,23 @@ export class ChatView extends ItemView {
     responseEl: HTMLElement,
     contentEl: HTMLElement
   ): Promise<void> {
-    // Show continuation indicator
+    const contextManager = this.plugin.contextManager;
+
+    // Phase 3: Save partial response to temp storage on first truncation
+    if (!this.currentPartialId && contextManager) {
+      this.currentPartialId = await contextManager.savePartialResponse(partialResponse);
+    } else if (this.currentPartialId && contextManager) {
+      // Append to existing partial
+      await contextManager.appendToPartialResponse(this.currentPartialId, '');
+    }
+
+    // Show continuation indicator with attempt number
     const indicator = contentEl.createDiv({ cls: 'claudian-auto-continue' });
-    indicator.setText(t('agent.continuing'));
+    indicator.setText(`${t('agent.continuing')} (${this.autoContinueCount}/${this.MAX_AUTO_CONTINUES})`);
+
+    // Add delay to avoid rate limits (increases with each retry)
+    const delayMs = 2000 * this.autoContinueCount;
+    await this.delay(delayMs);
 
     // Generate continuation prompt
     const continuePrompt = truncationResult.suggestedContinuation || t('agent.retryWithJson');
@@ -467,6 +496,11 @@ export class ChatView extends ItemView {
         const fullResponse = TruncationDetector.mergeResponses(partialResponse, response);
         contentEl.empty();
 
+        // Phase 3: Update partial in storage
+        if (this.currentPartialId && contextManager) {
+          await contextManager.appendToPartialResponse(this.currentPartialId, response);
+        }
+
         // Check if still truncated
         const newTruncation = TruncationDetector.detect({
           response: fullResponse,
@@ -479,6 +513,12 @@ export class ChatView extends ItemView {
           this.autoContinueCount++;
           await this.handleTruncatedResponse(fullResponse, newTruncation, responseEl, contentEl);
           return;
+        }
+
+        // Phase 3: Complete partial and clean up
+        if (this.currentPartialId && contextManager) {
+          await contextManager.completePartialResponse(this.currentPartialId);
+          this.currentPartialId = null;
         }
 
         // Process complete response
@@ -495,8 +535,15 @@ export class ChatView extends ItemView {
         this.sendButton.setText(t('chat.send'));
         this.scrollToBottom();
       },
-      onError: (error) => {
+      onError: async (error) => {
         cursorEl.remove();
+
+        // Phase 3: Clean up partial on error
+        if (this.currentPartialId && contextManager) {
+          await contextManager.completePartialResponse(this.currentPartialId);
+          this.currentPartialId = null;
+        }
+
         contentEl.createEl('span', {
           text: t('chat.error', { message: error.message }),
           cls: 'claudian-error'
@@ -520,7 +567,11 @@ export class ChatView extends ItemView {
   ): Promise<void> {
     // Show retry indicator
     const indicator = contentEl.createDiv({ cls: 'claudian-validation-retry' });
-    indicator.setText(t('agent.retryWithJson'));
+    indicator.setText(`${t('agent.retryWithJson')} (${this.autoContinueCount}/${this.MAX_AUTO_CONTINUES})`);
+
+    // Add delay to avoid rate limits
+    const delayMs = 2000 * this.autoContinueCount;
+    await this.delay(delayMs);
 
     // Generate retry prompt
     const retryPrompt = ResponseValidator.generateRetryPrompt(originalResponse, validation);

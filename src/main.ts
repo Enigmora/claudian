@@ -20,6 +20,10 @@ import { BatchProcessor } from './batch-processor';
 import { ConceptMapGenerator } from './concept-map-generator';
 import { BatchModal } from './batch-modal';
 import { t, setLocale, resolveLocale, initSync } from './i18n';
+// Phase 3: Context Management
+import { ContextStorage } from './context-storage';
+import { ContextManager } from './context-manager';
+import { PurgeManager } from './purge-strategies';
 
 export default class ClaudeCompanionPlugin extends Plugin {
   settings: ClaudeCompanionSettings;
@@ -28,6 +32,10 @@ export default class ClaudeCompanionPlugin extends Plugin {
   noteProcessor: NoteProcessor;
   batchProcessor: BatchProcessor;
   conceptMapGenerator: ConceptMapGenerator;
+  // Phase 3: Context Management
+  contextStorage: ContextStorage;
+  contextManager: ContextManager;
+  private purgeIntervalId: number | null = null;
 
   async onload() {
     // Register custom icon
@@ -63,6 +71,18 @@ export default class ClaudeCompanionPlugin extends Plugin {
 
     // Initialize concept map generator
     this.conceptMapGenerator = new ConceptMapGenerator(this, this.claudeClient, this.indexer);
+
+    // Phase 3: Initialize context management
+    this.contextStorage = new ContextStorage(this);
+    await this.contextStorage.initialize();
+    this.contextManager = new ContextManager(this.contextStorage);
+
+    // Schedule periodic purge of temp files (every 30 minutes)
+    this.purgeIntervalId = window.setInterval(
+      () => this.runScheduledPurge(),
+      30 * 60 * 1000
+    );
+    this.registerInterval(this.purgeIntervalId);
 
     // Register chat view
     this.registerView(
@@ -144,6 +164,36 @@ export default class ClaudeCompanionPlugin extends Plugin {
   async onunload() {
     // Clean up views when disabling plugin
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CHAT);
+
+    // Phase 3: Final purge of expired temp files
+    if (this.contextStorage) {
+      await this.contextStorage.purgeExpired();
+    }
+
+    // Clear purge interval
+    if (this.purgeIntervalId !== null) {
+      window.clearInterval(this.purgeIntervalId);
+    }
+  }
+
+  /**
+   * Phase 3: Run scheduled purge of temp files
+   */
+  private async runScheduledPurge(): Promise<void> {
+    if (!this.contextStorage) return;
+
+    try {
+      const purgeManager = new PurgeManager(this.contextStorage);
+      const result = await purgeManager.runPurge();
+
+      if (result.purgedFiles > 0) {
+        console.log(
+          `Claudian: Purged ${result.purgedFiles} temp files, freed ${Math.round(result.freedSpace / 1024)}KB`
+        );
+      }
+    } catch (error) {
+      console.error('Claudian: Error during scheduled purge:', error);
+    }
   }
 
   async loadSettings() {

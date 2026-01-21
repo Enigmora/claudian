@@ -1,13 +1,18 @@
 <p align="center">
+  <img src="logo-2.svg" alt="Claudian by Enigmora SC" width="400">
+</p>
+
+<p align="center">
+  <strong>The ultimate Claude AI integration for Obsidian</strong><br>
+  <em>Powered by Claude</em>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Obsidian-Plugin-7C3AED?style=for-the-badge&logo=obsidian&logoColor=white" alt="Obsidian Plugin">
   <img src="https://img.shields.io/badge/Claude-AI-FF6B35?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude AI">
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
 </p>
-
-# Claude Companion by Enigmora
-
-> Plugin de Obsidian para chatear con Claude AI y generar notas estructuradas con wikilinks, tags y YAML frontmatter directamente en tu bóveda.
 
 ---
 
@@ -19,6 +24,7 @@
 | **Streaming en tiempo real** | Las respuestas se muestran mientras se generan |
 | **Procesamiento de notas** | Analiza notas activas y sugiere tags, wikilinks y conceptos atómicos |
 | **Generación de notas** | Convierte respuestas del chat en notas Markdown estructuradas |
+| **Modo Agente** | Gestiona tu bóveda con lenguaje natural |
 | **Contexto de bóveda** | Indexa títulos y tags existentes para sugerencias inteligentes |
 | **Formato nativo** | Notas con YAML frontmatter, wikilinks y tags |
 | **Privacidad** | Tu API key se almacena localmente, nunca en servidores externos |
@@ -31,17 +37,17 @@
 ### Instalación manual
 
 1. Descarga `main.js`, `manifest.json` y `styles.css` de la última release
-2. Crea la carpeta `.obsidian/plugins/obsidian-claude-companion/` en tu bóveda
+2. Crea la carpeta `.obsidian/plugins/claudian/` en tu bóveda
 3. Copia los archivos descargados a esa carpeta
 4. Reinicia Obsidian o recarga (`Ctrl/Cmd + R`)
-5. Ve a **Settings > Community Plugins** y activa "Claude Companion by Enigmora"
+5. Ve a **Settings > Community Plugins** y activa "Claudian"
 
 ---
 
 ## Configuración
 
 1. Obtén tu API key en [console.anthropic.com](https://console.anthropic.com/)
-2. Abre **Settings > Claude Companion by Enigmora**
+2. Abre **Settings > Claudian**
 3. Ingresa tu API key
 4. Selecciona el modelo preferido (Claude Sonnet 4 por defecto)
 5. Ajusta las opciones de contexto según el tamaño de tu bóveda
@@ -107,6 +113,23 @@
    - Temas transversales
    - Grafo visual en formato Mermaid
 
+### Modo Agente (gestión de bóveda)
+
+1. Activa el **modo agente** con el toggle en el header del chat
+2. Usa lenguaje natural para gestionar tu bóveda:
+   - *"Crea una carpeta Proyectos/2025 con subcarpetas para Docs y Código"*
+   - *"Mueve todas las notas sobre Python a Programación/"*
+   - *"Crea una nota con ideas para el proyecto X"*
+   - *"Elimina las notas vacías en Borradores/"*
+3. Claude interpretará tu solicitud y ejecutará las acciones
+4. Las acciones destructivas requieren confirmación
+
+**Acciones disponibles:**
+- Crear, mover, renombrar y eliminar notas y carpetas
+- Leer y modificar contenido de notas
+- Buscar notas por título, contenido o tags
+- Actualizar frontmatter (YAML)
+
 ---
 
 ## Formato de notas generadas
@@ -115,7 +138,7 @@
 ---
 created: 2025-01-20
 tags: [tag1, tag2]
-source: claude-chat
+source: claudian
 status: draft
 ---
 
@@ -135,8 +158,8 @@ Contenido de la respuesta...
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/Enigmora/obsidian-plugin.git
-cd obsidian-plugin
+git clone https://github.com/Enigmora/claudian.git
+cd claudian
 
 # Instalar dependencias
 npm install
@@ -146,6 +169,9 @@ npm run dev
 
 # Build de producción (minificado)
 npm run build
+
+# Compilar y desplegar a bóveda
+./deploy.sh . /ruta/a/boveda/.obsidian/plugins/claudian/
 ```
 
 ### Estructura del proyecto
@@ -164,6 +190,9 @@ src/
 ├── batch-processor.ts       # Procesamiento batch de notas
 ├── batch-modal.ts           # Modal de selección para batch
 ├── concept-map-generator.ts # Generador de mapas de conceptos
+├── vault-actions.ts         # Ejecutor de acciones sobre bóveda
+├── agent-mode.ts            # Gestión del modo agente
+├── confirmation-modal.ts    # Modal de confirmación de acciones
 └── templates/
     └── default.ts           # Template de notas
 ```
@@ -190,6 +219,13 @@ src/
 - [x] Procesamiento batch de múltiples notas
 - [x] Generación de mapas de conceptos
 
+### Fase 4: Agente de Bóveda
+- [x] Modo agente para gestión de bóveda via chat
+- [x] Acciones: crear, mover, renombrar, eliminar notas/carpetas
+- [x] Búsqueda y modificación de contenido
+- [x] Modal de confirmación para acciones destructivas
+- [x] Configuración de carpetas protegidas
+
 ---
 
 ## Stack técnico
@@ -207,17 +243,19 @@ Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
 
 ---
 
-## Autor
-
 <p align="center">
-  <strong>José Villaseñor Montfort</strong><br>
-  Diseño, arquitectura y desarrollo
+  <img src="logo.svg" alt="Claudian" width="80">
 </p>
 
 <p align="center">
-  <a href="https://github.com/Enigmora">Enigmora SC</a>
+  <strong>Claudian</strong><br>
+  <em>The ultimate Claude AI integration for Obsidian</em>
 </p>
 
 <p align="center">
-  <sub>Copyright © 2025 José Villaseñor Montfort. Todos los derechos reservados.</sub>
+  Desarrollado por <a href="https://github.com/Enigmora">Enigmora SC</a>
+</p>
+
+<p align="center">
+  <sub>Powered by Claude</sub>
 </p>

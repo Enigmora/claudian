@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-claude-companion",
+  "name": "claudian",
   "version": "0.1.0",
-  "description": "Chat con Claude y genera notas estructuradas directamente en tu bóveda de Obsidian.",
+  "description": "The ultimate Claude AI integration for Obsidian. Powered by Claude.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
@@ -11,9 +11,10 @@
     "obsidian",
     "claude",
     "ai",
-    "notes"
+    "notes",
+    "claudian"
   ],
-  "author": "",
+  "author": "Enigmora SC",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -43,7 +43,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
     );
 
     // Agregar icono en ribbon
-    this.addRibbonIcon('message-circle', 'Claude Companion by Enigmora', () => {
+    this.addRibbonIcon('message-circle', 'Claudian', () => {
       this.activateChatView();
     });
 

@@ -13,7 +13,7 @@ export function generateNoteContent(data: NoteData): string {
   return `---
 created: ${data.date}
 tags: [${tagsFormatted}]
-source: claude-chat
+source: claudian
 status: draft
 ---
 
@@ -22,7 +22,7 @@ status: draft
 ${data.content}
 
 ---
-*Generado con Claude Companion by Enigmora - ${data.date}*
+*Generado con Claudian - ${data.date}*
 `;
 }
 

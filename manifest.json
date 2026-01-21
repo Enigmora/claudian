@@ -1,10 +1,10 @@
 {
-  "id": "obsidian-claude-companion",
-  "name": "Claude Companion by Enigmora",
+  "id": "claudian",
+  "name": "Claudian",
   "version": "0.1.0",
   "minAppVersion": "1.0.0",
-  "description": "Chat con Claude y genera notas estructuradas directamente en tu bóveda.",
-  "author": "Enigmora",
+  "description": "The ultimate Claude AI integration for Obsidian. Powered by Claude.",
+  "author": "Enigmora SC",
   "authorUrl": "https://github.com/Enigmora",
   "isDesktopOnly": false
 }

@@ -1,8 +1,10 @@
-# Obsidian Claude Plugin - Especificación de Proyecto
+# Claudian - Especificación de Proyecto
+
+> The ultimate Claude AI integration for Obsidian. Powered by Claude.
 
 ## Resumen Ejecutivo
 
-**Nombre del proyecto:** `obsidian-claude-companion`
+**Nombre del proyecto:** `claudian`
 
 **Objetivo:** Crear un plugin de Obsidian que permita interactuar con Claude directamente desde la aplicación, generando notas estructuradas con formato compatible con Obsidian (wikilinks, tags, YAML frontmatter).
 
@@ -16,7 +18,7 @@
 ┌─────────────────────────────────────────────────────┐
 │                    Obsidian                         │
 │  ┌───────────────────────────────────────────────┐  │
-│  │           obsidian-claude-companion           │  │
+│  │           claudian           │  │
 │  │                                               │  │
 │  │  ┌─────────────┐  ┌─────────────────────────┐ │  │
 │  │  │  Chat View  │  │   Note Processor        │ │  │
@@ -58,7 +60,7 @@
    - Guardar en carpeta configurable
 
 3. **Configuración básica**
-   - Campo para API key (almacenada en `.obsidian/plugins/obsidian-claude-companion/data.json`)
+   - Campo para API key (almacenada en `.obsidian/plugins/claudian/data.json`)
    - Selector de modelo (claude-3-5-sonnet, claude-3-opus, etc.)
 
 ### Fase 2: Integración con bóveda
@@ -113,7 +115,7 @@
 ### Estructura del proyecto
 
 ```
-obsidian-claude-companion/
+claudian/
 ├── src/
 │   ├── main.ts              # Entry point del plugin
 │   ├── settings.ts          # Configuración y UI de settings
@@ -148,8 +150,8 @@ npm --version   # >= 9.0.0
 
 ```bash
 # Clonar/crear repositorio
-mkdir obsidian-claude-companion
-cd obsidian-claude-companion
+mkdir claudian
+cd claudian
 
 # Inicializar proyecto
 npm init -y
@@ -228,8 +230,8 @@ esbuild.build({
 
 ```json
 {
-  "id": "obsidian-claude-companion",
-  "name": "Claude Companion by Enigmora",
+  "id": "claudian",
+  "name": "Claudian",
   "version": "0.1.0",
   "minAppVersion": "1.0.0",
   "description": "Chat con Claude y genera notas estructuradas directamente en tu bóveda.",
@@ -374,7 +376,7 @@ Conectar chat con creación de archivos `.md`.
 ## Testing local
 
 1. Crear bóveda de prueba o usar una existente
-2. Crear carpeta `.obsidian/plugins/obsidian-claude-companion/`
+2. Crear carpeta `.obsidian/plugins/claudian/`
 3. Copiar `main.js`, `manifest.json`, `styles.css`
 4. Recargar Obsidian (Ctrl/Cmd + R)
 5. Activar plugin en Settings > Community Plugins

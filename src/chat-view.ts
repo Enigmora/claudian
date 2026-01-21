@@ -2,8 +2,11 @@ import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice, setIcon } from 'obsi
 import ClaudeCompanionPlugin from './main';
 import { ClaudeClient, Message } from './claude-client';
 import { NoteCreatorModal } from './note-creator';
+import { AgentMode, AgentResponse } from './agent-mode';
+import { VaultActionExecutor, VaultAction } from './vault-actions';
+import { ConfirmationModal } from './confirmation-modal';
 
-export const VIEW_TYPE_CHAT = 'claude-companion-chat';
+export const VIEW_TYPE_CHAT = 'claudian-chat';
 
 export class ChatView extends ItemView {
   plugin: ClaudeCompanionPlugin;
@@ -14,10 +17,19 @@ export class ChatView extends ItemView {
   private sendButton: HTMLButtonElement;
   private isStreaming: boolean = false;
 
+  // Modo Agente
+  private agentMode: AgentMode;
+  private executor: VaultActionExecutor;
+  private isAgentModeActive: boolean = false;
+  private agentToggle: HTMLElement;
+
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.client = new ClaudeClient(plugin.settings);
+    this.executor = new VaultActionExecutor(plugin);
+    this.agentMode = new AgentMode(plugin, this.executor, plugin.indexer);
+    this.isAgentModeActive = plugin.settings.agentModeEnabled;
   }
 
   getViewType(): string {
@@ -25,7 +37,7 @@ export class ChatView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claude Companion by Enigmora';
+    return 'Claudian';
   }
 
   getIcon(): string {
@@ -35,28 +47,40 @@ export class ChatView extends ItemView {
   async onOpen(): Promise<void> {
     const container = this.containerEl.children[1];
     container.empty();
-    container.addClass('claude-companion-container');
+    container.addClass('claudian-container');
 
     // Header
-    const header = container.createDiv({ cls: 'claude-companion-header' });
-    header.createEl('h4', { text: 'Claude Companion by Enigmora' });
+    const header = container.createDiv({ cls: 'claudian-header' });
+    header.createEl('h4', { text: 'Claudian' });
 
-    const clearBtn = header.createEl('button', { cls: 'claude-companion-clear-btn' });
+    // Controles del header
+    const headerControls = header.createDiv({ cls: 'claudian-header-controls' });
+
+    // Toggle de modo agente
+    this.agentToggle = headerControls.createDiv({ cls: 'claudian-agent-toggle' });
+    const agentLabel = this.agentToggle.createSpan({ cls: 'agent-toggle-label', text: 'Agente' });
+    const toggleSwitch = this.agentToggle.createDiv({ cls: 'agent-toggle-switch' });
+    if (this.isAgentModeActive) {
+      toggleSwitch.addClass('is-active');
+    }
+    toggleSwitch.onclick = () => this.toggleAgentMode(toggleSwitch);
+
+    const clearBtn = headerControls.createEl('button', { cls: 'claudian-clear-btn' });
     setIcon(clearBtn, 'trash-2');
     clearBtn.setAttribute('aria-label', 'Limpiar chat');
     clearBtn.onclick = () => this.clearChat();
 
     // Contenedor de mensajes
-    this.messagesContainer = container.createDiv({ cls: 'claude-companion-messages' });
+    this.messagesContainer = container.createDiv({ cls: 'claudian-messages' });
 
     // Restaurar historial si existe
     this.restoreHistory();
 
     // Área de input
-    const inputArea = container.createDiv({ cls: 'claude-companion-input-area' });
+    const inputArea = container.createDiv({ cls: 'claudian-input-area' });
 
     this.inputEl = inputArea.createEl('textarea', {
-      cls: 'claude-companion-input',
+      cls: 'claudian-input',
       attr: { placeholder: 'Escribe tu mensaje...' }
     });
 
@@ -75,7 +99,7 @@ export class ChatView extends ItemView {
     });
 
     this.sendButton = inputArea.createEl('button', {
-      cls: 'claude-companion-send-btn',
+      cls: 'claudian-send-btn',
       text: 'Enviar'
     });
     this.sendButton.onclick = () => this.sendMessage();
@@ -98,6 +122,18 @@ export class ChatView extends ItemView {
     new Notice('Chat limpiado');
   }
 
+  private toggleAgentMode(toggleEl: HTMLElement): void {
+    this.isAgentModeActive = !this.isAgentModeActive;
+
+    if (this.isAgentModeActive) {
+      toggleEl.addClass('is-active');
+      new Notice('Modo agente activado');
+    } else {
+      toggleEl.removeClass('is-active');
+      new Notice('Modo agente desactivado');
+    }
+  }
+
   private async sendMessage(): Promise<void> {
     const message = this.inputEl.value.trim();
     if (!message || this.isStreaming) return;
@@ -114,15 +150,31 @@ export class ChatView extends ItemView {
 
     // Preparar contenedor para respuesta
     const responseEl = this.createMessageElement('assistant');
-    const contentEl = responseEl.querySelector('.claude-companion-message-content') as HTMLElement;
+    const contentEl = responseEl.querySelector('.claudian-message-content') as HTMLElement;
 
     // Agregar cursor de streaming
-    const cursorEl = contentEl.createSpan({ cls: 'claude-companion-cursor' });
+    const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
 
     this.isStreaming = true;
     this.sendButton.disabled = true;
     this.sendButton.setText('...');
 
+    let fullResponse = '';
+
+    // Elegir método según modo
+    if (this.isAgentModeActive) {
+      await this.sendAgentMessage(message, responseEl, contentEl, cursorEl);
+    } else {
+      await this.sendNormalMessage(message, responseEl, contentEl, cursorEl);
+    }
+  }
+
+  private async sendNormalMessage(
+    message: string,
+    responseEl: HTMLElement,
+    contentEl: HTMLElement,
+    cursorEl: HTMLElement
+  ): Promise<void> {
     let fullResponse = '';
 
     await this.client.sendMessageStream(message, {
@@ -177,7 +229,7 @@ export class ChatView extends ItemView {
         contentEl.empty();
         contentEl.createEl('span', {
           text: `Error: ${error.message}`,
-          cls: 'claude-companion-error'
+          cls: 'claudian-error'
         });
 
         this.isStreaming = false;
@@ -187,9 +239,191 @@ export class ChatView extends ItemView {
     });
   }
 
+  private async sendAgentMessage(
+    message: string,
+    responseEl: HTMLElement,
+    contentEl: HTMLElement,
+    cursorEl: HTMLElement
+  ): Promise<void> {
+    let fullResponse = '';
+    const agentSystemPrompt = this.agentMode.getSystemPrompt();
+
+    await this.client.sendAgentMessageStream(message, agentSystemPrompt, {
+      onStart: () => {
+        // Streaming iniciado
+      },
+      onToken: (token) => {
+        fullResponse += token;
+        cursorEl.remove();
+        contentEl.empty();
+
+        // Mostrar respuesta mientras llega
+        MarkdownRenderer.render(
+          this.app,
+          fullResponse,
+          contentEl,
+          '',
+          this
+        );
+
+        contentEl.appendChild(cursorEl);
+        this.scrollToBottom();
+      },
+      onComplete: async (response) => {
+        cursorEl.remove();
+        contentEl.empty();
+
+        // Verificar si es respuesta del agente con acciones
+        if (this.agentMode.isAgentResponse(response)) {
+          await this.handleAgentResponse(response, responseEl, contentEl);
+        } else {
+          // Respuesta normal (conversación)
+          MarkdownRenderer.render(
+            this.app,
+            response,
+            contentEl,
+            '',
+            this
+          );
+          this.addMessageActions(responseEl, response);
+        }
+
+        this.isStreaming = false;
+        this.sendButton.disabled = false;
+        this.sendButton.setText('Enviar');
+        this.scrollToBottom();
+      },
+      onError: (error) => {
+        cursorEl.remove();
+        contentEl.empty();
+        contentEl.createEl('span', {
+          text: `Error: ${error.message}`,
+          cls: 'claudian-error'
+        });
+
+        this.isStreaming = false;
+        this.sendButton.disabled = false;
+        this.sendButton.setText('Enviar');
+      }
+    });
+  }
+
+  private async handleAgentResponse(
+    response: string,
+    responseEl: HTMLElement,
+    contentEl: HTMLElement
+  ): Promise<void> {
+    const agentResponse = this.agentMode.parseAgentResponse(response);
+
+    if (!agentResponse || agentResponse.actions.length === 0) {
+      // No hay acciones, mostrar mensaje normal
+      MarkdownRenderer.render(
+        this.app,
+        agentResponse?.message || response,
+        contentEl,
+        '',
+        this
+      );
+      this.addMessageActions(responseEl, response);
+      return;
+    }
+
+    // Mostrar mensaje inicial
+    MarkdownRenderer.render(
+      this.app,
+      agentResponse.message,
+      contentEl,
+      '',
+      this
+    );
+
+    // Verificar si hay acciones destructivas que requieren confirmación
+    const destructiveActions = this.agentMode.getDestructiveActions(agentResponse.actions);
+
+    if (destructiveActions.length > 0 && this.plugin.settings.confirmDestructiveActions) {
+      // Mostrar modal de confirmación
+      await this.showConfirmationAndExecute(agentResponse, responseEl, contentEl);
+    } else {
+      // Ejecutar directamente
+      await this.executeAgentActions(agentResponse.actions, responseEl, contentEl, agentResponse.message);
+    }
+  }
+
+  private async showConfirmationAndExecute(
+    agentResponse: AgentResponse,
+    responseEl: HTMLElement,
+    contentEl: HTMLElement
+  ): Promise<void> {
+    const destructiveActions = this.agentMode.getDestructiveActions(agentResponse.actions);
+
+    return new Promise((resolve) => {
+      new ConfirmationModal(
+        this.plugin,
+        destructiveActions,
+        async () => {
+          // Confirmado: ejecutar todas las acciones
+          await this.executeAgentActions(
+            agentResponse.actions,
+            responseEl,
+            contentEl,
+            agentResponse.message
+          );
+          resolve();
+        },
+        () => {
+          // Cancelado: mostrar mensaje
+          const cancelMsg = contentEl.createDiv({ cls: 'agent-action-cancelled' });
+          cancelMsg.setText('Acciones canceladas por el usuario.');
+          resolve();
+        }
+      ).open();
+    });
+  }
+
+  private async executeAgentActions(
+    actions: VaultAction[],
+    responseEl: HTMLElement,
+    contentEl: HTMLElement,
+    originalMessage: string
+  ): Promise<void> {
+    try {
+      const results = await this.agentMode.executeActions(actions);
+      const summary = this.agentMode.getSummaryMessage(results, originalMessage);
+
+      // Actualizar contenido con resultados
+      contentEl.empty();
+      MarkdownRenderer.render(
+        this.app,
+        summary,
+        contentEl,
+        '',
+        this
+      );
+
+      // Agregar indicador visual de acciones ejecutadas
+      const actionsIndicator = contentEl.createDiv({ cls: 'agent-actions-indicator' });
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.filter(r => !r.success).length;
+
+      if (failCount === 0) {
+        actionsIndicator.addClass('all-success');
+        actionsIndicator.setText(`${successCount} acción(es) ejecutadas`);
+      } else {
+        actionsIndicator.addClass('has-errors');
+        actionsIndicator.setText(`${successCount} exitosas, ${failCount} fallidas`);
+      }
+
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      contentEl.createDiv({ cls: 'agent-action-error' }).setText(`Error: ${errorMsg}`);
+    }
+
+    this.addMessageActions(responseEl, originalMessage);
+  }
+
   private renderMessage(role: 'user' | 'assistant', content: string): void {
     const messageEl = this.createMessageElement(role);
-    const contentEl = messageEl.querySelector('.claude-companion-message-content') as HTMLElement;
+    const contentEl = messageEl.querySelector('.claudian-message-content') as HTMLElement;
 
     if (role === 'assistant') {
       MarkdownRenderer.render(
@@ -209,19 +443,19 @@ export class ChatView extends ItemView {
 
   private createMessageElement(role: 'user' | 'assistant'): HTMLElement {
     const messageEl = this.messagesContainer.createDiv({
-      cls: `claude-companion-message claude-companion-message-${role}`
+      cls: `claudian-message claudian-message-${role}`
     });
 
-    messageEl.createDiv({ cls: 'claude-companion-message-content' });
+    messageEl.createDiv({ cls: 'claudian-message-content' });
 
     return messageEl;
   }
 
   private addMessageActions(messageEl: HTMLElement, content: string): void {
-    const actionsEl = messageEl.createDiv({ cls: 'claude-companion-message-actions' });
+    const actionsEl = messageEl.createDiv({ cls: 'claudian-message-actions' });
 
     // Botón copiar
-    const copyBtn = actionsEl.createEl('button', { cls: 'claude-companion-action-btn' });
+    const copyBtn = actionsEl.createEl('button', { cls: 'claudian-action-btn' });
     setIcon(copyBtn, 'clipboard-copy');
     copyBtn.setAttribute('aria-label', 'Copiar');
     copyBtn.onclick = async () => {
@@ -230,7 +464,7 @@ export class ChatView extends ItemView {
     };
 
     // Botón crear nota
-    const noteBtn = actionsEl.createEl('button', { cls: 'claude-companion-action-btn' });
+    const noteBtn = actionsEl.createEl('button', { cls: 'claudian-action-btn' });
     setIcon(noteBtn, 'file-plus');
     noteBtn.setAttribute('aria-label', 'Crear nota');
     noteBtn.onclick = () => {

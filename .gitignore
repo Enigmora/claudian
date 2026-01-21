@@ -1,5 +1,5 @@
 node_modules/
-main.js
+dist/
 *.js.map
 .DS_Store
 data.json

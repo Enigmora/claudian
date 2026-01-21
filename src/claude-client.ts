@@ -71,7 +71,7 @@ export class ClaudeClient {
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
       return;
     }
 
@@ -139,7 +139,7 @@ export class ClaudeClient {
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
       return;
     }
 
@@ -243,7 +243,7 @@ ${noteContent}`;
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
       return;
     }
 
@@ -284,7 +284,7 @@ ${template.outputFormat === 'json' ? 'IMPORTANTE: Responde ÚNICAMENTE con JSON 
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
       return;
     }
 
@@ -316,6 +316,59 @@ IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
+      this.handleError(error, callbacks);
+    }
+  }
+
+  async sendAgentMessageStream(
+    userMessage: string,
+    agentSystemPrompt: string,
+    callbacks: StreamCallbacks
+  ): Promise<void> {
+    if (!this.client) {
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
+      return;
+    }
+
+    // Agregar mensaje del usuario al historial
+    this.conversationHistory.push({
+      role: 'user',
+      content: userMessage
+    });
+
+    callbacks.onStart?.();
+
+    let fullResponse = '';
+
+    try {
+      const stream = this.client.messages.stream({
+        model: this.settings.model,
+        max_tokens: this.settings.maxTokens,
+        system: agentSystemPrompt,
+        messages: this.conversationHistory.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }))
+      });
+
+      stream.on('text', (text) => {
+        fullResponse += text;
+        callbacks.onToken?.(text);
+      });
+
+      await stream.finalMessage();
+
+      // Agregar respuesta al historial
+      this.conversationHistory.push({
+        role: 'assistant',
+        content: fullResponse
+      });
+
+      callbacks.onComplete?.(fullResponse);
+
+    } catch (error) {
+      // Remover el mensaje del usuario si hubo error
+      this.conversationHistory.pop();
       this.handleError(error, callbacks);
     }
   }

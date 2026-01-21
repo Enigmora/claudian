@@ -9,6 +9,11 @@ export interface ClaudeCompanionSettings {
   systemPrompt: string;
   maxNotesInContext: number;
   maxTagsInContext: number;
+  // Modo Agente
+  agentModeEnabled: boolean;
+  confirmDestructiveActions: boolean;
+  protectedFolders: string[];
+  maxActionsPerMessage: number;
 }
 
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
@@ -18,7 +23,12 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   maxTokens: 4096,
   systemPrompt: 'Eres un asistente útil para organizar notas en Obsidian. Responde de forma clara y estructurada, usando formato Markdown cuando sea apropiado. Si te piden crear contenido para una nota, incluye sugerencias de tags relevantes.',
   maxNotesInContext: 100,
-  maxTagsInContext: 50
+  maxTagsInContext: 50,
+  // Modo Agente
+  agentModeEnabled: false,
+  confirmDestructiveActions: true,
+  protectedFolders: ['.obsidian', 'templates', '_templates'],
+  maxActionsPerMessage: 10
 };
 
 export const AVAILABLE_MODELS = [
@@ -41,7 +51,7 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Claude Companion by Enigmora - Configuración' });
+    containerEl.createEl('h2', { text: 'Claudian - Configuración' });
 
     // API Key
     new Setting(containerEl)
@@ -144,6 +154,64 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         .setDynamicTooltip()
         .onChange(async (value) => {
           this.plugin.settings.maxTagsInContext = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Sección de Modo Agente
+    containerEl.createEl('hr');
+    containerEl.createEl('h3', { text: 'Modo Agente' });
+
+    // Activar modo agente por defecto
+    new Setting(containerEl)
+      .setName('Activar modo agente por defecto')
+      .setDesc('El modo agente permite a Claude ejecutar acciones sobre la bóveda.')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.agentModeEnabled)
+        .onChange(async (value) => {
+          this.plugin.settings.agentModeEnabled = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Confirmar acciones destructivas
+    new Setting(containerEl)
+      .setName('Confirmar acciones destructivas')
+      .setDesc('Solicitar confirmación antes de eliminar archivos o reemplazar contenido.')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.confirmDestructiveActions)
+        .onChange(async (value) => {
+          this.plugin.settings.confirmDestructiveActions = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Carpetas protegidas
+    new Setting(containerEl)
+      .setName('Carpetas protegidas')
+      .setDesc('Carpetas que el agente no puede modificar (separadas por comas).')
+      .addText(text => text
+        .setPlaceholder('.obsidian, templates')
+        .setValue(this.plugin.settings.protectedFolders.join(', '))
+        .onChange(async (value) => {
+          this.plugin.settings.protectedFolders = value
+            .split(',')
+            .map(f => f.trim())
+            .filter(f => f.length > 0);
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Máximo de acciones por mensaje
+    new Setting(containerEl)
+      .setName('Máximo de acciones por mensaje')
+      .setDesc('Límite de acciones que Claude puede ejecutar en un solo mensaje (1-20).')
+      .addSlider(slider => slider
+        .setLimits(1, 20, 1)
+        .setValue(this.plugin.settings.maxActionsPerMessage)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.maxActionsPerMessage = value;
           await this.plugin.saveSettings();
         })
       );

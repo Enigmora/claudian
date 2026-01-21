@@ -1,4 +1,4 @@
-# Plan de Implementación: obsidian-claude-companion
+# Plan de Implementación: claudian
 
 ## Fase 1 - MVP (Mínimo Producto Viable)
 
@@ -70,8 +70,8 @@ npm run dev
 
 **Estructura:**
 ```typescript
-export default class ClaudeCompanionPlugin extends Plugin {
-  settings: ClaudeCompanionSettings;
+export default class ClaudianPlugin extends Plugin {
+  settings: ClaudianSettings;
 
   async onload() {
     await this.loadSettings();
@@ -99,7 +99,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
 
 **Interface de configuración:**
 ```typescript
-interface ClaudeCompanionSettings {
+interface ClaudianSettings {
   apiKey: string;           // API key de Anthropic
   model: string;            // claude-3-5-sonnet-20241022, etc.
   notesFolder: string;      // Carpeta destino de notas
@@ -147,7 +147,7 @@ interface ClaudeCompanionSettings {
 **Componentes UI:**
 ```
 ┌─────────────────────────────┐
-│  Claude Companion by Enigmora     [🗑️]  │ ← Header
+│  Claudian     [🗑️]  │ ← Header
 ├─────────────────────────────┤
 │                             │
 │  ┌─────────────────────┐   │
@@ -199,7 +199,7 @@ status: draft
 {{content}}
 
 ---
-*Generado con Claude Companion by Enigmora - {{date}}*
+*Generado con Claudian - {{date}}*
 ```
 
 **Modal de creación:**

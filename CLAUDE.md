@@ -151,3 +151,21 @@ All changes must go through feature/fix branches and Pull Requests. This ensures
 | `docs/` | Documentation-only changes | `docs/api-reference` |
 | `refactor/` | Code refactoring (no behavior change) | `refactor/catalog-service` |
 | `test/` | Test-only changes | `test/bunit-coverage` |
+
+## Releases
+
+Releases are automated via GitHub Actions. To create a new release:
+
+1. Update version in `manifest.json` and `package.json`
+2. Commit and push changes to `main`
+3. Create and push a version tag:
+   ```bash
+   git tag -a v1.0.0 -m "v1.0.0"
+   git push origin v1.0.0
+   ```
+4. GitHub Actions will automatically:
+   - Build the plugin
+   - Verify manifest version matches tag
+   - Create a GitHub Release with `main.js`, `manifest.json`, and `styles.css`
+
+**Version format:** Use semantic versioning (e.g., `v1.0.0`, `v1.2.3`)

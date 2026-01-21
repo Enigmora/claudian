@@ -179,6 +179,8 @@ Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
 
 ---
 
+## Autor
+
 <p align="center">
   <strong>José Villaseñor Montfort</strong><br>
   Diseño, arquitectura y desarrollo

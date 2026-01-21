@@ -107,84 +107,55 @@ export class NoteProcessor {
   async applyTags(file: TFile, tags: string[]): Promise<void> {
     if (tags.length === 0) return;
 
-    const content = await this.plugin.app.vault.read(file);
-    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-
-    let newContent: string;
-
-    if (frontmatterMatch) {
-      const frontmatter = frontmatterMatch[1];
-      const existingTagsMatch = frontmatter.match(/^tags:\s*\[(.*?)\]/m) ||
-                                frontmatter.match(/^tags:\s*\n((?:\s+-\s+.*\n)*)/m);
-
-      let existingTags: string[] = [];
-      if (existingTagsMatch) {
-        if (existingTagsMatch[1].includes('-')) {
-          existingTags = existingTagsMatch[1]
-            .split('\n')
-            .map(line => line.replace(/^\s*-\s*/, '').trim())
-            .filter(t => t);
-        } else {
-          existingTags = existingTagsMatch[1]
-            .split(',')
-            .map(t => t.trim().replace(/['"]/g, ''))
-            .filter(t => t);
-        }
-      }
+    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+      const existingTags: string[] = Array.isArray(frontmatter.tags)
+        ? frontmatter.tags
+        : (frontmatter.tags ? [frontmatter.tags] : []);
 
       const mergedTags = [...new Set([...existingTags, ...tags])];
-      const tagsLine = `tags: [${mergedTags.join(', ')}]`;
+      frontmatter.tags = mergedTags;
+    });
 
-      if (existingTagsMatch) {
-        const newFrontmatter = frontmatter.replace(
-          /^tags:.*(?:\n(?:\s+-.*)*)?/m,
-          tagsLine
-        );
-        newContent = content.replace(frontmatterMatch[0], `---\n${newFrontmatter}\n---`);
-      } else {
-        const newFrontmatter = frontmatter + `\n${tagsLine}`;
-        newContent = content.replace(frontmatterMatch[0], `---\n${newFrontmatter}\n---`);
-      }
-    } else {
-      const tagsLine = `tags: [${tags.join(', ')}]`;
-      newContent = `---\n${tagsLine}\n---\n\n${content}`;
-    }
-
-    await this.plugin.app.vault.modify(file, newContent);
     new Notice(`${tags.length} tag(s) aplicados.`);
   }
 
   async insertWikilinks(file: TFile, wikilinks: WikilinkSuggestion[]): Promise<void> {
     if (wikilinks.length === 0) return;
 
-    let content = await this.plugin.app.vault.read(file);
+    await this.plugin.app.vault.process(file, (content) => {
+      const sectionHeader = '## Enlaces relacionados';
+      const existingSectionRegex = /\n## Enlaces relacionados\n/;
 
-    const linksSection = '\n\n## Enlaces relacionados\n\n' +
-      wikilinks.map(wl => `- [[${wl.target}]] - ${wl.context}`).join('\n');
+      const newLinksFormatted = wikilinks
+        .map(wl => `- [[${wl.target}]] - ${wl.context}`);
 
-    const existingLinksMatch = content.match(/\n## Enlaces relacionados\n/);
+      if (existingSectionRegex.test(content)) {
+        const insertPoint = content.indexOf(sectionHeader);
+        const afterHeader = content.slice(insertPoint + sectionHeader.length);
+        const nextSectionMatch = afterHeader.match(/\n## [^#]/);
+        const endPoint = nextSectionMatch
+          ? insertPoint + sectionHeader.length + nextSectionMatch.index!
+          : content.length;
 
-    if (existingLinksMatch) {
-      const insertPoint = content.indexOf('## Enlaces relacionados');
-      const nextSectionMatch = content.slice(insertPoint).match(/\n## [^#]/);
-      const endPoint = nextSectionMatch
-        ? insertPoint + nextSectionMatch.index!
-        : content.length;
+        const existingSection = content.slice(insertPoint, endPoint);
 
-      const existingSection = content.slice(insertPoint, endPoint);
-      const newLinks = wikilinks
-        .filter(wl => !existingSection.includes(`[[${wl.target}]]`))
-        .map(wl => `- [[${wl.target}]] - ${wl.context}`)
-        .join('\n');
+        const linksToAdd = newLinksFormatted
+          .filter(link => !existingSection.includes(link.split(' - ')[0]))
+          .join('\n');
 
-      if (newLinks) {
-        content = content.slice(0, endPoint) + '\n' + newLinks + content.slice(endPoint);
+        if (linksToAdd) {
+          const trimmedEnd = content.slice(insertPoint, endPoint).trimEnd();
+          const restOfContent = content.slice(endPoint);
+          return content.slice(0, insertPoint) + trimmedEnd + '\n' + linksToAdd + restOfContent;
+        }
+        return content;
+      } else {
+        const trimmedContent = content.trimEnd();
+        const linksSection = `\n\n${sectionHeader}\n\n${newLinksFormatted.join('\n')}\n`;
+        return trimmedContent + linksSection;
       }
-    } else {
-      content += linksSection;
-    }
+    });
 
-    await this.plugin.app.vault.modify(file, content);
     new Notice(`${wikilinks.length} wikilink(s) insertados.`);
   }
 
@@ -198,16 +169,14 @@ export class NoteProcessor {
       await this.plugin.app.vault.createFolder(folderPath);
     }
 
-    const frontmatter = `---
-created: ${new Date().toISOString().split('T')[0]}
-source: atomic-concept
----
+    const bodyContent = `# ${concept.title}\n\n${concept.summary}\n\n${concept.content}`;
+    const file = await this.plugin.app.vault.create(filePath, bodyContent);
 
-`;
+    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+      frontmatter.created = new Date().toISOString().split('T')[0];
+      frontmatter.source = 'atomic-concept';
+    });
 
-    const content = frontmatter + `# ${concept.title}\n\n${concept.summary}\n\n${concept.content}`;
-
-    const file = await this.plugin.app.vault.create(filePath, content);
     new Notice(`Nota "${concept.title}" creada.`);
     return file;
   }

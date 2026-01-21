@@ -1,12 +1,29 @@
-import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice, TFile } from 'obsidian';
 import { ClaudeCompanionSettings, ClaudeCompanionSettingTab, DEFAULT_SETTINGS } from './settings';
 import { ChatView, VIEW_TYPE_CHAT } from './chat-view';
+import { VaultIndexer } from './vault-indexer';
+import { ClaudeClient } from './claude-client';
+import { NoteProcessor } from './note-processor';
+import { SuggestionsModal } from './suggestions-modal';
 
 export default class ClaudeCompanionPlugin extends Plugin {
   settings: ClaudeCompanionSettings;
+  indexer: VaultIndexer;
+  claudeClient: ClaudeClient;
+  noteProcessor: NoteProcessor;
 
   async onload() {
     await this.loadSettings();
+
+    // Inicializar cliente de Claude
+    this.claudeClient = new ClaudeClient(this.settings);
+
+    // Inicializar indexador de bóveda
+    this.indexer = new VaultIndexer(this);
+    await this.indexer.initialize();
+
+    // Inicializar procesador de notas
+    this.noteProcessor = new NoteProcessor(this, this.claudeClient, this.indexer);
 
     // Registrar la vista de chat
     this.registerView(
@@ -28,8 +45,43 @@ export default class ClaudeCompanionPlugin extends Plugin {
       }
     });
 
+    // Registrar comando para procesar nota activa
+    this.addCommand({
+      id: 'process-active-note',
+      name: 'Procesar nota activa con Claude',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (file?.extension === 'md') {
+          if (!checking) {
+            this.processActiveNote(file);
+          }
+          return true;
+        }
+        return false;
+      }
+    });
+
     // Agregar tab de settings
     this.addSettingTab(new ClaudeCompanionSettingTab(this.app, this));
+  }
+
+  private async processActiveNote(file: TFile): Promise<void> {
+    const notice = new Notice('Procesando nota con Claude...', 0);
+
+    this.noteProcessor.processActiveNote({
+      onStart: () => {},
+      onProgress: (message) => {
+        notice.setMessage(message);
+      },
+      onComplete: (suggestions) => {
+        notice.hide();
+        new SuggestionsModal(this, this.noteProcessor, suggestions, file).open();
+      },
+      onError: (error) => {
+        notice.hide();
+        new Notice(`Error: ${error.message}`);
+      }
+    });
   }
 
   async onunload() {

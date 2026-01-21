@@ -7,6 +7,8 @@ export interface ClaudeCompanionSettings {
   notesFolder: string;
   maxTokens: number;
   systemPrompt: string;
+  maxNotesInContext: number;
+  maxTagsInContext: number;
 }
 
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
@@ -14,7 +16,9 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   model: 'claude-sonnet-4-20250514',
   notesFolder: 'Claude Notes',
   maxTokens: 4096,
-  systemPrompt: 'Eres un asistente útil para organizar notas en Obsidian. Responde de forma clara y estructurada, usando formato Markdown cuando sea apropiado. Si te piden crear contenido para una nota, incluye sugerencias de tags relevantes.'
+  systemPrompt: 'Eres un asistente útil para organizar notas en Obsidian. Responde de forma clara y estructurada, usando formato Markdown cuando sea apropiado. Si te piden crear contenido para una nota, incluye sugerencias de tags relevantes.',
+  maxNotesInContext: 100,
+  maxTagsInContext: 50
 };
 
 export const AVAILABLE_MODELS = [
@@ -112,10 +116,42 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         text.inputEl.cols = 50;
       });
 
+    // Sección de Procesamiento de Notas
+    containerEl.createEl('hr');
+    containerEl.createEl('h3', { text: 'Procesamiento de Notas' });
+
+    // Max notas en contexto
+    new Setting(containerEl)
+      .setName('Máximo de notas en contexto')
+      .setDesc('Número máximo de títulos de notas a incluir al procesar (10-500).')
+      .addSlider(slider => slider
+        .setLimits(10, 500, 10)
+        .setValue(this.plugin.settings.maxNotesInContext)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.maxNotesInContext = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    // Max tags en contexto
+    new Setting(containerEl)
+      .setName('Máximo de tags en contexto')
+      .setDesc('Número máximo de tags existentes a incluir al procesar (10-200).')
+      .addSlider(slider => slider
+        .setLimits(10, 200, 10)
+        .setValue(this.plugin.settings.maxTagsInContext)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.maxTagsInContext = value;
+          await this.plugin.saveSettings();
+        })
+      );
+
     // Información adicional
     containerEl.createEl('hr');
     containerEl.createEl('p', {
-      text: '💡 Obtén tu API key en console.anthropic.com',
+      text: 'Obtén tu API key en console.anthropic.com',
       cls: 'setting-item-description'
     });
   }

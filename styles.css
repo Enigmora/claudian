@@ -335,3 +335,228 @@
 .claude-companion-messages::-webkit-scrollbar-thumb:hover {
   background: var(--background-modifier-border-hover);
 }
+
+/* ==================== */
+/* Modal de Sugerencias */
+/* ==================== */
+
+.suggestions-modal {
+  max-width: 700px;
+}
+
+.suggestions-modal h2 {
+  margin-bottom: 16px;
+  color: var(--text-normal);
+}
+
+.suggestions-reasoning {
+  background: var(--background-secondary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--interactive-accent);
+}
+
+.suggestions-reasoning p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Secciones */
+.suggestions-section {
+  margin-bottom: 24px;
+}
+
+.suggestions-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-normal);
+}
+
+.suggestions-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Tags */
+.suggestions-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.suggestions-tag {
+  padding: 4px 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.suggestions-tag:hover {
+  border-color: var(--interactive-accent);
+  color: var(--text-normal);
+}
+
+.suggestions-tag.is-selected {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Wikilinks */
+.suggestions-wikilinks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.suggestions-wikilink-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.suggestions-wikilink-row input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.suggestions-wikilink-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.suggestions-wikilink-target {
+  font-weight: 500;
+  color: var(--text-accent);
+}
+
+.suggestions-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.suggestions-badge-exists {
+  background: var(--background-modifier-success);
+  color: var(--text-on-accent);
+}
+
+.suggestions-badge-new {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.suggestions-wikilink-context {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 24px;
+}
+
+/* Conceptos atómicos */
+.suggestions-concepts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suggestions-concept-card {
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.suggestions-concept-card.is-created {
+  opacity: 0.6;
+}
+
+.suggestions-concept-header h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+.suggestions-concept-summary {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.suggestions-concept-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.suggestions-concept-preview {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.suggestions-concept-preview pre {
+  margin: 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  color: var(--text-muted);
+}
+
+/* Acciones */
+.suggestions-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.suggestions-btn-primary,
+.suggestions-btn-secondary {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.suggestions-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.suggestions-btn-primary:hover:not(:disabled) {
+  background: var(--interactive-accent-hover);
+}
+
+.suggestions-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.suggestions-btn-secondary {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.suggestions-btn-secondary:hover {
+  background: var(--background-modifier-hover);
+}

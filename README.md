@@ -114,4 +114,9 @@ MIT
 
 ## Autor
 
-[Enigmora](https://github.com/Enigmora)
+**José Villaseñor Montfort**  
+Diseño, arquitectura y desarrollo  
+
+[Enigmora SC](https://github.com/Enigmora)
+
+Copyright © 2025 José Villaseñor Montfort. Todos los derechos reservados.  

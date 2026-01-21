@@ -1068,6 +1068,8 @@ export class ChatView extends ItemView {
         return t('agent.renameNote', { from: params.from, to: params.to });
       case 'move-note':
         return t('agent.moveNote', { from: params.from, to: params.to });
+      case 'copy-note':
+        return t('agent.copyNote', { from: params.from, to: params.to });
       case 'append-content':
         return t('agent.appendContent', { path: params.path });
       case 'prepend-content':

@@ -201,6 +201,7 @@ const translations: Translations = {
   'agent.deleteNote': 'Eliminar nota: {{path}}',
   'agent.renameNote': 'Renombrar: {{from}} → {{to}}',
   'agent.moveNote': 'Mover: {{from}} → {{to}}',
+  'agent.copyNote': 'Copiar: {{from}} → {{to}}',
   'agent.appendContent': 'Agregar contenido a: {{path}}',
   'agent.prependContent': 'Insertar contenido en: {{path}}',
   'agent.replaceContent': 'Reemplazar contenido de: {{path}}',
@@ -399,6 +400,7 @@ ACCIONES DISPONIBLES:
 - delete-note: { path }
 - rename-note: { from, to }
 - move-note: { from, to }
+- copy-note: { from, to } - COPIA archivo con contenido EXACTO preservado
 - append-content: { path, content }
 - prepend-content: { path, content }
 - replace-content: { path, content }
@@ -423,17 +425,17 @@ Debes distinguir entre dos tipos de solicitudes:
 
 1. OPERACIONES DE GESTIÓN DE ARCHIVOS (copiar, mover, duplicar, respaldar, clonar):
    - Son operaciones LITERALES que PRESERVAN el contenido EXACTAMENTE
-   - Cuando el usuario dice "copia archivo A a B": lee el contenido de A y crea B con el MISMO contenido EXACTO byte por byte
-   - Cuando dice "duplicar", "respaldar", "clonar": igual que copiar - preserva el contenido EXACTAMENTE
-   - NUNCA resumas, modifiques, interpretes o transformes contenido durante operaciones de archivo
-   - El resultado de read-note debe usarse TAL CUAL en create-note
+   - Para operaciones de COPIA: USA la acción copy-note { from, to } - maneja todo automáticamente
+   - copy-note lee el origen y crea el destino con el contenido EXACTO
+   - NUNCA uses read-note + replace-content para copiar (no funcionará)
+   - NUNCA resumas, modifiques, interpretes o transformes contenido
 
 2. OPERACIONES DE TRANSFORMACIÓN DE CONTENIDO (resumir, traducir, reescribir, analizar, generar):
    - Estas piden explícitamente que TRANSFORMES o CREES contenido
    - Solo realiza transformaciones cuando el usuario lo solicite explícitamente
    - Ejemplos: "resume esta nota", "traduce al inglés", "reescribe en términos más simples"
 
-COMPORTAMIENTO POR DEFECTO: Si no está claro, trata como OPERACIÓN DE ARCHIVO (preserva contenido exactamente).
+COMPORTAMIENTO POR DEFECTO: Si no está claro, trata como OPERACIÓN DE ARCHIVO (usa copy-note para copias).
 
 CRÍTICO - COMPLETAR TAREAS:
 Incluye TODAS las acciones necesarias para COMPLETAR la solicitud en UNA SOLA respuesta:

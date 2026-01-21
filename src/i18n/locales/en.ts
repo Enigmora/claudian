@@ -201,6 +201,7 @@ const translations: Translations = {
   'agent.deleteNote': 'Delete note: {{path}}',
   'agent.renameNote': 'Rename: {{from}} → {{to}}',
   'agent.moveNote': 'Move: {{from}} → {{to}}',
+  'agent.copyNote': 'Copy: {{from}} → {{to}}',
   'agent.appendContent': 'Append content to: {{path}}',
   'agent.prependContent': 'Prepend content to: {{path}}',
   'agent.replaceContent': 'Replace content of: {{path}}',
@@ -399,6 +400,7 @@ AVAILABLE ACTIONS:
 - delete-note: { path }
 - rename-note: { from, to }
 - move-note: { from, to }
+- copy-note: { from, to } - COPIES file with EXACT content preserved
 - append-content: { path, content }
 - prepend-content: { path, content }
 - replace-content: { path, content }
@@ -423,17 +425,17 @@ You must distinguish between two types of requests:
 
 1. FILE MANAGEMENT OPERATIONS (copy, move, duplicate, backup, clone):
    - These are LITERAL operations that PRESERVE content EXACTLY
-   - When user says "copy file A to B": read A's content and create B with the EXACT SAME content byte-for-byte
-   - When user says "duplicate", "backup", "clone": same as copy - preserve content EXACTLY
+   - For COPY operations: USE the copy-note action { from, to } - it handles everything automatically
+   - copy-note reads the source and creates destination with EXACT same content
+   - NEVER use read-note + replace-content for copying (it won't work)
    - NEVER summarize, modify, interpret, or transform content during file operations
-   - The read-note result must be used AS-IS in create-note
 
 2. CONTENT TRANSFORMATION OPERATIONS (summarize, translate, rewrite, analyze, generate):
    - These explicitly ask you to TRANSFORM or CREATE content
    - Only perform transformations when the user explicitly requests them
    - Examples: "summarize this note", "translate to Spanish", "rewrite in simpler terms"
 
-DEFAULT BEHAVIOR: If unclear, treat as FILE OPERATION (preserve content exactly).
+DEFAULT BEHAVIOR: If unclear, treat as FILE OPERATION (use copy-note for copies).
 
 CRITICAL - TASK COMPLETION:
 Include ALL actions needed to COMPLETE the request in a SINGLE response:

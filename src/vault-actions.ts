@@ -3,7 +3,7 @@ import ClaudeCompanionPlugin from './main';
 
 export type ActionType =
   | 'create-folder' | 'delete-folder' | 'list-folder'
-  | 'create-note' | 'read-note' | 'delete-note' | 'rename-note' | 'move-note'
+  | 'create-note' | 'read-note' | 'delete-note' | 'rename-note' | 'move-note' | 'copy-note'
   | 'append-content' | 'prepend-content' | 'replace-content' | 'update-frontmatter'
   | 'search-notes' | 'get-note-info' | 'find-links';
 
@@ -120,6 +120,9 @@ export class VaultActionExecutor {
 
       case 'move-note':
         return this.moveNote(params.from, params.to);
+
+      case 'copy-note':
+        return this.copyNote(params.from, params.to);
 
       // Modificación de contenido
       case 'append-content':
@@ -337,6 +340,50 @@ export class VaultActionExecutor {
 
   private async moveNote(from: string, to: string): Promise<{ from: string; to: string }> {
     return this.renameNote(from, to);
+  }
+
+  /**
+   * Copy a note to a new location, preserving content exactly
+   */
+  private async copyNote(from: string, to: string): Promise<{ from: string; to: string; copied: boolean }> {
+    const normalizedFrom = this.normalizeNotePath(from);
+    let normalizedTo = this.sanitizePath(to);
+    if (!normalizedTo.endsWith('.md')) {
+      normalizedTo += '.md';
+    }
+
+    if (this.isProtectedPath(normalizedTo)) {
+      throw new Error(`Ruta protegida: ${normalizedTo}`);
+    }
+
+    // Read source file
+    const sourceFile = this.plugin.app.vault.getAbstractFileByPath(normalizedFrom);
+    if (!sourceFile || !(sourceFile instanceof TFile)) {
+      throw new Error(`Nota origen no encontrada: ${normalizedFrom}`);
+    }
+
+    // Read exact content
+    const content = await this.plugin.app.vault.read(sourceFile);
+
+    // Ensure destination folder exists
+    const parentPath = normalizedTo.substring(0, normalizedTo.lastIndexOf('/'));
+    if (parentPath) {
+      await this.ensureFolderExists(parentPath);
+    }
+
+    // Check if destination exists
+    const existing = this.plugin.app.vault.getAbstractFileByPath(normalizedTo);
+    if (existing) {
+      // Overwrite existing file
+      if (existing instanceof TFile) {
+        await this.plugin.app.vault.modify(existing, content);
+        return { from: normalizedFrom, to: normalizedTo, copied: true };
+      }
+    }
+
+    // Create new file with exact content
+    await this.plugin.app.vault.create(normalizedTo, content);
+    return { from: normalizedFrom, to: normalizedTo, copied: true };
   }
 
   // ==================== Modificación de Contenido ====================

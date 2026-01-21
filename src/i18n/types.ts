@@ -210,6 +210,7 @@ export type Translations = {
   'agent.deleteNote': string;
   'agent.renameNote': string;
   'agent.moveNote': string;
+  'agent.copyNote': string;
   'agent.appendContent': string;
   'agent.prependContent': string;
   'agent.replaceContent': string;

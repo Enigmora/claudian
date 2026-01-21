@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeCompanionSettings } from './settings';
 import { VaultContext } from './vault-indexer';
+import { ExtractionTemplate } from './extraction-templates';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -234,5 +235,104 @@ TÍTULO: ${noteTitle}
 
 CONTENIDO:
 ${noteContent}`;
+  }
+
+  async processWithTemplate(
+    prompt: string,
+    template: ExtractionTemplate,
+    callbacks: StreamCallbacks
+  ): Promise<void> {
+    if (!this.client) {
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
+      return;
+    }
+
+    const systemPrompt = `Eres un asistente especializado en análisis y extracción de información de textos.
+Responde de manera estructurada y clara según las instrucciones proporcionadas.
+${template.outputFormat === 'json' ? 'IMPORTANTE: Responde ÚNICAMENTE con JSON válido.' : 'Usa formato Markdown para tu respuesta.'}`;
+
+    callbacks.onStart?.();
+
+    let fullResponse = '';
+
+    try {
+      const stream = this.client.messages.stream({
+        model: this.settings.model,
+        max_tokens: this.settings.maxTokens,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      stream.on('text', (text) => {
+        fullResponse += text;
+        callbacks.onToken?.(text);
+      });
+
+      await stream.finalMessage();
+      callbacks.onComplete?.(fullResponse);
+
+    } catch (error) {
+      this.handleError(error, callbacks);
+    }
+  }
+
+  async generateConceptMap(
+    prompt: string,
+    callbacks: StreamCallbacks
+  ): Promise<void> {
+    if (!this.client) {
+      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claude Companion by Enigmora.'));
+      return;
+    }
+
+    const systemPrompt = `Eres un asistente especializado en análisis de conocimiento y creación de mapas conceptuales.
+Tu tarea es identificar conceptos, relaciones y temas transversales en conjuntos de notas.
+IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`;
+
+    callbacks.onStart?.();
+
+    let fullResponse = '';
+
+    try {
+      const stream = this.client.messages.stream({
+        model: this.settings.model,
+        max_tokens: this.settings.maxTokens,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      stream.on('text', (text) => {
+        fullResponse += text;
+        callbacks.onToken?.(text);
+      });
+
+      await stream.finalMessage();
+      callbacks.onComplete?.(fullResponse);
+
+    } catch (error) {
+      this.handleError(error, callbacks);
+    }
+  }
+
+  private handleError(error: unknown, callbacks: StreamCallbacks): void {
+    if (error instanceof Error) {
+      if (error.message.includes('401')) {
+        callbacks.onError?.(new Error('API key inválida. Verifica tu clave en Settings.'));
+      } else if (error.message.includes('429')) {
+        callbacks.onError?.(new Error('Límite de requests excedido. Intenta en unos segundos.'));
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        callbacks.onError?.(new Error('Error de conexión. Verifica tu conexión a internet.'));
+      } else {
+        callbacks.onError?.(error);
+      }
+    } else {
+      callbacks.onError?.(new Error('Error desconocido al comunicarse con Claude.'));
+    }
   }
 }

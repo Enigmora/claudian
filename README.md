@@ -83,6 +83,30 @@
    - **Wikilinks sugeridos** — Enlaces a notas existentes o nuevas
    - **Conceptos atómicos** — Ideas que merecen su propia nota
 
+### Procesamiento batch
+
+1. Ejecuta el comando **"Procesamiento batch de notas"** (`Ctrl/Cmd + P`)
+2. Selecciona las notas a procesar (por carpeta o individualmente)
+3. Elige un template de extracción:
+   - **Extraer ideas clave** — Resume las ideas principales
+   - **Resumen ejecutivo** — Genera resumen conciso
+   - **Identificar preguntas** — Detecta temas abiertos
+   - **Extraer acciones** — Lista tareas y TODOs
+   - **Conceptos y definiciones** — Crea glosario
+   - **Conexiones** — Identifica relaciones
+4. Los resultados se guardan en una nota consolidada
+
+### Generar mapa de conceptos
+
+1. Ejecuta el comando **"Generar mapa de conceptos"** (`Ctrl/Cmd + P`)
+2. Selecciona las notas a analizar
+3. Ingresa un título para el mapa
+4. Claude analizará las notas y generará:
+   - Conceptos principales y secundarios
+   - Relaciones entre conceptos
+   - Temas transversales
+   - Grafo visual en formato Mermaid
+
 ---
 
 ## Formato de notas generadas
@@ -128,16 +152,20 @@ npm run build
 
 ```
 src/
-├── main.ts              # Entry point, comandos y vistas
-├── settings.ts          # Configuración del plugin
-├── claude-client.ts     # Cliente Anthropic SDK con streaming
-├── chat-view.ts         # Panel lateral de chat
-├── note-creator.ts      # Modal para crear notas desde chat
-├── note-processor.ts    # Procesamiento de notas existentes
-├── vault-indexer.ts     # Indexación de bóveda
-├── suggestions-modal.ts # Modal de sugerencias interactivo
+├── main.ts                  # Entry point, comandos y vistas
+├── settings.ts              # Configuración del plugin
+├── claude-client.ts         # Cliente Anthropic SDK con streaming
+├── chat-view.ts             # Panel lateral de chat
+├── note-creator.ts          # Modal para crear notas desde chat
+├── note-processor.ts        # Procesamiento de notas existentes
+├── vault-indexer.ts         # Indexación de bóveda
+├── suggestions-modal.ts     # Modal de sugerencias interactivo
+├── extraction-templates.ts  # Templates de extracción predefinidos
+├── batch-processor.ts       # Procesamiento batch de notas
+├── batch-modal.ts           # Modal de selección para batch
+├── concept-map-generator.ts # Generador de mapas de conceptos
 └── templates/
-    └── default.ts       # Template de notas
+    └── default.ts           # Template de notas
 ```
 
 ---
@@ -158,9 +186,9 @@ src/
 - [x] Creación de notas atómicas desde sugerencias
 
 ### Fase 3: Automatización
-- [ ] Templates de extracción personalizados
-- [ ] Procesamiento batch de múltiples notas
-- [ ] Generación de mapas de conceptos
+- [x] Templates de extracción personalizados
+- [x] Procesamiento batch de múltiples notas
+- [x] Generación de mapas de conceptos
 
 ---
 

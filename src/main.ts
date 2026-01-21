@@ -5,12 +5,17 @@ import { VaultIndexer } from './vault-indexer';
 import { ClaudeClient } from './claude-client';
 import { NoteProcessor } from './note-processor';
 import { SuggestionsModal } from './suggestions-modal';
+import { BatchProcessor } from './batch-processor';
+import { ConceptMapGenerator } from './concept-map-generator';
+import { BatchModal } from './batch-modal';
 
 export default class ClaudeCompanionPlugin extends Plugin {
   settings: ClaudeCompanionSettings;
   indexer: VaultIndexer;
   claudeClient: ClaudeClient;
   noteProcessor: NoteProcessor;
+  batchProcessor: BatchProcessor;
+  conceptMapGenerator: ConceptMapGenerator;
 
   async onload() {
     await this.loadSettings();
@@ -24,6 +29,12 @@ export default class ClaudeCompanionPlugin extends Plugin {
 
     // Inicializar procesador de notas
     this.noteProcessor = new NoteProcessor(this, this.claudeClient, this.indexer);
+
+    // Inicializar procesador batch
+    this.batchProcessor = new BatchProcessor(this, this.claudeClient);
+
+    // Inicializar generador de mapas de conceptos
+    this.conceptMapGenerator = new ConceptMapGenerator(this, this.claudeClient, this.indexer);
 
     // Registrar la vista de chat
     this.registerView(
@@ -58,6 +69,24 @@ export default class ClaudeCompanionPlugin extends Plugin {
           return true;
         }
         return false;
+      }
+    });
+
+    // Registrar comando para procesamiento batch
+    this.addCommand({
+      id: 'batch-process-notes',
+      name: 'Procesamiento batch de notas',
+      callback: () => {
+        new BatchModal(this, this.batchProcessor, this.conceptMapGenerator, 'extraction').open();
+      }
+    });
+
+    // Registrar comando para generar mapa de conceptos
+    this.addCommand({
+      id: 'generate-concept-map',
+      name: 'Generar mapa de conceptos',
+      callback: () => {
+        new BatchModal(this, this.batchProcessor, this.conceptMapGenerator, 'concept-map').open();
       }
     });
 

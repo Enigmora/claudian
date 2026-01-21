@@ -560,3 +560,312 @@
 .suggestions-btn-secondary:hover {
   background: var(--background-modifier-hover);
 }
+
+/* ==================== */
+/* Modal Batch          */
+/* ==================== */
+
+.batch-modal {
+  max-width: 600px;
+  overflow-x: hidden;
+}
+
+.batch-modal .modal-content {
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.batch-modal * {
+  box-sizing: border-box;
+}
+
+.batch-modal h2 {
+  margin-bottom: 20px;
+  color: var(--text-normal);
+}
+
+.batch-section {
+  margin-bottom: 24px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.batch-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-normal);
+}
+
+/* Toolbar */
+.batch-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.batch-toolbar button {
+  flex-shrink: 0;
+}
+
+.batch-counter {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Files container */
+.batch-files-container {
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+}
+
+.batch-folder {
+  margin-bottom: 8px;
+}
+
+.batch-folder-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.batch-folder-header span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-folder-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.batch-files-list {
+  margin-left: 24px;
+  margin-top: 4px;
+}
+
+.batch-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.batch-file-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-file-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.batch-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Templates */
+.batch-templates-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.batch-template-card {
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  overflow: hidden;
+}
+
+.batch-template-card:hover {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+}
+
+.batch-template-card.is-selected {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.batch-template-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--background-modifier-border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.batch-template-info {
+  overflow: hidden;
+}
+
+.batch-template-info strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-template-info p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Input row */
+.batch-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.batch-input-row label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.batch-input-row input {
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.batch-input-row input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+/* Progress */
+.batch-progress-container {
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+
+.batch-progress-container.hidden {
+  display: none;
+}
+
+.batch-progress-bar {
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.batch-progress-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.batch-progress-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Actions */
+.batch-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.batch-btn-primary,
+.batch-btn-secondary {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.batch-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.batch-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.batch-btn-secondary {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.batch-btn-secondary:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Scrollbar para files container */
+.batch-files-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.batch-files-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.batch-files-container::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+}
+
+.batch-files-container::-webkit-scrollbar-thumb:hover {
+  background: var(--background-modifier-border-hover);
+}

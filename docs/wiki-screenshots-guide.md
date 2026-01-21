@@ -4,19 +4,39 @@ This document provides guidelines for capturing and maintaining screenshots for 
 
 ## Screenshot Requirements
 
+### Core Interface
+
 | Screenshot | Filename | Description | How to Capture |
 |------------|----------|-------------|----------------|
 | Chat Interface | `chat-interface.png` | Full chat panel with messages | Open chat, send a test message, capture panel |
 | Settings Panel | `settings-panel.png` | Full settings page | Open Settings > Claudian, capture full view |
 | Settings Header | `settings-header.png` | Logo + title + description | Crop from settings page header |
+| Note Creator | `note-creator-modal.png` | Note creation dialog | Click "Create note" on any Claude response |
+| Suggestions Modal | `suggestions-modal.png` | Interactive suggestions with tags/links | After processing a note |
+
+### Agent Mode
+
+| Screenshot | Filename | Description | How to Capture |
+|------------|----------|-------------|----------------|
 | Agent Toggle | `agent-mode-toggle.png` | Toggle button in chat header | Crop from chat header area |
 | Agent Confirmation | `confirmation-modal.png` | Confirmation dialog for destructive actions | Trigger a delete action in agent mode |
+| Overwrite Confirmation | `overwrite-confirmation.png` | Confirmation when overwriting existing file | Copy/create note to existing path |
+| Agent Progress | `agent-progress.png` | Real-time progress indicator during actions | During agent execution with multiple actions |
+| Stop Button | `stop-button.png` | Red stop button during streaming | Send message, capture while response streams |
+
+### Batch Processing
+
+| Screenshot | Filename | Description | How to Capture |
+|------------|----------|-------------|----------------|
 | Batch Modal | `batch-modal.png` | Full batch processing modal | Open batch process command |
 | Batch Progress | `batch-progress.png` | Progress bar during processing | During batch execution |
-| Note Creator | `note-creator-modal.png` | Note creation dialog | Click "Create note" on any Claude response |
+
+### Concept Maps
+
+| Screenshot | Filename | Description | How to Capture |
+|------------|----------|-------------|----------------|
 | Concept Map Result | `concept-map-result.png` | Generated concept map note | After generating a concept map |
 | Concept Map Mermaid | `concept-map-mermaid.png` | Rendered Mermaid diagram | Preview mode showing the diagram |
-| Suggestions Modal | `suggestions-modal.png` | Interactive suggestions with tags/links | After processing a note |
 
 ## Technical Specifications
 
@@ -45,8 +65,12 @@ wiki/
 └── images/
     ├── chat-interface.png
     ├── settings-panel.png
+    ├── settings-header.png
     ├── agent-mode-toggle.png
     ├── confirmation-modal.png
+    ├── overwrite-confirmation.png
+    ├── agent-progress.png
+    ├── stop-button.png
     ├── batch-modal.png
     ├── batch-progress.png
     ├── note-creator-modal.png
@@ -95,6 +119,50 @@ ls wiki/images/ | sort
 ```
 
 And compare against this guide.
+
+---
+
+## Capture Checklist
+
+Use this checklist to track screenshot progress:
+
+### Core Interface
+- [ ] `chat-interface.png` - Full chat panel with messages
+- [ ] `settings-panel.png` - Full settings page
+- [ ] `settings-header.png` - Logo + title + description
+- [ ] `note-creator-modal.png` - Note creation dialog
+- [ ] `suggestions-modal.png` - Interactive suggestions modal
+
+### Agent Mode (Priority: High)
+- [ ] `agent-mode-toggle.png` - Toggle button in chat header
+- [ ] `confirmation-modal.png` - Delete/destructive action confirmation
+- [ ] `overwrite-confirmation.png` - File overwrite confirmation *(NEW)*
+- [ ] `agent-progress.png` - Real-time progress indicator *(NEW)*
+- [ ] `stop-button.png` - Red stop button during streaming *(NEW)*
+
+### Batch Processing
+- [ ] `batch-modal.png` - Batch processing selection modal
+- [ ] `batch-progress.png` - Progress bar during execution
+
+### Concept Maps
+- [ ] `concept-map-result.png` - Generated concept map note
+- [ ] `concept-map-mermaid.png` - Rendered Mermaid diagram
+
+### Quick Capture Steps
+
+1. **Stop Button** (`stop-button.png`)
+   - Open chat, send any message
+   - While streaming, capture the red Stop button
+
+2. **Agent Progress** (`agent-progress.png`)
+   - Enable Agent Mode
+   - Request multiple actions: *"Create 3 folders: A, B, C"*
+   - Capture the progress indicator showing items
+
+3. **Overwrite Confirmation** (`overwrite-confirmation.png`)
+   - Enable Agent Mode
+   - Create a note that already exists
+   - Capture the confirmation modal
 
 ---
 

@@ -41,7 +41,7 @@ export class ChatView extends ItemView {
   }
 
   getIcon(): string {
-    return 'message-circle';
+    return 'claudian';
   }
 
   async onOpen(): Promise<void> {
@@ -51,7 +51,19 @@ export class ChatView extends ItemView {
 
     // Header
     const header = container.createDiv({ cls: 'claudian-header' });
-    header.createEl('h4', { text: 'Claudian' });
+
+    // Logo y título
+    const headerTitle = header.createDiv({ cls: 'claudian-header-title' });
+    const logoContainer = headerTitle.createDiv({ cls: 'claudian-logo' });
+    logoContainer.innerHTML = `<svg width="24" height="24" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
+            stroke="#7F52FF"
+            stroke-width="24"
+            stroke-linejoin="round"/>
+      <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
+            fill="#E95D3C"/>
+    </svg>`;
+    headerTitle.createEl('h4', { text: 'Claudian' });
 
     // Controles del header
     const headerControls = header.createDiv({ cls: 'claudian-header-controls' });
@@ -76,8 +88,15 @@ export class ChatView extends ItemView {
     // Restaurar historial si existe
     this.restoreHistory();
 
+    // Contenedor del área de input (para resize)
+    const inputWrapper = container.createDiv({ cls: 'claudian-input-wrapper' });
+
+    // Handle para redimensionar
+    const resizeHandle = inputWrapper.createDiv({ cls: 'claudian-resize-handle' });
+    this.setupResizeHandle(resizeHandle, inputWrapper, container as HTMLElement);
+
     // Área de input
-    const inputArea = container.createDiv({ cls: 'claudian-input-area' });
+    const inputArea = inputWrapper.createDiv({ cls: 'claudian-input-area' });
 
     this.inputEl = inputArea.createEl('textarea', {
       cls: 'claudian-input',
@@ -92,10 +111,11 @@ export class ChatView extends ItemView {
       }
     });
 
-    // Auto-resize textarea
+    // Auto-resize textarea basado en contenido (respetando límites del wrapper)
     this.inputEl.addEventListener('input', () => {
       this.inputEl.style.height = 'auto';
-      this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, 150) + 'px';
+      const maxHeight = inputWrapper.clientHeight - 24; // padding
+      this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, maxHeight) + 'px';
     });
 
     this.sendButton = inputArea.createEl('button', {
@@ -474,5 +494,64 @@ export class ChatView extends ItemView {
 
   private scrollToBottom(): void {
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+  }
+
+  private setupResizeHandle(
+    handle: HTMLElement,
+    wrapper: HTMLElement,
+    container: HTMLElement
+  ): void {
+    const MIN_HEIGHT = 64;  // Altura mínima en px
+    const MAX_RATIO = 0.5;  // Máximo 50% del contenedor padre
+
+    let isResizing = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    const onMouseDown = (e: MouseEvent) => {
+      isResizing = true;
+      startY = e.clientY;
+      startHeight = wrapper.offsetHeight;
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const deltaY = startY - e.clientY;
+      const maxHeight = container.offsetHeight * MAX_RATIO;
+      const newHeight = Math.min(Math.max(startHeight + deltaY, MIN_HEIGHT), maxHeight);
+
+      wrapper.style.height = newHeight + 'px';
+
+      // Ajustar el textarea al nuevo tamaño
+      const inputArea = wrapper.querySelector('.claudian-input-area') as HTMLElement;
+      if (inputArea) {
+        this.inputEl.style.height = 'auto';
+        const availableHeight = newHeight - 24; // padding
+        this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, availableHeight) + 'px';
+      }
+    };
+
+    const onMouseUp = () => {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    };
+
+    handle.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    // Limpiar event listeners cuando se cierra la vista
+    this.register(() => {
+      handle.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    });
   }
 }

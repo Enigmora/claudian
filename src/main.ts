@@ -1,4 +1,14 @@
-import { Plugin, WorkspaceLeaf, Notice, TFile } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Notice, TFile, addIcon } from 'obsidian';
+
+// Icono personalizado de Claudian
+const CLAUDIAN_ICON = `<svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
+        stroke="currentColor"
+        stroke-width="24"
+        stroke-linejoin="round"/>
+  <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
+        fill="currentColor"/>
+</svg>`;
 import { ClaudeCompanionSettings, ClaudeCompanionSettingTab, DEFAULT_SETTINGS } from './settings';
 import { ChatView, VIEW_TYPE_CHAT } from './chat-view';
 import { VaultIndexer } from './vault-indexer';
@@ -18,6 +28,9 @@ export default class ClaudeCompanionPlugin extends Plugin {
   conceptMapGenerator: ConceptMapGenerator;
 
   async onload() {
+    // Registrar icono personalizado
+    addIcon('claudian', CLAUDIAN_ICON);
+
     await this.loadSettings();
 
     // Inicializar cliente de Claude
@@ -43,7 +56,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
     );
 
     // Agregar icono en ribbon
-    this.addRibbonIcon('message-circle', 'Claudian', () => {
+    this.addRibbonIcon('claudian', 'Claudian', () => {
       this.activateChatView();
     });
 

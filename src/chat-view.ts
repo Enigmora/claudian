@@ -427,6 +427,7 @@ export class ChatView extends ItemView {
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
     let isShowingIndicator = false;
+    let confirmedAsJson = false; // Once confirmed as JSON, stay in indicator mode
 
     // Phase 2: Context reinforcement
     let enhancedMessage = message;
@@ -463,10 +464,12 @@ export class ChatView extends ItemView {
       onToken: (token) => {
         fullResponse += token;
 
-        // Detect if this looks like an agent JSON response
-        const looksLikeAgentJson = this.looksLikeAgentJsonResponse(fullResponse);
+        // Once confirmed as JSON, don't switch back to markdown view
+        if (!confirmedAsJson) {
+          confirmedAsJson = this.looksLikeAgentJsonResponse(fullResponse);
+        }
 
-        if (looksLikeAgentJson) {
+        if (confirmedAsJson) {
           // Show elegant processing indicator instead of raw JSON
           if (!isShowingIndicator) {
             cursorEl.remove();
@@ -477,11 +480,9 @@ export class ChatView extends ItemView {
           // Update the indicator with current stats
           this.updateStreamingIndicator(streamingIndicator, fullResponse);
         } else {
-          // Normal text response - show it as markdown
+          // Not yet confirmed as JSON - show as markdown for now
           cursorEl.remove();
           contentEl.empty();
-          isShowingIndicator = false;
-          streamingIndicator = null;
 
           MarkdownRenderer.render(
             this.app,
@@ -1082,6 +1083,12 @@ export class ChatView extends ItemView {
     // Check if it starts with { (JSON object)
     if (!trimmed.startsWith('{')) {
       return false;
+    }
+
+    // Early detection: if it starts with { and has a quote after newline, likely JSON
+    // This catches cases like '{\n  "thinking"' before the colon appears
+    if (/^\{\s*"/.test(trimmed) && trimmed.length > 10) {
+      return true;
     }
 
     // Check for common agent response patterns

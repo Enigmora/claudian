@@ -3,7 +3,7 @@
   "name": "Claudian",
   "version": "1.0.0",
   "minAppVersion": "1.0.0",
-  "description": "The ultimate Claude AI integration for Obsidian. Powered by Claude.",
+  "description": "The ultimate Claude AI integration for Obsidian. Chat with Claude, process notes for smart suggestions, and manage your vault with natural language.",
   "author": "Enigmora SC",
   "authorUrl": "https://github.com/Enigmora",
   "isDesktopOnly": false

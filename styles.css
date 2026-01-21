@@ -1546,10 +1546,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
-  background: var(--background-secondary);
-  border-radius: 8px;
-  border-left: 3px solid var(--interactive-accent);
+  padding: 8px 0;
+  background: transparent;
 }
 
 .agent-streaming-header {

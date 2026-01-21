@@ -1096,31 +1096,35 @@ export class ChatView extends ItemView {
   private looksLikeAgentJsonResponse(response: string): boolean {
     const trimmed = response.trim();
 
-    // Check if it starts with { (JSON object)
-    if (!trimmed.startsWith('{')) {
-      return false;
-    }
-
-    // Very early detection: just opening brace is enough if in agent mode
-    // This is aggressive but we're already in agent mode so JSON is expected
-    if (trimmed.length >= 1 && trimmed[0] === '{') {
-      // If it's just "{" wait for a bit more
-      if (trimmed.length < 3) {
+    // Case 1: Response starts directly with JSON object
+    if (trimmed.startsWith('{')) {
+      // Wait for at least a few characters
+      if (trimmed.length < 5) {
         return false;
       }
-      // If we have "{ followed by whitespace or quote, it's JSON
-      if (/^\{\s*"?/.test(trimmed)) {
+      // If we have { followed by quote (with optional whitespace), it's JSON
+      if (/^\{\s*"/.test(trimmed)) {
         return true;
       }
     }
 
-    // Check for common agent response patterns
-    const hasActionsPattern = /"actions"\s*:/.test(trimmed);
-    const hasThinkingPattern = /"thinking"\s*:/.test(trimmed);
-    const hasMessagePattern = /"message"\s*:/.test(trimmed);
+    // Case 2: JSON inside markdown code block (```json or ```)
+    if (trimmed.includes('```')) {
+      // Check if it looks like a JSON code block with agent patterns
+      const codeBlockMatch = /```(?:json)?\s*\{[\s\S]*?"(?:actions|thinking|message)"/.test(trimmed);
+      if (codeBlockMatch) {
+        return true;
+      }
+    }
 
-    // If it has any of these patterns, it's likely an agent response
-    return hasActionsPattern || hasThinkingPattern || hasMessagePattern;
+    // Case 3: JSON appears somewhere in the response (after text explanation)
+    // Look for the characteristic agent JSON structure anywhere in the text
+    const hasAgentJsonStructure = /\{\s*"(?:thinking|actions|message)"\s*:/.test(trimmed);
+    if (hasAgentJsonStructure) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

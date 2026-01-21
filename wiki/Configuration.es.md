@@ -165,10 +165,46 @@ Lista separada por comas de rutas de carpetas. El modo agente rechazará modific
 |--------|-------------|
 | **Nombre** | Máximo de acciones por mensaje |
 | **Descripción** | Máximo de operaciones en la bóveda por respuesta del agente |
-| **Por defecto** | 10 |
-| **Rango** | 1 - 20 |
+| **Por defecto** | 20 |
+| **Rango** | 1 - 50 |
 
 Limita el número de acciones que Claude puede ejecutar en una sola respuesta para prevenir operaciones descontroladas.
+
+---
+
+### Auto-Continuar
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Auto-continuar |
+| **Descripción** | Continuar automáticamente respuestas truncadas |
+| **Por defecto** | Activado |
+
+Cuando está activado, si la respuesta de Claude se corta debido a límites de tokens, el plugin solicitará automáticamente una continuación. Esto asegura respuestas completas para tareas complejas.
+
+---
+
+### Auto-Planificar
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Auto-planificar |
+| **Descripción** | Descomponer automáticamente tareas complejas en pasos |
+| **Por defecto** | Activado |
+
+Cuando está activado, Claude desglosará solicitudes complejas en una serie de pasos manejables antes de la ejecución. Esto mejora la confiabilidad para operaciones de múltiples pasos.
+
+---
+
+### Refuerzo de Contexto
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Refuerzo de contexto |
+| **Descripción** | Reforzar el contexto del agente en conversaciones largas |
+| **Por defecto** | Activado |
+
+Cuando está activado, el contexto del sistema del agente se refuerza periódicamente durante conversaciones largas para mantener un comportamiento consistente y prevenir la deriva del contexto.
 
 ---
 

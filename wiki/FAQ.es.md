@@ -108,9 +108,29 @@ Consulta la [página de precios de Anthropic](https://www.anthropic.com/pricing)
 El Modo Agente permite a Claude ejecutar acciones en tu bóveda a través de lenguaje natural. Por ejemplo:
 - "Crea una nueva carpeta llamada Proyectos"
 - "Mueve todas las notas sobre Python a Programación/"
+- "Copia mis notas a Archivo/"
 - "Elimina las notas vacías en Borradores/"
 
 Consulta [Modo Agente](Features/Agent-Mode.es) para más detalles.
+
+---
+
+### ¿Por qué el agente resume en vez de copiar?
+
+El Modo Agente distingue entre **operaciones de archivo** (copiar, mover, respaldar) y **transformaciones de contenido** (resumir, traducir). Si pides "copiar" o "respaldar" una nota, el contenido debería preservarse exactamente. Si el agente está resumiendo cuando esperas una copia, intenta ser más explícito:
+
+- Di "copia esta nota exactamente a Archivo/" en lugar de "pon esto en Archivo"
+- Usa palabras como "copiar", "respaldar", "duplicar" para copias exactas
+- Usa palabras como "resumir", "traducir", "reescribir" solo cuando quieras cambios
+
+---
+
+### ¿Cómo detengo una solicitud en progreso?
+
+Mientras Claude está generando una respuesta, el botón Enviar cambia a un botón **Detener** (con color rojo). Haz clic para cancelar inmediatamente la solicitud. Esto es útil para:
+- Detener respuestas largas que ya no necesitas
+- Cancelar una solicitud para corregir tu prompt
+- Liberar para enviar un nuevo mensaje
 
 ---
 

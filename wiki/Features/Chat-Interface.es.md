@@ -25,7 +25,7 @@ El panel de chat consiste en:
 | **Encabezado** | Título con toggle de Modo Agente y botón de limpiar |
 | **Área de Mensajes** | Historial de conversación con scroll |
 | **Área de Entrada** | Entrada de texto redimensionable para tus mensajes |
-| **Botón Enviar** | Envía el mensaje actual |
+| **Botón Enviar/Detener** | Envía mensajes o detiene solicitudes en progreso |
 
 ---
 
@@ -57,6 +57,18 @@ Las respuestas aparecen carácter por carácter mientras Claude las genera. Esto
 - Retroalimentación inmediata de que tu mensaje fue recibido
 - Capacidad de leer respuestas mientras se escriben
 - Indicación visual de procesamiento en curso
+
+---
+
+## Detener Solicitudes
+
+Mientras Claude está generando una respuesta, el botón Enviar se transforma en un botón **Detener**. Haz clic en él para:
+
+- Cancelar la solicitud actual inmediatamente
+- Dejar de esperar respuestas largas
+- Liberar para enviar un nuevo mensaje
+
+El botón Detener aparece con un color rojo distintivo para indicar que cancelará la operación. Después de detener, puedes enviar un nuevo mensaje de inmediato.
 
 ---
 

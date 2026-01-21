@@ -9,11 +9,17 @@ Agent Mode transforms Claude into an intelligent assistant that can execute acti
 With Agent Mode enabled, you can:
 
 - Create, move, rename, and delete notes and folders
+- Copy notes to new locations (preserving exact content)
 - Read and modify note content
+- Translate or transform content on request
 - Search notes by title, content, or tags
 - Update frontmatter (YAML metadata)
 
 All through simple, conversational requests.
+
+### Visual Progress
+
+When Agent Mode executes actions, you'll see real-time progress indicators showing each action as it completes. This provides immediate feedback on what's happening in your vault.
 
 ---
 
@@ -50,6 +56,7 @@ You can start all new chats with Agent Mode enabled:
 |--------|-----------------|
 | Create note | "Create a note about meeting notes in Meetings/" |
 | Read note | "Show me the contents of my todo list" |
+| Copy note | "Copy my meeting notes to Archive/2024/" |
 | Rename note | "Rename 'draft.md' to 'final-report.md'" |
 | Move note | "Move all Python notes to Programming/" |
 | Delete note | "Delete the empty notes in Drafts/" |
@@ -61,6 +68,7 @@ You can start all new chats with Agent Mode enabled:
 | Append content | "Add a new section to my project plan" |
 | Prepend content | "Add a summary at the top of this note" |
 | Replace content | "Rewrite the introduction of my essay" |
+| Translate content | "Translate this note to English" |
 | Update frontmatter | "Add the tag 'important' to this note" |
 
 ### Search and Query
@@ -104,6 +112,32 @@ You can start all new chats with Agent Mode enabled:
 
 ---
 
+## File Operations vs Content Transformation
+
+Agent Mode distinguishes between two types of requests:
+
+### File Operations
+
+When you ask to **copy**, **move**, **backup**, **duplicate**, or **clone** a note, the content is preserved exactly as-is, byte-by-byte. No summarization or modification occurs.
+
+**Examples:**
+- "Copy my meeting notes to Archive/"
+- "Backup all notes in Projects/ to Backups/"
+- "Duplicate the template note"
+
+### Content Transformation
+
+When you explicitly request to **translate**, **summarize**, **rewrite**, or **transform** content, Claude will modify the content as requested.
+
+**Examples:**
+- "Translate this note to Spanish"
+- "Summarize the key points from my research notes"
+- "Rewrite the introduction to be more concise"
+
+**Note:** Ambiguous requests are treated as file operations by default. If you want content modified, be explicit about the transformation you need.
+
+---
+
 ## Confirmation System
 
 Destructive actions require your confirmation before executing:
@@ -114,6 +148,7 @@ Destructive actions require your confirmation before executing:
 
 - Deleting notes
 - Deleting folders
+- Overwriting existing files
 - Replacing entire note content
 - Any modification to protected folders
 
@@ -150,7 +185,7 @@ Some folders are protected from modification by default:
 
 ### Action Limits
 
-Maximum actions per message is configurable (default: 10). This prevents runaway operations from a single request.
+Maximum actions per message is configurable (default: 20). This prevents runaway operations from a single request.
 
 ### Path Validation
 
@@ -200,6 +235,18 @@ Then:
 
 ```
 "In my daily-notes folder, add a 'Reviewed' section at the end of today's note"
+```
+
+### Backup Notes
+
+```
+"Copy all notes from Projects/Active to Backups/2024/"
+```
+
+### Translate Notes
+
+```
+"Translate my README note to Spanish and save it as README-ES"
 ```
 
 ---

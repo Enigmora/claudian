@@ -32,9 +32,12 @@ Claudian is an Obsidian plugin that brings the power of Claude AI directly into 
 |---------|-------------|
 | **Integrated chat** | Side panel for conversing with Claude without leaving Obsidian |
 | **Real-time streaming** | Responses are displayed as they are generated |
+| **Stop & cancel** | Cancel any request in progress with the Stop button |
 | **Note processing** | Analyzes active notes and suggests tags, wikilinks, and atomic concepts |
 | **Note generation** | Converts chat responses into structured Markdown notes |
-| **Agent Mode** | Manage your vault with natural language |
+| **Agent Mode** | Manage your vault with natural language commands |
+| **Visual progress** | Real-time indicators show agent actions as they execute |
+| **Safe operations** | Confirmation prompts before overwriting existing files |
 | **Vault context** | Indexes existing titles and tags for smart suggestions |
 | **Native format** | Notes with YAML frontmatter, wikilinks, and tags |
 | **Privacy** | Your API key is stored locally, never on external servers |
@@ -73,6 +76,10 @@ Claudian is an Obsidian plugin that brings the power of Claude AI directly into 
 | Max tokens | Token limit in responses | 4096 |
 | Notes in context | Titles to include when processing | 100 |
 | Tags in context | Tags to include when processing | 50 |
+| Max actions | Maximum vault actions per agent message | 20 |
+| Auto-continue | Automatically continue truncated responses | Enabled |
+| Auto-plan | Decompose complex tasks into steps | Enabled |
+| Context reinforcement | Reinforce agent context in long conversations | Enabled |
 
 ---
 
@@ -130,16 +137,24 @@ Claudian is an Obsidian plugin that brings the power of Claude AI directly into 
 2. Use natural language to manage your vault:
    - *"Create a Projects/2025 folder with subfolders for Docs and Code"*
    - *"Move all notes about Python to Programming/"*
-   - *"Create a note with ideas for project X"*
+   - *"Copy my meeting notes to Archive/2025/"*
+   - *"Translate this note to English"*
    - *"Delete empty notes in Drafts/"*
 3. Claude will interpret your request and execute the actions
-4. Destructive actions require confirmation
+4. Visual progress indicators show each action as it executes
+5. Destructive actions and file overwrites require confirmation
 
 **Available actions:**
 - Create, move, rename, and delete notes and folders
+- Copy notes to new locations (preserves exact content)
 - Read and modify note content
+- Translate or transform content on request
 - Search notes by title, content, or tags
 - Update frontmatter (YAML)
+
+**File operations vs content transformation:**
+- **File operations** (copy, move, backup): Preserve content exactly as-is
+- **Content transformation** (translate, summarize): Only when explicitly requested
 
 ---
 

@@ -25,7 +25,7 @@ The chat panel consists of:
 | **Header** | Title with Agent Mode toggle and clear button |
 | **Message Area** | Scrollable conversation history |
 | **Input Area** | Resizable text input for your messages |
-| **Send Button** | Sends the current message |
+| **Send/Stop Button** | Sends messages or stops ongoing requests |
 
 ---
 
@@ -57,6 +57,18 @@ Responses appear character by character as Claude generates them. This provides:
 - Immediate feedback that your message was received
 - Ability to read responses as they're being written
 - Visual indication of ongoing processing
+
+---
+
+## Stopping Requests
+
+While Claude is generating a response, the Send button transforms into a **Stop** button. Click it to:
+
+- Cancel the current request immediately
+- Stop waiting for long responses
+- Free up to send a new message
+
+The Stop button appears with a distinctive red color to indicate it will cancel the operation. After stopping, you can send a new message right away.
 
 ---
 

@@ -9,11 +9,17 @@ El Modo Agente transforma a Claude en un asistente inteligente que puede ejecuta
 Con el Modo Agente activado, puedes:
 
 - Crear, mover, renombrar y eliminar notas y carpetas
+- Copiar notas a nuevas ubicaciones (preservando el contenido exacto)
 - Leer y modificar contenido de notas
+- Traducir o transformar contenido bajo petición
 - Buscar notas por título, contenido o tags
 - Actualizar frontmatter (metadatos YAML)
 
 Todo a través de solicitudes simples y conversacionales.
+
+### Progreso Visual
+
+Cuando el Modo Agente ejecuta acciones, verás indicadores de progreso en tiempo real mostrando cada acción mientras se completa. Esto proporciona retroalimentación inmediata sobre lo que está sucediendo en tu bóveda.
 
 ---
 
@@ -50,6 +56,7 @@ Puedes iniciar todos los chats nuevos con el Modo Agente activado:
 |--------|-------------------|
 | Crear nota | "Crea una nota sobre notas de reunión en Reuniones/" |
 | Leer nota | "Muéstrame el contenido de mi lista de tareas" |
+| Copiar nota | "Copia mis notas de reuniones a Archivo/2024/" |
 | Renombrar nota | "Renombra 'borrador.md' a 'informe-final.md'" |
 | Mover nota | "Mueve todas las notas de Python a Programación/" |
 | Eliminar nota | "Elimina las notas vacías en Borradores/" |
@@ -61,6 +68,7 @@ Puedes iniciar todos los chats nuevos con el Modo Agente activado:
 | Agregar contenido | "Agrega una nueva sección a mi plan de proyecto" |
 | Agregar al inicio | "Agrega un resumen al inicio de esta nota" |
 | Reemplazar contenido | "Reescribe la introducción de mi ensayo" |
+| Traducir contenido | "Traduce esta nota al inglés" |
 | Actualizar frontmatter | "Agrega el tag 'importante' a esta nota" |
 
 ### Búsqueda y Consulta
@@ -104,6 +112,32 @@ Puedes iniciar todos los chats nuevos con el Modo Agente activado:
 
 ---
 
+## Operaciones de Archivo vs Transformación de Contenido
+
+El Modo Agente distingue entre dos tipos de solicitudes:
+
+### Operaciones de Archivo
+
+Cuando pides **copiar**, **mover**, **respaldar**, **duplicar** o **clonar** una nota, el contenido se preserva exactamente tal cual está, byte por byte. No ocurre ningún resumen o modificación.
+
+**Ejemplos:**
+- "Copia mis notas de reuniones a Archivo/"
+- "Respalda todas las notas en Proyectos/ a Respaldos/"
+- "Duplica la nota de plantilla"
+
+### Transformación de Contenido
+
+Cuando solicitas explícitamente **traducir**, **resumir**, **reescribir** o **transformar** contenido, Claude modificará el contenido según lo solicitado.
+
+**Ejemplos:**
+- "Traduce esta nota al español"
+- "Resume los puntos clave de mis notas de investigación"
+- "Reescribe la introducción para que sea más concisa"
+
+**Nota:** Las solicitudes ambiguas se tratan como operaciones de archivo por defecto. Si quieres que el contenido sea modificado, sé explícito sobre la transformación que necesitas.
+
+---
+
 ## Sistema de Confirmación
 
 Las acciones destructivas requieren tu confirmación antes de ejecutarse:
@@ -114,6 +148,7 @@ Las acciones destructivas requieren tu confirmación antes de ejecutarse:
 
 - Eliminar notas
 - Eliminar carpetas
+- Sobrescribir archivos existentes
 - Reemplazar contenido completo de nota
 - Cualquier modificación en carpetas protegidas
 
@@ -150,7 +185,7 @@ Algunas carpetas están protegidas de modificación por defecto:
 
 ### Límites de Acciones
 
-El máximo de acciones por mensaje es configurable (por defecto: 10). Esto previene operaciones descontroladas de una sola solicitud.
+El máximo de acciones por mensaje es configurable (por defecto: 20). Esto previene operaciones descontroladas de una sola solicitud.
 
 ### Validación de Rutas
 
@@ -200,6 +235,18 @@ Luego:
 
 ```
 "En mi carpeta de notas-diarias, agrega una sección 'Revisado' al final de la nota de hoy"
+```
+
+### Respaldar Notas
+
+```
+"Copia todas las notas de Proyectos/Activos a Respaldos/2024/"
+```
+
+### Traducir Notas
+
+```
+"Traduce mi nota README al español y guárdala como README-ES"
 ```
 
 ---

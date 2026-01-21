@@ -32,9 +32,12 @@ Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente
 |----------------|-------------|
 | **Chat integrado** | Panel lateral para conversar con Claude sin salir de Obsidian |
 | **Streaming en tiempo real** | Las respuestas se muestran mientras se generan |
+| **Detener y cancelar** | Cancela cualquier solicitud en progreso con el botón Detener |
 | **Procesamiento de notas** | Analiza notas activas y sugiere tags, wikilinks y conceptos atómicos |
 | **Generación de notas** | Convierte respuestas del chat en notas Markdown estructuradas |
-| **Modo Agente** | Gestiona tu bóveda con lenguaje natural |
+| **Modo Agente** | Gestiona tu bóveda con comandos en lenguaje natural |
+| **Progreso visual** | Indicadores en tiempo real muestran las acciones del agente |
+| **Operaciones seguras** | Confirmación antes de sobrescribir archivos existentes |
 | **Contexto de bóveda** | Indexa títulos y tags existentes para sugerencias inteligentes |
 | **Formato nativo** | Notas con YAML frontmatter, wikilinks y tags |
 | **Privacidad** | Tu API key se almacena localmente, nunca en servidores externos |
@@ -73,6 +76,10 @@ Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente
 | Máx. tokens | Límite de tokens en respuestas | 4096 |
 | Notas en contexto | Títulos a incluir al procesar | 100 |
 | Tags en contexto | Tags a incluir al procesar | 50 |
+| Máx. acciones | Máximo de acciones del agente por mensaje | 20 |
+| Auto-continuar | Continuar automáticamente respuestas truncadas | Activado |
+| Auto-planificar | Descomponer tareas complejas en pasos | Activado |
+| Refuerzo de contexto | Reforzar contexto del agente en conversaciones largas | Activado |
 
 ---
 
@@ -130,16 +137,24 @@ Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente
 2. Usa lenguaje natural para gestionar tu bóveda:
    - *"Crea una carpeta Proyectos/2025 con subcarpetas para Docs y Código"*
    - *"Mueve todas las notas sobre Python a Programación/"*
-   - *"Crea una nota con ideas para el proyecto X"*
+   - *"Copia mis notas de reuniones a Archivo/2025/"*
+   - *"Traduce esta nota al inglés"*
    - *"Elimina las notas vacías en Borradores/"*
 3. Claude interpretará tu solicitud y ejecutará las acciones
-4. Las acciones destructivas requieren confirmación
+4. Indicadores de progreso visual muestran cada acción mientras se ejecuta
+5. Las acciones destructivas y sobrescrituras de archivos requieren confirmación
 
 **Acciones disponibles:**
 - Crear, mover, renombrar y eliminar notas y carpetas
+- Copiar notas a nuevas ubicaciones (preserva contenido exacto)
 - Leer y modificar contenido de notas
+- Traducir o transformar contenido bajo petición
 - Buscar notas por título, contenido o tags
 - Actualizar frontmatter (YAML)
+
+**Operaciones de archivo vs transformación de contenido:**
+- **Operaciones de archivo** (copiar, mover, respaldar): Preservan el contenido exactamente
+- **Transformación de contenido** (traducir, resumir): Solo cuando se solicita explícitamente
 
 ---
 

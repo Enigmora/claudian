@@ -165,10 +165,46 @@ Comma-separated list of folder paths. Agent mode will refuse to modify files in 
 |---------|-------------|
 | **Name** | Max actions per message |
 | **Description** | Maximum vault operations per agent response |
-| **Default** | 10 |
-| **Range** | 1 - 20 |
+| **Default** | 20 |
+| **Range** | 1 - 50 |
 
 Limits the number of actions Claude can execute in a single response to prevent runaway operations.
+
+---
+
+### Auto-Continue
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Auto-continue |
+| **Description** | Automatically continue truncated responses |
+| **Default** | On |
+
+When enabled, if Claude's response is cut off due to token limits, the plugin will automatically request a continuation. This ensures complete responses for complex tasks.
+
+---
+
+### Auto-Plan
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Auto-plan |
+| **Description** | Automatically decompose complex tasks into steps |
+| **Default** | On |
+
+When enabled, Claude will break down complex requests into a series of manageable steps before execution. This improves reliability for multi-step operations.
+
+---
+
+### Context Reinforcement
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Context reinforcement |
+| **Description** | Reinforce agent context in long conversations |
+| **Default** | On |
+
+When enabled, the agent's system context is periodically reinforced during long conversations to maintain consistent behavior and prevent context drift.
 
 ---
 

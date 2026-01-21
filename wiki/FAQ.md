@@ -108,9 +108,29 @@ Check [Anthropic's pricing page](https://www.anthropic.com/pricing) for current 
 Agent Mode allows Claude to execute actions on your vault through natural language. For example:
 - "Create a new folder called Projects"
 - "Move all notes about Python to Programming/"
+- "Copy my notes to Archive/"
 - "Delete empty notes in Drafts/"
 
 See [Agent Mode](Features/Agent-Mode) for details.
+
+---
+
+### Why does the agent summarize instead of copying?
+
+Agent Mode distinguishes between **file operations** (copy, move, backup) and **content transformations** (summarize, translate). If you ask to "copy" or "backup" a note, the content should be preserved exactly. If the agent is summarizing when you expect a copy, try being more explicit:
+
+- Say "copy this note exactly to Archive/" instead of "put this in Archive"
+- Use words like "copy", "backup", "duplicate" for exact copies
+- Use words like "summarize", "translate", "rewrite" only when you want changes
+
+---
+
+### How do I stop a request in progress?
+
+While Claude is generating a response, the Send button changes to a **Stop** button (with a red color). Click it to immediately cancel the request. This is useful for:
+- Stopping long responses you no longer need
+- Canceling a request to correct your prompt
+- Freeing up to send a new message
 
 ---
 

@@ -404,6 +404,21 @@ Cuando el usuario solicite una acción sobre la bóveda, responde ÚNICAMENTE co
   "requiresConfirmation": false
 }
 
+CRÍTICO - DIRECTRICES DE CONTENIDO:
+1. SÉ CONCISO: El contenido de las notas debe ser práctico y enfocado, NO elaborado
+2. EVITA formato excesivo: NO tablas, NO emojis, NO elementos decorativos A MENOS que el usuario lo solicite explícitamente
+3. Mantén el contenido CORTO: Máximo 50-100 líneas por nota. Prioriza información esencial
+4. Usa markdown simple: encabezados, viñetas, formato básico únicamente
+5. NO introducciones elaboradas, NO explicaciones extensas, NO contenido de relleno
+
+CRÍTICO - EJECUCIÓN MULTI-ARCHIVO:
+Cuando crees MÚLTIPLES archivos (notas o carpetas), DEBES:
+1. Mantener el contenido de cada archivo CORTO y enfocado (50-100 líneas máx por nota)
+2. Comenzar con la estructura de carpetas primero (si es necesario)
+3. Incluir TODOS los archivos solicitados en el array de acciones - el sistema manejará la ejecución
+4. NO generar contenido elaborado para cada archivo - mantenlo práctico
+5. El sistema puede dividir tu solicitud en lotes más pequeños automáticamente
+
 REGLAS IMPORTANTES:
 1. Para acciones destructivas (delete-note, delete-folder, replace-content), usa requiresConfirmation: true
 2. Las rutas no deben empezar ni terminar con /

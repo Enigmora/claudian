@@ -12,6 +12,11 @@ export interface TaskAnalysis {
   estimatedActions: number;
   reasons: string[];
   suggestPlanning: boolean;
+  multiFile?: {
+    detected: boolean;
+    items: string[];
+    count: number;
+  };
 }
 
 export interface Subtask {
@@ -92,6 +97,50 @@ export class TaskPlanner {
     { pattern: /(?:categorías?|categories?|secciones?|sections?)/i, weight: 1, description: 'Categories/sections' },
   ];
 
+  // Patterns to detect multi-file requests with explicit items
+  private static readonly MULTI_FILE_PATTERNS: Array<{
+    pattern: RegExp;
+    extractor: (match: RegExpMatchArray, request: string) => string[];
+  }> = [
+    // Numbered lists: "create notes about: 1. Topic A, 2. Topic B, 3. Topic C"
+    {
+      pattern: /(?:notas?|notes?|archivos?|files?)\s*(?:sobre|about|de|for|:)\s*(.+)/i,
+      extractor: (match, request) => {
+        const content = match[1];
+        // Try to extract items from numbered lists or comma-separated
+        const items = content.split(/(?:\d+\.\s*|,\s*|\s+y\s+|\s+and\s+)/).filter(s => s.trim().length > 2);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    // "Create notes for X, Y, and Z"
+    {
+      pattern: /(?:crear?|create?|genera?r?)\s+(?:notas?|notes?)\s+(?:para|for|sobre|about)\s+(.+)/i,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|\s+y\s+|\s+and\s+)/).filter(s => s.trim().length > 2);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    // "Notes about artists: Elvis, Beatles, Madonna"
+    {
+      pattern: /(?:notas?|notes?)\s+(?:sobre|about|de)\s+(?:\w+)\s*:\s*(.+)/i,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|\s+y\s+|\s+and\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    // Count-based: "create 5 notes about..."
+    {
+      pattern: /(?:crear?|create?|genera?r?)\s+(\d+)\s+(?:notas?|notes?|archivos?|files?)/i,
+      extractor: (match, request) => {
+        const count = parseInt(match[1], 10);
+        // Can't extract specific items, but we know the count
+        return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
+      }
+    },
+  ];
+
   // Action keywords for counting
   private static readonly ACTION_KEYWORDS = [
     /\b(?:crea|create|genera|generate|haz|make)\b/gi,
@@ -106,11 +155,91 @@ export class TaskPlanner {
   }
 
   /**
+   * Detect if request involves multiple files and extract items
+   */
+  detectMultiFileRequest(request: string): { isMultiFile: boolean; items: string[]; count: number } {
+    for (const { pattern, extractor } of TaskPlanner.MULTI_FILE_PATTERNS) {
+      const match = request.match(pattern);
+      if (match) {
+        const items = extractor(match, request);
+        if (items.length >= 2) {
+          return { isMultiFile: true, items, count: items.length };
+        }
+      }
+    }
+
+    // Also check for explicit numbers
+    const numberMatch = request.match(/(\d+)\s+(?:notas?|notes?|archivos?|files?)/i);
+    if (numberMatch) {
+      const count = parseInt(numberMatch[1], 10);
+      if (count >= 2) {
+        return {
+          isMultiFile: true,
+          items: Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`),
+          count
+        };
+      }
+    }
+
+    return { isMultiFile: false, items: [], count: 0 };
+  }
+
+  /**
+   * Create a multi-file plan that executes one file at a time
+   */
+  createMultiFilePlan(request: string, items: string[]): TaskPlan {
+    const subtasks: Subtask[] = [];
+
+    // First subtask: create folder structure if implied
+    const needsFolder = /(?:carpeta|folder|estructura|structure)/i.test(request);
+    if (needsFolder) {
+      subtasks.push({
+        id: 'subtask-folders',
+        index: 0,
+        description: t('agent.subtask.preparation'),
+        prompt: `Create the necessary folder structure for: ${request}. Only create folders, no notes yet.`,
+        dependencies: [],
+        status: 'pending'
+      });
+    }
+
+    // Create one subtask per file/item
+    items.slice(0, this.config.maxSubtasks - (needsFolder ? 1 : 0)).forEach((item, idx) => {
+      const subtaskIndex = needsFolder ? idx + 1 : idx;
+      subtasks.push({
+        id: `subtask-file-${idx + 1}`,
+        index: subtaskIndex,
+        description: `Create note: ${item}`,
+        prompt: `Create ONE note about "${item}". Keep content concise (50-100 lines max). No elaborate formatting.`,
+        dependencies: needsFolder ? ['subtask-folders'] : [],
+        status: 'pending'
+      });
+    });
+
+    return {
+      id: `plan-${Date.now()}`,
+      originalRequest: request,
+      createdAt: Date.now(),
+      subtasks,
+      totalEstimatedActions: subtasks.length,
+      currentSubtaskIndex: 0,
+      status: 'executing'
+    };
+  }
+
+  /**
    * Analyze a request to determine complexity
    */
   analyzeRequest(request: string): TaskAnalysis {
     const reasons: string[] = [];
     let complexityScore = 0;
+
+    // Check for multi-file requests first - this is critical
+    const multiFileResult = this.detectMultiFileRequest(request);
+    if (multiFileResult.isMultiFile) {
+      complexityScore += multiFileResult.count * 2;
+      reasons.push(`Multi-file request: ${multiFileResult.count} items detected`);
+    }
 
     // Check patterns
     for (const { pattern, weight, description } of TaskPlanner.COMPLEXITY_PATTERNS) {
@@ -160,14 +289,20 @@ export class TaskPlanner {
     }
 
     const isComplex = complexityScore >= 3;
-    const suggestPlanning = isComplex && estimatedActions > this.config.maxActionsPerSubtask;
+    // IMPORTANT: Always suggest planning for multi-file requests
+    const suggestPlanning = multiFileResult.isMultiFile || (isComplex && estimatedActions > this.config.maxActionsPerSubtask);
 
     return {
       isComplex,
       complexity,
       estimatedActions,
       reasons,
-      suggestPlanning
+      suggestPlanning,
+      multiFile: {
+        detected: multiFileResult.isMultiFile,
+        items: multiFileResult.items,
+        count: multiFileResult.count
+      }
     };
   }
 
@@ -258,6 +393,12 @@ export class TaskPlanner {
    * Create a simple plan for tasks that don't need model planning
    */
   createSimplePlan(request: string, analysis: TaskAnalysis): TaskPlan {
+    // Check for multi-file request first - this takes priority
+    const multiFileResult = this.detectMultiFileRequest(request);
+    if (multiFileResult.isMultiFile && multiFileResult.items.length >= 2) {
+      return this.createMultiFilePlan(request, multiFileResult.items);
+    }
+
     // For moderately complex tasks, create a simple 2-step plan
     const subtasks: Subtask[] = [];
 
@@ -276,7 +417,7 @@ export class TaskPlanner {
         id: 'subtask-2',
         index: 1,
         description: t('agent.subtask.execution'),
-        prompt: `Now complete the main task: ${request}. The folder structure is ready.`,
+        prompt: `Now complete the main task: ${request}. The folder structure is ready. Keep content concise.`,
         dependencies: ['subtask-1'],
         status: 'pending'
       });
@@ -286,7 +427,7 @@ export class TaskPlanner {
         id: 'subtask-1',
         index: 0,
         description: request,
-        prompt: request,
+        prompt: `${request}. Keep content concise and practical.`,
         dependencies: [],
         status: 'pending'
       });

@@ -404,6 +404,21 @@ When the user requests an action on the vault, respond ONLY with valid JSON:
   "requiresConfirmation": false
 }
 
+CRITICAL - CONTENT GUIDELINES:
+1. BE CONCISE: Note content should be practical and focused, NOT elaborate
+2. AVOID excessive formatting: NO tables, NO emojis, NO decorative elements UNLESS the user explicitly requests them
+3. Keep content SHORT: Maximum 50-100 lines per note. Prioritize essential information
+4. Use simple markdown: headers, bullet points, basic formatting only
+5. NO elaborate introductions, NO lengthy explanations, NO filler content
+
+CRITICAL - MULTI-FILE EXECUTION:
+When creating MULTIPLE files (notes or folders), you MUST:
+1. Keep each file's content SHORT and focused (50-100 lines max per note)
+2. Start with the folder structure first (if needed)
+3. Include ALL requested files in the actions array - the system will handle execution
+4. Do NOT generate elaborate content for each file - keep it practical
+5. The system may split your request into smaller batches automatically
+
 IMPORTANT RULES:
 1. For destructive actions (delete-note, delete-folder, replace-content), use requiresConfirmation: true
 2. Paths should not start or end with /

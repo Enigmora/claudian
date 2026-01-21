@@ -894,9 +894,10 @@ export class ChatView extends ItemView {
 
     // Progress bar
     const progressBarContainer = progressContainer.createDiv({ cls: 'agent-progress-bar-container' });
-    const progressBar = progressBarContainer.createDiv({ cls: 'agent-progress-bar' });
     const progressText = progressBarContainer.createDiv({ cls: 'agent-progress-text' });
     progressText.setText(t('agent.progressStarting'));
+    const progressBarTrack = progressBarContainer.createDiv({ cls: 'agent-progress-bar-track' });
+    const progressBar = progressBarTrack.createDiv({ cls: 'agent-progress-bar' });
 
     // Track completed results for final summary
     const completedResults: Map<number, { element: HTMLElement, result: any }> = new Map();

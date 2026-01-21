@@ -1388,24 +1388,17 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px;
-  background: var(--background-secondary);
-  border-radius: 8px;
+  padding: 8px 0;
+  background: transparent;
   transition: all 0.3s ease;
 }
 
-.agent-progress-bar-container.complete.all-success {
-  border-left: 3px solid var(--text-success);
+.agent-progress-bar-container.complete.all-success .agent-progress-text {
+  color: var(--text-success);
 }
 
-.agent-progress-bar-container.complete.has-errors {
-  border-left: 3px solid var(--text-error);
-}
-
-.agent-progress-bar-container.error {
-  border-left: 3px solid var(--text-error);
-  background: var(--background-secondary);
-  border: 1px solid var(--text-error);
+.agent-progress-bar-container.complete.has-errors .agent-progress-text {
+  color: var(--text-warning);
 }
 
 .agent-progress-bar-container.error .agent-progress-text {
@@ -1413,10 +1406,17 @@
   font-weight: 500;
 }
 
+.agent-progress-bar-track {
+  height: 4px;
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
 .agent-progress-bar {
-  height: 6px;
+  height: 100%;
   background: var(--interactive-accent);
-  border-radius: 3px;
+  border-radius: 2px;
   width: 0%;
   transition: width 0.3s ease;
 }
@@ -1424,18 +1424,18 @@
 .agent-progress-text {
   font-size: 12px;
   color: var(--text-muted);
-  text-align: center;
 }
 
 /* Progress list */
 .agent-progress-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   max-height: 300px;
   overflow-y: auto;
   width: 100%;
   min-width: 0;
+  margin: 8px 0;
 }
 
 .agent-progress-item {
@@ -1443,62 +1443,47 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
-  padding: 8px 12px;
-  background: var(--background-primary);
-  border-radius: 6px;
+  padding: 4px 0;
+  background: transparent;
   font-size: 13px;
   transition: all 0.2s ease;
-  animation: slideIn 0.2s ease-out;
+  animation: fadeInItem 0.2s ease-out;
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  /* Borde sutil completo */
-  border: 1px solid var(--background-modifier-border);
-  border-left-width: 3px;
-  border-left-color: var(--background-modifier-border);
 }
 
-@keyframes slideIn {
+@keyframes fadeInItem {
   from {
     opacity: 0;
-    transform: translateX(-10px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
 .agent-progress-item.in-progress {
-  border-left-color: var(--interactive-accent);
+  /* No special styling needed */
 }
 
-.agent-progress-item.success {
-  border-left-color: var(--text-success);
+.agent-progress-item.success .agent-progress-desc {
+  color: var(--text-muted);
 }
 
-.agent-progress-item.error {
-  border-left-color: var(--text-error);
-  background: var(--background-secondary);
+.agent-progress-item.error .agent-progress-desc {
+  color: var(--text-normal);
 }
 
 .agent-progress-icon {
   flex-shrink: 0;
   width: 18px;
   text-align: center;
+  color: var(--text-muted);
 }
 
 .agent-progress-item.in-progress .agent-progress-icon {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  animation: pulse 1.5s ease-in-out infinite;
+  color: var(--interactive-accent);
 }
 
 .agent-progress-item.success .agent-progress-icon {
@@ -1520,9 +1505,9 @@
 
 .agent-progress-error {
   flex-basis: 100%;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-error);
-  margin-top: 4px;
+  margin-top: 2px;
   margin-left: 26px; /* Align with desc (icon width + gap) */
 }
 

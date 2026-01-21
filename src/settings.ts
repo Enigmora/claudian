@@ -1,7 +1,10 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
+import { t, getSupportedLocales, setLocale, resolveLocale } from './i18n';
+import type { Locale } from './i18n';
 
 export interface ClaudeCompanionSettings {
+  language: 'auto' | Locale;
   apiKey: string;
   model: string;
   notesFolder: string;
@@ -9,7 +12,7 @@ export interface ClaudeCompanionSettings {
   systemPrompt: string;
   maxNotesInContext: number;
   maxTagsInContext: number;
-  // Modo Agente
+  // Agent Mode
   agentModeEnabled: boolean;
   confirmDestructiveActions: boolean;
   protectedFolders: string[];
@@ -17,25 +20,31 @@ export interface ClaudeCompanionSettings {
 }
 
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
+  language: 'auto',
   apiKey: '',
   model: 'claude-sonnet-4-20250514',
   notesFolder: 'Claude Notes',
   maxTokens: 4096,
-  systemPrompt: 'Eres un asistente útil para organizar notas en Obsidian. Responde de forma clara y estructurada, usando formato Markdown cuando sea apropiado. Si te piden crear contenido para una nota, incluye sugerencias de tags relevantes.',
+  systemPrompt: '', // Will be set from i18n on load
   maxNotesInContext: 100,
   maxTagsInContext: 50,
-  // Modo Agente
+  // Agent Mode
   agentModeEnabled: false,
   confirmDestructiveActions: true,
   protectedFolders: ['.obsidian', 'templates', '_templates'],
   maxActionsPerMessage: 10
 };
 
-export const AVAILABLE_MODELS = [
-  { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4 (Recomendado)' },
-  { id: 'claude-opus-4-20250514', name: 'Claude Opus 4' },
-  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
-  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku (Rápido)' },
+export interface ModelOption {
+  id: string;
+  nameKey: 'settings.model.sonnet4' | 'settings.model.opus4' | 'settings.model.sonnet35' | 'settings.model.haiku35';
+}
+
+export const AVAILABLE_MODELS: ModelOption[] = [
+  { id: 'claude-sonnet-4-20250514', nameKey: 'settings.model.sonnet4' },
+  { id: 'claude-opus-4-20250514', nameKey: 'settings.model.opus4' },
+  { id: 'claude-3-5-sonnet-20241022', nameKey: 'settings.model.sonnet35' },
+  { id: 'claude-3-5-haiku-20241022', nameKey: 'settings.model.haiku35' },
 ];
 
 export class ClaudeCompanionSettingTab extends PluginSettingTab {
@@ -51,14 +60,34 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Claudian - Configuración' });
+    containerEl.createEl('h2', { text: t('settings.title') });
+
+    // Language
+    new Setting(containerEl)
+      .setName(t('settings.language.name'))
+      .setDesc(t('settings.language.desc'))
+      .addDropdown(dropdown => {
+        dropdown.addOption('auto', t('settings.language.auto'));
+        for (const locale of getSupportedLocales()) {
+          dropdown.addOption(locale.code, locale.name);
+        }
+        dropdown
+          .setValue(this.plugin.settings.language)
+          .onChange(async (value) => {
+            this.plugin.settings.language = value as 'auto' | Locale;
+            await this.plugin.saveSettings();
+            // Change locale and refresh display
+            const newLocale = resolveLocale(value);
+            await setLocale(newLocale);
+            this.display();
+          });
+      });
 
     // API Key
-    new Setting(containerEl)
-      .setName('API Key')
-      .setDesc('Tu clave de API de Anthropic. Se almacena localmente en tu bóveda.')
+    const apiKeySetting = new Setting(containerEl)
+      .setName(t('settings.apiKey.name'))
       .addText(text => text
-        .setPlaceholder('sk-ant-...')
+        .setPlaceholder(t('settings.apiKey.placeholder'))
         .setValue(this.plugin.settings.apiKey)
         .onChange(async (value) => {
           this.plugin.settings.apiKey = value;
@@ -67,13 +96,23 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         .inputEl.type = 'password'
       );
 
-    // Modelo
+    // Build description with clickable link
+    const apiKeyDescEl = apiKeySetting.descEl;
+    apiKeyDescEl.createSpan({ text: t('settings.apiKey.descPart1') });
+    const consoleLink = apiKeyDescEl.createEl('a', {
+      text: 'console.anthropic.com',
+      href: 'https://console.anthropic.com'
+    });
+    consoleLink.setAttr('target', '_blank');
+    apiKeyDescEl.createSpan({ text: t('settings.apiKey.descPart2') });
+
+    // Model
     new Setting(containerEl)
-      .setName('Modelo')
-      .setDesc('Selecciona el modelo de Claude a utilizar.')
+      .setName(t('settings.model.name'))
+      .setDesc(t('settings.model.desc'))
       .addDropdown(dropdown => {
         AVAILABLE_MODELS.forEach(model => {
-          dropdown.addOption(model.id, model.name);
+          dropdown.addOption(model.id, t(model.nameKey));
         });
         dropdown
           .setValue(this.plugin.settings.model)
@@ -83,12 +122,12 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
           });
       });
 
-    // Carpeta de notas
+    // Notes folder
     new Setting(containerEl)
-      .setName('Carpeta de notas')
-      .setDesc('Carpeta donde se guardarán las notas generadas desde el chat.')
+      .setName(t('settings.folder.name'))
+      .setDesc(t('settings.folder.desc'))
       .addText(text => text
-        .setPlaceholder('Claude Notes')
+        .setPlaceholder(t('settings.folder.placeholder'))
         .setValue(this.plugin.settings.notesFolder)
         .onChange(async (value) => {
           this.plugin.settings.notesFolder = value;
@@ -98,8 +137,8 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
 
     // Max tokens
     new Setting(containerEl)
-      .setName('Máximo de tokens')
-      .setDesc('Número máximo de tokens en las respuestas (1000-8192).')
+      .setName(t('settings.maxTokens.name'))
+      .setDesc(t('settings.maxTokens.desc'))
       .addSlider(slider => slider
         .setLimits(1000, 8192, 256)
         .setValue(this.plugin.settings.maxTokens)
@@ -111,29 +150,39 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
       );
 
     // System prompt
-    new Setting(containerEl)
-      .setName('Prompt del sistema')
-      .setDesc('Instrucciones que definen el comportamiento de Claude.')
+    const systemPromptSetting = new Setting(containerEl)
+      .setName(t('settings.systemPrompt.name'))
+      .setDesc(t('settings.systemPrompt.desc'))
       .addTextArea(text => {
         text
-          .setPlaceholder('Eres un asistente...')
+          .setPlaceholder(t('settings.systemPrompt.placeholder'))
           .setValue(this.plugin.settings.systemPrompt)
           .onChange(async (value) => {
             this.plugin.settings.systemPrompt = value;
             await this.plugin.saveSettings();
           });
-        text.inputEl.rows = 6;
+        text.inputEl.rows = 8;
         text.inputEl.cols = 50;
+      })
+      .addButton(button => {
+        button
+          .setButtonText(t('settings.systemPrompt.restore'))
+          .onClick(async () => {
+            this.plugin.settings.systemPrompt = t('prompt.default');
+            await this.plugin.saveSettings();
+            this.display(); // Refresh to show updated value
+            new Notice(t('settings.systemPrompt.restored'));
+          });
       });
 
-    // Sección de Procesamiento de Notas
+    // Note Processing Section
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: 'Procesamiento de Notas' });
+    containerEl.createEl('h3', { text: t('settings.section.noteProcessing') });
 
-    // Max notas en contexto
+    // Max notes in context
     new Setting(containerEl)
-      .setName('Máximo de notas en contexto')
-      .setDesc('Número máximo de títulos de notas a incluir al procesar (10-500).')
+      .setName(t('settings.maxNotesContext.name'))
+      .setDesc(t('settings.maxNotesContext.desc'))
       .addSlider(slider => slider
         .setLimits(10, 500, 10)
         .setValue(this.plugin.settings.maxNotesInContext)
@@ -144,10 +193,10 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // Max tags en contexto
+    // Max tags in context
     new Setting(containerEl)
-      .setName('Máximo de tags en contexto')
-      .setDesc('Número máximo de tags existentes a incluir al procesar (10-200).')
+      .setName(t('settings.maxTagsContext.name'))
+      .setDesc(t('settings.maxTagsContext.desc'))
       .addSlider(slider => slider
         .setLimits(10, 200, 10)
         .setValue(this.plugin.settings.maxTagsInContext)
@@ -158,14 +207,14 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // Sección de Modo Agente
+    // Agent Mode Section
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: 'Modo Agente' });
+    containerEl.createEl('h3', { text: t('settings.section.agentMode') });
 
-    // Activar modo agente por defecto
+    // Enable agent mode by default
     new Setting(containerEl)
-      .setName('Activar modo agente por defecto')
-      .setDesc('El modo agente permite a Claude ejecutar acciones sobre la bóveda.')
+      .setName(t('settings.agentEnabled.name'))
+      .setDesc(t('settings.agentEnabled.desc'))
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.agentModeEnabled)
         .onChange(async (value) => {
@@ -174,10 +223,10 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // Confirmar acciones destructivas
+    // Confirm destructive actions
     new Setting(containerEl)
-      .setName('Confirmar acciones destructivas')
-      .setDesc('Solicitar confirmación antes de eliminar archivos o reemplazar contenido.')
+      .setName(t('settings.confirmDestructive.name'))
+      .setDesc(t('settings.confirmDestructive.desc'))
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.confirmDestructiveActions)
         .onChange(async (value) => {
@@ -186,12 +235,12 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // Carpetas protegidas
+    // Protected folders
     new Setting(containerEl)
-      .setName('Carpetas protegidas')
-      .setDesc('Carpetas que el agente no puede modificar (separadas por comas).')
+      .setName(t('settings.protectedFolders.name'))
+      .setDesc(t('settings.protectedFolders.desc'))
       .addText(text => text
-        .setPlaceholder('.obsidian, templates')
+        .setPlaceholder(t('settings.protectedFolders.placeholder'))
         .setValue(this.plugin.settings.protectedFolders.join(', '))
         .onChange(async (value) => {
           this.plugin.settings.protectedFolders = value
@@ -202,10 +251,10 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // Máximo de acciones por mensaje
+    // Max actions per message
     new Setting(containerEl)
-      .setName('Máximo de acciones por mensaje')
-      .setDesc('Límite de acciones que Claude puede ejecutar en un solo mensaje (1-20).')
+      .setName(t('settings.maxActions.name'))
+      .setDesc(t('settings.maxActions.desc'))
       .addSlider(slider => slider
         .setLimits(1, 20, 1)
         .setValue(this.plugin.settings.maxActionsPerMessage)
@@ -216,11 +265,33 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // Información adicional
+    // Footer - Copyright notice
     containerEl.createEl('hr');
-    containerEl.createEl('p', {
-      text: 'Obtén tu API key en console.anthropic.com',
+    const copyrightEl = containerEl.createEl('div', {
+      cls: 'claudian-settings-footer'
+    });
+
+    // License line
+    const licenseLine = copyrightEl.createEl('p', {
       cls: 'setting-item-description'
     });
+    licenseLine.createSpan({ text: `${t('settings.footer.license')} · ` });
+    licenseLine.createSpan({ text: `${t('settings.footer.developedBy')} ` });
+    const enigmoraLink = licenseLine.createEl('a', {
+      text: 'Enigmora SC',
+      href: 'https://enigmora.com'
+    });
+    enigmoraLink.setAttr('target', '_blank');
+
+    // Source code line
+    const sourceLine = copyrightEl.createEl('p', {
+      cls: 'setting-item-description'
+    });
+    sourceLine.createSpan({ text: `${t('settings.footer.sourceCode')}: ` });
+    const repoLink = sourceLine.createEl('a', {
+      text: 'github.com/Enigmora/claudian',
+      href: 'https://github.com/Enigmora/claudian'
+    });
+    repoLink.setAttr('target', '_blank');
   }
 }

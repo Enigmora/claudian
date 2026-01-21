@@ -14,125 +14,130 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
 </p>
 
----
-
-## Características
-
-| Característica | Descripción |
-|----------------|-------------|
-| **Chat integrado** | Panel lateral para conversar con Claude sin salir de Obsidian |
-| **Streaming en tiempo real** | Las respuestas se muestran mientras se generan |
-| **Procesamiento de notas** | Analiza notas activas y sugiere tags, wikilinks y conceptos atómicos |
-| **Generación de notas** | Convierte respuestas del chat en notas Markdown estructuradas |
-| **Modo Agente** | Gestiona tu bóveda con lenguaje natural |
-| **Contexto de bóveda** | Indexa títulos y tags existentes para sugerencias inteligentes |
-| **Formato nativo** | Notas con YAML frontmatter, wikilinks y tags |
-| **Privacidad** | Tu API key se almacena localmente, nunca en servidores externos |
-| **Open Source** | Código 100% auditable |
+<p align="center">
+  <a href="README_ES.md">Documentación en Español</a>
+</p>
 
 ---
 
-## Instalación
+## Features
 
-### Instalación manual
-
-1. Descarga `main.js`, `manifest.json` y `styles.css` de la última release
-2. Crea la carpeta `.obsidian/plugins/claudian/` en tu bóveda
-3. Copia los archivos descargados a esa carpeta
-4. Reinicia Obsidian o recarga (`Ctrl/Cmd + R`)
-5. Ve a **Settings > Community Plugins** y activa "Claudian"
-
----
-
-## Configuración
-
-1. Obtén tu API key en [console.anthropic.com](https://console.anthropic.com/)
-2. Abre **Settings > Claudian**
-3. Ingresa tu API key
-4. Selecciona el modelo preferido (Claude Sonnet 4 por defecto)
-5. Ajusta las opciones de contexto según el tamaño de tu bóveda
-
-### Opciones disponibles
-
-| Opción | Descripción | Valor por defecto |
-|--------|-------------|-------------------|
-| API Key | Tu clave de API de Anthropic | - |
-| Modelo | Modelo de Claude a utilizar | Claude Sonnet 4 |
-| Carpeta de notas | Destino para notas generadas | `Claude Notes` |
-| Máx. tokens | Límite de tokens en respuestas | 4096 |
-| Notas en contexto | Títulos a incluir al procesar | 100 |
-| Tags en contexto | Tags a incluir al procesar | 50 |
+| Feature | Description |
+|---------|-------------|
+| **Integrated chat** | Side panel for conversing with Claude without leaving Obsidian |
+| **Real-time streaming** | Responses are displayed as they are generated |
+| **Note processing** | Analyzes active notes and suggests tags, wikilinks, and atomic concepts |
+| **Note generation** | Converts chat responses into structured Markdown notes |
+| **Agent Mode** | Manage your vault with natural language |
+| **Vault context** | Indexes existing titles and tags for smart suggestions |
+| **Native format** | Notes with YAML frontmatter, wikilinks, and tags |
+| **Privacy** | Your API key is stored locally, never on external servers |
+| **Open Source** | 100% auditable code |
 
 ---
 
-## Uso
+## Installation
 
-### Chat con Claude
+### Manual Installation
 
-1. Abre el panel con el comando **"Abrir chat con Claude"** o desde el ribbon
-2. Escribe tu mensaje y presiona `Enter`
-3. Las respuestas aparecerán en tiempo real con streaming
-
-### Crear notas desde el chat
-
-1. Haz clic en **"Crear nota"** en cualquier respuesta de Claude
-2. Edita el título y tags sugeridos
-3. La nota se guardará con formato estructurado
-
-### Procesar nota activa
-
-1. Abre una nota en tu bóveda
-2. Ejecuta el comando **"Procesar nota activa con Claude"** (`Ctrl/Cmd + P`)
-3. Claude analizará la nota considerando el contexto de tu bóveda
-4. Aparecerá un modal interactivo con:
-   - **Tags sugeridos** — Chips seleccionables para aplicar al frontmatter
-   - **Wikilinks sugeridos** — Enlaces a notas existentes o nuevas
-   - **Conceptos atómicos** — Ideas que merecen su propia nota
-
-### Procesamiento batch
-
-1. Ejecuta el comando **"Procesamiento batch de notas"** (`Ctrl/Cmd + P`)
-2. Selecciona las notas a procesar (por carpeta o individualmente)
-3. Elige un template de extracción:
-   - **Extraer ideas clave** — Resume las ideas principales
-   - **Resumen ejecutivo** — Genera resumen conciso
-   - **Identificar preguntas** — Detecta temas abiertos
-   - **Extraer acciones** — Lista tareas y TODOs
-   - **Conceptos y definiciones** — Crea glosario
-   - **Conexiones** — Identifica relaciones
-4. Los resultados se guardan en una nota consolidada
-
-### Generar mapa de conceptos
-
-1. Ejecuta el comando **"Generar mapa de conceptos"** (`Ctrl/Cmd + P`)
-2. Selecciona las notas a analizar
-3. Ingresa un título para el mapa
-4. Claude analizará las notas y generará:
-   - Conceptos principales y secundarios
-   - Relaciones entre conceptos
-   - Temas transversales
-   - Grafo visual en formato Mermaid
-
-### Modo Agente (gestión de bóveda)
-
-1. Activa el **modo agente** con el toggle en el header del chat
-2. Usa lenguaje natural para gestionar tu bóveda:
-   - *"Crea una carpeta Proyectos/2025 con subcarpetas para Docs y Código"*
-   - *"Mueve todas las notas sobre Python a Programación/"*
-   - *"Crea una nota con ideas para el proyecto X"*
-   - *"Elimina las notas vacías en Borradores/"*
-3. Claude interpretará tu solicitud y ejecutará las acciones
-4. Las acciones destructivas requieren confirmación
-
-**Acciones disponibles:**
-- Crear, mover, renombrar y eliminar notas y carpetas
-- Leer y modificar contenido de notas
-- Buscar notas por título, contenido o tags
-- Actualizar frontmatter (YAML)
+1. Download `main.js`, `manifest.json`, and `styles.css` from the latest release
+2. Create the folder `.obsidian/plugins/claudian/` in your vault
+3. Copy the downloaded files to that folder
+4. Restart Obsidian or reload (`Ctrl/Cmd + R`)
+5. Go to **Settings > Community Plugins** and enable "Claudian"
 
 ---
 
-## Formato de notas generadas
+## Configuration
+
+1. Get your API key at [console.anthropic.com](https://console.anthropic.com/)
+2. Open **Settings > Claudian**
+3. Enter your API key
+4. Select your preferred model (Claude Sonnet 4 by default)
+5. Adjust context options according to your vault size
+
+### Available Options
+
+| Option | Description | Default Value |
+|--------|-------------|---------------|
+| Language | Interface language (Auto/English/Spanish) | Auto |
+| API Key | Your Anthropic API key | - |
+| Model | Claude model to use | Claude Sonnet 4 |
+| Notes folder | Destination for generated notes | `Claude Notes` |
+| Max tokens | Token limit in responses | 4096 |
+| Notes in context | Titles to include when processing | 100 |
+| Tags in context | Tags to include when processing | 50 |
+
+---
+
+## Usage
+
+### Chat with Claude
+
+1. Open the panel with the command **"Open chat with Claude"** or from the ribbon
+2. Type your message and press `Enter`
+3. Responses will appear in real-time with streaming
+
+### Create notes from chat
+
+1. Click **"Create note"** on any Claude response
+2. Edit the suggested title and tags
+3. The note will be saved with structured format
+
+### Process active note
+
+1. Open a note in your vault
+2. Run the command **"Process active note with Claude"** (`Ctrl/Cmd + P`)
+3. Claude will analyze the note considering your vault context
+4. An interactive modal will appear with:
+   - **Suggested tags** — Selectable chips to apply to frontmatter
+   - **Suggested wikilinks** — Links to existing or new notes
+   - **Atomic concepts** — Ideas that deserve their own note
+
+### Batch processing
+
+1. Run the command **"Batch process notes"** (`Ctrl/Cmd + P`)
+2. Select notes to process (by folder or individually)
+3. Choose an extraction template:
+   - **Extract key ideas** — Summarizes main ideas
+   - **Executive summary** — Generates concise summary
+   - **Identify questions** — Detects open topics
+   - **Extract actions** — Lists tasks and TODOs
+   - **Concepts and definitions** — Creates glossary
+   - **Connections** — Identifies relationships
+4. Results are saved in a consolidated note
+
+### Generate concept map
+
+1. Run the command **"Generate concept map"** (`Ctrl/Cmd + P`)
+2. Select notes to analyze
+3. Enter a title for the map
+4. Claude will analyze the notes and generate:
+   - Main and secondary concepts
+   - Relationships between concepts
+   - Cross-cutting themes
+   - Visual graph in Mermaid format
+
+### Agent Mode (vault management)
+
+1. Enable **agent mode** with the toggle in the chat header
+2. Use natural language to manage your vault:
+   - *"Create a Projects/2025 folder with subfolders for Docs and Code"*
+   - *"Move all notes about Python to Programming/"*
+   - *"Create a note with ideas for project X"*
+   - *"Delete empty notes in Drafts/"*
+3. Claude will interpret your request and execute the actions
+4. Destructive actions require confirmation
+
+**Available actions:**
+- Create, move, rename, and delete notes and folders
+- Read and modify note content
+- Search notes by title, content, or tags
+- Update frontmatter (YAML)
+
+---
+
+## Generated Note Format
 
 ```markdown
 ---
@@ -142,75 +147,96 @@ source: claudian
 status: draft
 ---
 
-# Título de la nota
+# Note Title
 
-Contenido de la respuesta...
+Response content...
 
-## Enlaces relacionados
+## Related links
 
-- [[Nota relacionada 1]]
-- [[Nota relacionada 2]]
+- [[Related note 1]]
+- [[Related note 2]]
 ```
 
 ---
 
-## Desarrollo
+## Development
 
 ```bash
-# Clonar repositorio
+# Clone repository
 git clone https://github.com/Enigmora/claudian.git
 cd claudian
 
-# Instalar dependencias
+# Install dependencies
 npm install
 
-# Build de desarrollo (con sourcemaps)
+# Development build (with sourcemaps)
 npm run dev
 
-# Build de producción (minificado)
+# Production build (minified)
 npm run build
 
-# Compilar y desplegar a bóveda
-./deploy.sh . /ruta/a/boveda/.obsidian/plugins/claudian/
+# Compile and deploy to vault
+./deploy.sh . /path/to/vault/.obsidian/plugins/claudian/
 ```
 
-### Estructura del proyecto
+### Project Structure
 
 ```
 src/
-├── main.ts                  # Entry point, comandos y vistas
-├── settings.ts              # Configuración del plugin
-├── claude-client.ts         # Cliente Anthropic SDK con streaming
-├── chat-view.ts             # Panel lateral de chat
-├── note-creator.ts          # Modal para crear notas desde chat
-├── note-processor.ts        # Procesamiento de notas existentes
-├── vault-indexer.ts         # Indexación de bóveda
-├── suggestions-modal.ts     # Modal de sugerencias interactivo
-├── extraction-templates.ts  # Templates de extracción predefinidos
-├── batch-processor.ts       # Procesamiento batch de notas
-├── batch-modal.ts           # Modal de selección para batch
-├── concept-map-generator.ts # Generador de mapas de conceptos
-├── vault-actions.ts         # Ejecutor de acciones sobre bóveda
-├── agent-mode.ts            # Gestión del modo agente
-├── confirmation-modal.ts    # Modal de confirmación de acciones
+├── main.ts                  # Entry point, commands, and views
+├── settings.ts              # Plugin configuration
+├── claude-client.ts         # Anthropic SDK client with streaming
+├── chat-view.ts             # Chat side panel
+├── note-creator.ts          # Modal for creating notes from chat
+├── note-processor.ts        # Existing note processing
+├── vault-indexer.ts         # Vault indexing
+├── suggestions-modal.ts     # Interactive suggestions modal
+├── extraction-templates.ts  # Predefined extraction templates
+├── batch-processor.ts       # Batch note processing
+├── batch-modal.ts           # Batch selection modal
+├── concept-map-generator.ts # Concept map generator
+├── vault-actions.ts         # Vault action executor
+├── agent-mode.ts            # Agent mode management
+├── confirmation-modal.ts    # Action confirmation modal
+├── i18n/                    # Internationalization
+│   ├── index.ts             # Public i18n API
+│   ├── types.ts             # TypeScript types
+│   ├── core.ts              # Runtime logic
+│   └── locales/
+│       ├── en.ts            # English translations
+│       └── es.ts            # Spanish translations
 └── templates/
-    └── default.ts           # Template de notas
+    └── default.ts           # Note template
 ```
 
 ---
 
-## Stack técnico
+## Tech Stack
 
-- **TypeScript** — Tipado estático
-- **Obsidian API** — Integración nativa
-- **Anthropic SDK** — Comunicación con Claude
-- **esbuild** — Bundling ultrarrápido
+- **TypeScript** — Static typing
+- **Obsidian API** — Native integration
+- **Anthropic SDK** — Communication with Claude
+- **esbuild** — Ultra-fast bundling
 
 ---
 
-## Licencia
+## Internationalization
 
-Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
+Claudian supports multiple languages:
+
+| Phase | Languages |
+|-------|-----------|
+| **Phase 1** (Current) | English (default), Spanish |
+| **Phase 2** (Planned) | Chinese, German |
+| **Phase 3** (Planned) | French, Japanese |
+
+The plugin automatically detects Obsidian's language setting, or you can manually select a language in **Settings > Claudian > Language**.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
@@ -224,7 +250,7 @@ Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
 </p>
 
 <p align="center">
-  Desarrollado por <a href="https://github.com/Enigmora">Enigmora SC</a>
+  Developed by <a href="https://github.com/Enigmora">Enigmora SC</a>
 </p>
 
 <p align="center">

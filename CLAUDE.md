@@ -43,6 +43,13 @@ src/
 ├── vault-actions.ts         # Ejecutor de acciones sobre bóveda
 ├── agent-mode.ts            # Gestión del modo agente
 ├── confirmation-modal.ts    # Modal de confirmación de acciones
+├── i18n/                    # Internationalization system
+│   ├── index.ts             # Public API (t, setLocale, etc.)
+│   ├── types.ts             # TypeScript types and translation keys
+│   ├── core.ts              # Runtime logic
+│   └── locales/
+│       ├── en.ts            # English translations (default)
+│       └── es.ts            # Spanish translations
 └── templates/
     └── default.ts           # Template de notas con frontmatter
 ```
@@ -72,6 +79,40 @@ src/
 - Usar variables de Obsidian (`--background-primary`, `--text-normal`, etc.)
 - Soporte automático tema claro/oscuro
 - Clases con prefijo `claudian-` para evitar conflictos
+
+## Internationalization (i18n)
+
+**CRITICAL: All user-visible strings must be internationalized.**
+
+Every string displayed to the user (UI labels, messages, errors, tooltips, system prompts, etc.) must use the translation function `t()` from the i18n module. Never hardcode user-facing text.
+
+```typescript
+// ✅ Correct
+import { t } from './i18n';
+new Notice(t('error.apiKeyMissing'));
+button.setButtonText(t('chat.send'));
+
+// ❌ Wrong - hardcoded strings
+new Notice('API key not configured');
+button.setButtonText('Send');
+```
+
+**Adding new strings:**
+1. Add the translation key to `src/i18n/types.ts`
+2. Add translations in `src/i18n/locales/en.ts` (required)
+3. Add translations in `src/i18n/locales/es.ts` (required)
+4. Use `t('your.key')` in the code
+
+**Parameter interpolation:**
+```typescript
+t('batch.processing', { current: 5, total: 10, note: 'My Note' })
+// "Processing 5/10: My Note"
+```
+
+**Supported locales:**
+- Phase 1 (current): `en` (default), `es`
+- Phase 2 (planned): `zh`, `de`
+- Phase 3 (planned): `fr`, `ja`
 
 ## Specifications
 

@@ -2,6 +2,7 @@ import { Notice } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { VaultActionExecutor, VaultAction, ActionResult } from './vault-actions';
 import { VaultIndexer } from './vault-indexer';
+import { t } from './i18n';
 
 export interface AgentResponse {
   thinking?: string;
@@ -32,10 +33,10 @@ export class AgentMode {
   }
 
   isAgentResponse(content: string): boolean {
-    // Detectar si la respuesta contiene JSON con acciones
+    // Detect if response contains JSON with actions
     const trimmed = content.trim();
 
-    // Buscar patrón de JSON con "actions"
+    // Look for JSON pattern with "actions"
     if (trimmed.includes('"actions"') && trimmed.includes('[')) {
       try {
         const jsonMatch = content.match(/\{[\s\S]*"actions"[\s\S]*\}/);
@@ -63,7 +64,7 @@ export class AgentMode {
       return {
         thinking: parsed.thinking,
         actions: Array.isArray(parsed.actions) ? parsed.actions : [],
-        message: parsed.message || 'Acciones ejecutadas.',
+        message: parsed.message || t('agent.actionsExecuted'),
         requiresConfirmation: parsed.requiresConfirmation || false
       };
     } catch (error) {
@@ -76,7 +77,7 @@ export class AgentMode {
     const maxActions = this.plugin.settings.maxActionsPerMessage || 10;
 
     if (actions.length > maxActions) {
-      throw new Error(`Demasiadas acciones (${actions.length}). Máximo permitido: ${maxActions}`);
+      throw new Error(t('error.tooManyActions', { count: String(actions.length), max: String(maxActions) }));
     }
 
     return this.executor.executeAll(actions);
@@ -113,101 +114,59 @@ export class AgentMode {
 
     switch (action.action) {
       case 'create-folder':
-        return `Crear carpeta: ${params.path}`;
+        return t('agent.createFolder', { path: params.path });
       case 'delete-folder':
-        return `Eliminar carpeta: ${params.path}`;
+        return t('agent.deleteFolder', { path: params.path });
       case 'list-folder':
-        return `Listar carpeta: ${params.path || '/'}`;
+        return t('agent.listFolder', { path: params.path || '/' });
       case 'create-note':
-        return `Crear nota: ${params.path}`;
+        return t('agent.createNote', { path: params.path });
       case 'read-note':
-        return `Leer nota: ${params.path}`;
+        return t('agent.readNote', { path: params.path });
       case 'delete-note':
-        return `Eliminar nota: ${params.path}`;
+        return t('agent.deleteNote', { path: params.path });
       case 'rename-note':
-        return `Renombrar: ${params.from} → ${params.to}`;
+        return t('agent.renameNote', { from: params.from, to: params.to });
       case 'move-note':
-        return `Mover: ${params.from} → ${params.to}`;
+        return t('agent.moveNote', { from: params.from, to: params.to });
       case 'append-content':
-        return `Agregar contenido a: ${params.path}`;
+        return t('agent.appendContent', { path: params.path });
       case 'prepend-content':
-        return `Insertar contenido en: ${params.path}`;
+        return t('agent.prependContent', { path: params.path });
       case 'replace-content':
-        return `Reemplazar contenido de: ${params.path}`;
+        return t('agent.replaceContent', { path: params.path });
       case 'update-frontmatter':
-        return `Actualizar frontmatter: ${params.path}`;
+        return t('agent.updateFrontmatter', { path: params.path });
       case 'search-notes':
-        return `Buscar notas: "${params.query}"`;
+        return t('agent.searchNotes', { query: params.query });
       case 'get-note-info':
-        return `Obtener info: ${params.path}`;
+        return t('agent.getNoteInfo', { path: params.path });
       case 'find-links':
-        return `Buscar enlaces a: ${params.target}`;
+        return t('agent.findLinks', { target: params.target });
       default:
-        return `Acción: ${action.action}`;
+        return t('agent.genericAction', { action: action.action });
     }
   }
 
   getSystemPrompt(): string {
     const vaultContext = this.indexer.getVaultContext();
 
-    // Obtener lista de carpetas
+    // Get folder list
     const folders = new Set<string>();
     this.plugin.app.vault.getMarkdownFiles().forEach(f => {
       if (f.parent && f.parent.path !== '/') {
         folders.add(f.parent.path);
       }
     });
-    const folderList = Array.from(folders).slice(0, 30).join(', ') || '(ninguna)';
+    const folderList = Array.from(folders).slice(0, 30).join(', ') || '(none)';
 
-    return `Eres un asistente que ayuda a gestionar una bóveda de Obsidian. Puedes ejecutar acciones sobre archivos y carpetas.
-
-CAPACIDADES:
-- Crear, mover, renombrar y eliminar notas y carpetas
-- Leer y modificar contenido de notas
-- Buscar notas por título, contenido o tags
-- Actualizar frontmatter (YAML)
-
-ACCIONES DISPONIBLES:
-- create-folder: { path }
-- delete-folder: { path }
-- list-folder: { path, recursive? }
-- create-note: { path, content?, frontmatter? }
-- read-note: { path }
-- delete-note: { path }
-- rename-note: { from, to }
-- move-note: { from, to }
-- append-content: { path, content }
-- prepend-content: { path, content }
-- replace-content: { path, content }
-- update-frontmatter: { path, fields }
-- search-notes: { query, field?, folder? }
-- get-note-info: { path }
-- find-links: { target }
-
-FORMATO DE RESPUESTA:
-Cuando el usuario solicite una acción sobre la bóveda, responde ÚNICAMENTE con JSON válido:
-{
-  "thinking": "Tu razonamiento interno (opcional)",
-  "actions": [
-    { "action": "nombre-accion", "params": { ... }, "description": "Descripción legible" }
-  ],
-  "message": "Mensaje para el usuario explicando qué harás",
-  "requiresConfirmation": false
-}
-
-REGLAS IMPORTANTES:
-1. Para acciones destructivas (delete-note, delete-folder, replace-content), usa requiresConfirmation: true
-2. Las rutas no deben empezar ni terminar con /
-3. Las notas se crean con extensión .md automáticamente
-4. Si no estás seguro de la intención del usuario, pregunta antes de actuar
-5. Para conversación normal (sin acciones sobre la bóveda), responde normalmente SIN formato JSON
-6. Máximo ${this.plugin.settings.maxActionsPerMessage || 10} acciones por mensaje
-
-CONTEXTO DE LA BÓVEDA:
-- Total de notas: ${vaultContext.noteCount}
-- Carpetas existentes: ${folderList}
-- Tags existentes: ${vaultContext.allTags.slice(0, 20).map(t => '#' + t).join(', ') || '(ninguno)'}
-- Algunas notas: ${vaultContext.noteTitles.slice(0, 15).join(', ')}`;
+    return t('prompt.agentMode', {
+      maxActions: String(this.plugin.settings.maxActionsPerMessage || 10),
+      noteCount: String(vaultContext.noteCount),
+      folders: folderList,
+      tags: vaultContext.allTags.slice(0, 20).map(tag => '#' + tag).join(', ') || '(none)',
+      noteTitles: vaultContext.noteTitles.slice(0, 15).join(', ')
+    });
   }
 
   getSummaryMessage(results: ActionResult[], originalMessage: string): string {
@@ -217,11 +176,11 @@ CONTEXTO DE LA BÓVEDA:
     let summary = '';
 
     if (failed === 0) {
-      summary = `${originalMessage}\n\n**Acciones ejecutadas:**\n${this.formatResults(results)}`;
+      summary = `${originalMessage}\n\n**${t('agent.actionsExecuted')}:**\n${this.formatResults(results)}`;
     } else if (successful === 0) {
-      summary = `No se pudieron ejecutar las acciones:\n${this.formatResults(results)}`;
+      summary = `${t('agent.noActions')}\n${this.formatResults(results)}`;
     } else {
-      summary = `${originalMessage}\n\n**Resultados:**\n${this.formatResults(results)}\n\n⚠️ ${failed} acción(es) fallaron.`;
+      summary = `${originalMessage}\n\n**${t('agent.partialSuccess')}**\n${this.formatResults(results)}\n\n⚠️ ${t('agent.actionsFailed', { count: String(failed) })}`;
     }
 
     return summary;

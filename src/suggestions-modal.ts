@@ -2,6 +2,7 @@ import { Modal, TFile, Setting } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { NoteProcessor, ValidatedSuggestions, ValidatedWikilink } from './note-processor';
 import { AtomicConcept } from './claude-client';
+import { t } from './i18n';
 
 export class SuggestionsModal extends Modal {
   private plugin: ClaudeCompanionPlugin;
@@ -29,7 +30,7 @@ export class SuggestionsModal extends Modal {
     contentEl.empty();
     contentEl.addClass('suggestions-modal');
 
-    contentEl.createEl('h2', { text: 'Sugerencias para la nota' });
+    contentEl.createEl('h2', { text: t('suggestions.title') });
 
     if (this.suggestions.reasoning) {
       const reasoningEl = contentEl.createDiv({ cls: 'suggestions-reasoning' });
@@ -43,10 +44,10 @@ export class SuggestionsModal extends Modal {
 
   private renderTagsSection(container: HTMLElement) {
     const section = container.createDiv({ cls: 'suggestions-section' });
-    section.createEl('h3', { text: 'Tags sugeridos' });
+    section.createEl('h3', { text: t('suggestions.tags') });
 
     if (this.suggestions.tags.length === 0) {
-      section.createEl('p', { text: 'No hay sugerencias de tags.', cls: 'suggestions-empty' });
+      section.createEl('p', { text: t('suggestions.tagsEmpty'), cls: 'suggestions-empty' });
       return;
     }
 
@@ -69,7 +70,7 @@ export class SuggestionsModal extends Modal {
     const actionsRow = section.createDiv({ cls: 'suggestions-actions' });
 
     const selectAllBtn = actionsRow.createEl('button', {
-      text: 'Seleccionar todos',
+      text: t('suggestions.selectAll'),
       cls: 'suggestions-btn-secondary'
     });
     selectAllBtn.addEventListener('click', () => {
@@ -80,7 +81,7 @@ export class SuggestionsModal extends Modal {
     });
 
     const applyBtn = actionsRow.createEl('button', {
-      text: 'Aplicar seleccionados',
+      text: t('suggestions.applySelected'),
       cls: 'suggestions-btn-primary'
     });
     applyBtn.addEventListener('click', async () => {
@@ -96,10 +97,10 @@ export class SuggestionsModal extends Modal {
 
   private renderWikilinksSection(container: HTMLElement) {
     const section = container.createDiv({ cls: 'suggestions-section' });
-    section.createEl('h3', { text: 'Wikilinks sugeridos' });
+    section.createEl('h3', { text: t('suggestions.wikilinks') });
 
     if (this.suggestions.wikilinks.length === 0) {
-      section.createEl('p', { text: 'No hay sugerencias de wikilinks.', cls: 'suggestions-empty' });
+      section.createEl('p', { text: t('suggestions.wikilinksEmpty'), cls: 'suggestions-empty' });
       return;
     }
 
@@ -126,10 +127,10 @@ export class SuggestionsModal extends Modal {
 
       if (wl.exists) {
         const existsBadge = label.createSpan({ cls: 'suggestions-badge suggestions-badge-exists' });
-        existsBadge.textContent = 'existe';
+        existsBadge.textContent = t('suggestions.badgeExists');
       } else {
         const newBadge = label.createSpan({ cls: 'suggestions-badge suggestions-badge-new' });
-        newBadge.textContent = 'nueva';
+        newBadge.textContent = t('suggestions.badgeNew');
       }
 
       const contextEl = row.createDiv({ cls: 'suggestions-wikilink-context' });
@@ -139,7 +140,7 @@ export class SuggestionsModal extends Modal {
     const actionsRow = section.createDiv({ cls: 'suggestions-actions' });
 
     const selectExistingBtn = actionsRow.createEl('button', {
-      text: 'Seleccionar existentes',
+      text: t('suggestions.selectExisting'),
       cls: 'suggestions-btn-secondary'
     });
     selectExistingBtn.addEventListener('click', () => {
@@ -153,7 +154,7 @@ export class SuggestionsModal extends Modal {
     });
 
     const insertBtn = actionsRow.createEl('button', {
-      text: 'Insertar seleccionados',
+      text: t('suggestions.insertSelected'),
       cls: 'suggestions-btn-primary'
     });
     insertBtn.addEventListener('click', async () => {
@@ -171,10 +172,10 @@ export class SuggestionsModal extends Modal {
 
   private renderAtomicConceptsSection(container: HTMLElement) {
     const section = container.createDiv({ cls: 'suggestions-section' });
-    section.createEl('h3', { text: 'Conceptos atómicos' });
+    section.createEl('h3', { text: t('suggestions.atomicConcepts') });
 
     if (this.suggestions.atomicConcepts.length === 0) {
-      section.createEl('p', { text: 'No hay conceptos atómicos sugeridos.', cls: 'suggestions-empty' });
+      section.createEl('p', { text: t('suggestions.atomicConceptsEmpty'), cls: 'suggestions-empty' });
       return;
     }
 
@@ -192,7 +193,7 @@ export class SuggestionsModal extends Modal {
       const actions = card.createDiv({ cls: 'suggestions-concept-actions' });
 
       const previewBtn = actions.createEl('button', {
-        text: 'Ver contenido',
+        text: t('suggestions.viewContent'),
         cls: 'suggestions-btn-secondary'
       });
       previewBtn.addEventListener('click', () => {
@@ -206,13 +207,13 @@ export class SuggestionsModal extends Modal {
       });
 
       const createBtn = actions.createEl('button', {
-        text: 'Crear nota',
+        text: t('suggestions.createNote'),
         cls: 'suggestions-btn-primary'
       });
       createBtn.addEventListener('click', async () => {
         await this.processor.createAtomicNote(concept);
         card.addClass('is-created');
-        createBtn.textContent = 'Creada';
+        createBtn.textContent = t('suggestions.noteCreated');
         createBtn.disabled = true;
       });
     });

@@ -1,6 +1,7 @@
 import { Modal, setIcon } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { VaultAction } from './vault-actions';
+import { t } from './i18n';
 
 export class ConfirmationModal extends Modal {
   private plugin: ClaudeCompanionPlugin;
@@ -30,15 +31,15 @@ export class ConfirmationModal extends Modal {
     const header = contentEl.createDiv({ cls: 'confirmation-header' });
     const iconSpan = header.createSpan({ cls: 'confirmation-icon' });
     setIcon(iconSpan, 'alert-triangle');
-    header.createEl('h2', { text: 'Confirmar acciones' });
+    header.createEl('h2', { text: t('confirmation.title') });
 
-    // Descripción
+    // Description
     contentEl.createEl('p', {
-      text: 'Las siguientes acciones requieren confirmación:',
+      text: t('confirmation.description'),
       cls: 'confirmation-description'
     });
 
-    // Lista de acciones
+    // Actions list
     const actionsList = contentEl.createDiv({ cls: 'confirmation-actions-list' });
 
     for (const action of this.actions) {
@@ -50,23 +51,23 @@ export class ConfirmationModal extends Modal {
       const actionText = actionRow.createSpan({ cls: 'confirmation-action-text' });
       actionText.textContent = action.description || this.getActionDescription(action);
 
-      // Marcar acciones destructivas
+      // Mark destructive actions
       if (this.isDestructive(action)) {
         actionRow.addClass('is-destructive');
       }
     }
 
-    // Advertencia
+    // Warning
     const warning = contentEl.createDiv({ cls: 'confirmation-warning' });
     warning.createEl('p', {
-      text: 'Esta acción no se puede deshacer.'
+      text: t('confirmation.warning')
     });
 
-    // Botones
+    // Buttons
     const buttons = contentEl.createDiv({ cls: 'confirmation-buttons' });
 
     const cancelBtn = buttons.createEl('button', {
-      text: 'Cancelar',
+      text: t('confirmation.cancel'),
       cls: 'confirmation-btn-cancel'
     });
     cancelBtn.addEventListener('click', () => {
@@ -75,7 +76,7 @@ export class ConfirmationModal extends Modal {
     });
 
     const confirmBtn = buttons.createEl('button', {
-      text: 'Confirmar',
+      text: t('confirmation.confirm'),
       cls: 'confirmation-btn-confirm'
     });
     confirmBtn.addEventListener('click', () => {
@@ -110,15 +111,15 @@ export class ConfirmationModal extends Modal {
 
     switch (action.action) {
       case 'delete-note':
-        return `Eliminar nota: ${params.path}`;
+        return t('confirmation.deleteNote', { path: params.path });
       case 'delete-folder':
-        return `Eliminar carpeta: ${params.path}`;
+        return t('confirmation.deleteFolder', { path: params.path });
       case 'replace-content':
-        return `Reemplazar contenido de: ${params.path}`;
+        return t('confirmation.replaceContent', { path: params.path });
       case 'move-note':
-        return `Mover: ${params.from} → ${params.to}`;
+        return t('confirmation.moveNote', { from: params.from, to: params.to });
       case 'rename-note':
-        return `Renombrar: ${params.from} → ${params.to}`;
+        return t('confirmation.renameNote', { from: params.from, to: params.to });
       default:
         return `${action.action}: ${JSON.stringify(params)}`;
     }

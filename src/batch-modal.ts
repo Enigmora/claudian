@@ -3,6 +3,7 @@ import ClaudeCompanionPlugin from './main';
 import { ExtractionTemplate, getAllTemplates } from './extraction-templates';
 import { BatchProcessor, BatchProgress } from './batch-processor';
 import { ConceptMapGenerator } from './concept-map-generator';
+import { t } from './i18n';
 
 type BatchMode = 'extraction' | 'concept-map';
 
@@ -40,61 +41,61 @@ export class BatchModal extends Modal {
     contentEl.addClass('batch-modal');
 
     const title = this.mode === 'extraction'
-      ? 'Procesamiento Batch'
-      : 'Generar Mapa de Conceptos';
+      ? t('batch.titleExtraction')
+      : t('batch.titleConceptMap');
     contentEl.createEl('h2', { text: title });
 
-    // Selector de carpeta/notas
+    // File/note selector
     this.renderFileSelector(contentEl);
 
-    // Selector de template (solo para extraction)
+    // Template selector (only for extraction)
     if (this.mode === 'extraction') {
       this.renderTemplateSelector(contentEl);
     } else {
       this.renderConceptMapOptions(contentEl);
     }
 
-    // Contenedor de progreso (oculto inicialmente)
+    // Progress container (hidden initially)
     this.progressContainer = contentEl.createDiv({ cls: 'batch-progress-container hidden' });
 
-    // Botones de acción
+    // Action buttons
     this.renderActions(contentEl);
   }
 
   private renderFileSelector(container: HTMLElement) {
     const section = container.createDiv({ cls: 'batch-section' });
-    section.createEl('h3', { text: 'Seleccionar notas' });
+    section.createEl('h3', { text: t('batch.selectNotes') });
 
-    // Barra de herramientas
+    // Toolbar
     const toolbar = section.createDiv({ cls: 'batch-toolbar' });
 
-    // Botón seleccionar carpeta
+    // Select folder button
     const folderBtn = toolbar.createEl('button', {
-      text: 'Seleccionar carpeta',
+      text: t('batch.selectFolder'),
       cls: 'batch-btn-secondary'
     });
     folderBtn.addEventListener('click', () => this.showFolderPicker());
 
-    // Botón seleccionar todo
+    // Select all button
     const selectAllBtn = toolbar.createEl('button', {
-      text: 'Seleccionar todo',
+      text: t('batch.selectAll'),
       cls: 'batch-btn-secondary'
     });
     selectAllBtn.addEventListener('click', () => this.selectAllFiles());
 
-    // Botón limpiar selección
+    // Clear selection button
     const clearBtn = toolbar.createEl('button', {
-      text: 'Limpiar',
+      text: t('batch.clear'),
       cls: 'batch-btn-secondary'
     });
     clearBtn.addEventListener('click', () => this.clearSelection());
 
-    // Contador
+    // Counter
     const counter = toolbar.createSpan({ cls: 'batch-counter' });
     counter.id = 'batch-counter';
     this.updateCounter();
 
-    // Lista de archivos
+    // Files list
     this.filesContainer = section.createDiv({ cls: 'batch-files-container' });
     this.renderFilesList();
   }
@@ -107,13 +108,13 @@ export class BatchModal extends Modal {
 
     if (files.length === 0) {
       this.filesContainer.createEl('p', {
-        text: 'No hay notas en la bóveda',
+        text: t('batch.noNotes'),
         cls: 'batch-empty'
       });
       return;
     }
 
-    // Agrupar por carpeta
+    // Group by folder
     const byFolder = new Map<string, TFile[]>();
     for (const file of files) {
       const folder = file.parent?.path || '/';
@@ -128,7 +129,7 @@ export class BatchModal extends Modal {
 
       const folderHeader = folderDiv.createDiv({ cls: 'batch-folder-header' });
       const folderCheckbox = folderHeader.createEl('input', { type: 'checkbox' }) as HTMLInputElement;
-      folderHeader.createSpan({ text: folder === '/' ? 'Raíz' : folder });
+      folderHeader.createSpan({ text: folder === '/' ? t('batch.rootFolder') : folder });
 
       folderCheckbox.addEventListener('change', () => {
         for (const file of folderFiles) {
@@ -159,7 +160,7 @@ export class BatchModal extends Modal {
         });
       }
 
-      // Marcar checkbox de carpeta si todos están seleccionados
+      // Mark folder checkbox if all are selected
       folderCheckbox.checked = folderFiles.every(f => this.selectedFiles.has(f));
       folderCheckbox.indeterminate = !folderCheckbox.checked &&
         folderFiles.some(f => this.selectedFiles.has(f));
@@ -168,7 +169,7 @@ export class BatchModal extends Modal {
 
   private renderTemplateSelector(container: HTMLElement) {
     const section = container.createDiv({ cls: 'batch-section' });
-    section.createEl('h3', { text: 'Seleccionar template' });
+    section.createEl('h3', { text: t('batch.selectTemplate') });
 
     this.templateContainer = section.createDiv({ cls: 'batch-templates-container' });
 
@@ -197,13 +198,13 @@ export class BatchModal extends Modal {
 
   private renderConceptMapOptions(container: HTMLElement) {
     const section = container.createDiv({ cls: 'batch-section' });
-    section.createEl('h3', { text: 'Opciones del mapa' });
+    section.createEl('h3', { text: t('batch.mapOptions') });
 
     const inputContainer = section.createDiv({ cls: 'batch-input-row' });
-    inputContainer.createEl('label', { text: 'Título del mapa:' });
+    inputContainer.createEl('label', { text: t('batch.mapTitle') });
     const input = inputContainer.createEl('input', {
       type: 'text',
-      placeholder: 'Mi mapa de conceptos'
+      placeholder: t('batch.mapTitlePlaceholder')
     }) as HTMLInputElement;
     input.value = this.conceptMapTitle;
     input.addEventListener('input', () => {
@@ -215,13 +216,13 @@ export class BatchModal extends Modal {
     this.actionsContainer = container.createDiv({ cls: 'batch-actions' });
 
     const cancelBtn = this.actionsContainer.createEl('button', {
-      text: 'Cancelar',
+      text: t('batch.cancel'),
       cls: 'batch-btn-secondary'
     });
     cancelBtn.addEventListener('click', () => this.close());
 
     const processBtn = this.actionsContainer.createEl('button', {
-      text: this.mode === 'extraction' ? 'Procesar notas' : 'Generar mapa',
+      text: this.mode === 'extraction' ? t('batch.processNotes') : t('batch.generateMap'),
       cls: 'batch-btn-primary'
     });
     processBtn.addEventListener('click', () => this.startProcessing());
@@ -230,19 +231,19 @@ export class BatchModal extends Modal {
   private updateCounter() {
     const counter = document.getElementById('batch-counter');
     if (counter) {
-      counter.textContent = `${this.selectedFiles.size} notas seleccionadas`;
+      counter.textContent = t('batch.counter', { count: String(this.selectedFiles.size) });
     }
   }
 
   private showFolderPicker() {
-    // Mostrar un simple prompt para seleccionar carpeta
+    // Show a simple prompt to select folder
     const folders = new Set<string>();
     this.app.vault.getMarkdownFiles().forEach(f => {
       if (f.parent) folders.add(f.parent.path);
     });
 
     const folderList = Array.from(folders).sort();
-    const folder = prompt('Ingresa el nombre de la carpeta:', folderList[0] || '');
+    const folder = prompt(t('batch.folderPrompt'), folderList[0] || '');
 
     if (folder) {
       const files = this.app.vault.getMarkdownFiles().filter(f =>
@@ -268,20 +269,20 @@ export class BatchModal extends Modal {
 
   private async startProcessing() {
     if (this.selectedFiles.size === 0) {
-      new Notice('Selecciona al menos una nota');
+      new Notice(t('batch.selectAtLeastOne'));
       return;
     }
 
     if (this.mode === 'extraction' && !this.selectedTemplate) {
-      new Notice('Selecciona un template');
+      new Notice(t('batch.selectTemplateRequired'));
       return;
     }
 
     if (this.mode === 'concept-map' && !this.conceptMapTitle.trim()) {
-      this.conceptMapTitle = `Mapa de conceptos - ${new Date().toISOString().split('T')[0]}`;
+      this.conceptMapTitle = `Concept Map - ${new Date().toISOString().split('T')[0]}`;
     }
 
-    // Mostrar progreso
+    // Show progress
     this.progressContainer.removeClass('hidden');
     this.progressContainer.empty();
 
@@ -303,7 +304,7 @@ export class BatchModal extends Modal {
     progressFill: HTMLElement,
     progressText: HTMLElement
   ) {
-    progressText.textContent = 'Iniciando procesamiento...';
+    progressText.textContent = t('batch.starting');
 
     try {
       const results = await this.batchProcessor.processNotes(
@@ -311,22 +312,29 @@ export class BatchModal extends Modal {
         this.selectedTemplate!,
         {
           onStart: (total) => {
-            progressText.textContent = `Procesando 0/${total} notas...`;
+            progressText.textContent = t('batch.processing', { current: '0', total: String(total), note: '' });
           },
           onProgress: (progress) => {
             const percent = (progress.current / progress.total) * 100;
             progressFill.style.width = `${percent}%`;
-            progressText.textContent = `Procesando ${progress.current}/${progress.total}: ${progress.currentNote}`;
+            progressText.textContent = t('batch.processing', {
+              current: String(progress.current),
+              total: String(progress.total),
+              note: progress.currentNote
+            });
           },
           onComplete: async (results, errors) => {
             progressFill.style.width = '100%';
-            progressText.textContent = `Completado: ${results.length} exitosos, ${errors.length} errores`;
+            progressText.textContent = t('batch.completed', {
+              success: String(results.length),
+              errors: String(errors.length)
+            });
 
             if (results.length > 0) {
               const file = await this.batchProcessor.saveResultsAsNote(results, this.selectedTemplate!);
-              new Notice(`Resultados guardados en: ${file.path}`);
+              new Notice(t('batch.savedTo', { path: file.path }));
 
-              // Abrir la nota
+              // Open the note
               const leaf = this.app.workspace.getLeaf(false);
               await leaf.openFile(file);
             }
@@ -336,8 +344,8 @@ export class BatchModal extends Modal {
         }
       );
     } catch (error) {
-      progressText.textContent = `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`;
-      new Notice('Error durante el procesamiento');
+      progressText.textContent = t('chat.error', { message: error instanceof Error ? error.message : t('chat.errorUnknown') });
+      new Notice(t('batch.errorProcessing'));
     }
   }
 
@@ -346,7 +354,7 @@ export class BatchModal extends Modal {
     progressFill: HTMLElement,
     progressText: HTMLElement
   ) {
-    progressText.textContent = 'Analizando notas...';
+    progressText.textContent = t('batch.analyzing');
     progressFill.style.width = '30%';
 
     try {
@@ -363,13 +371,13 @@ export class BatchModal extends Modal {
           },
           onComplete: async (map) => {
             progressFill.style.width = '90%';
-            progressText.textContent = 'Guardando mapa...';
+            progressText.textContent = t('batch.saving');
 
             const file = await this.conceptMapGenerator.saveAsNote(map);
             progressFill.style.width = '100%';
-            progressText.textContent = 'Mapa generado exitosamente';
+            progressText.textContent = t('batch.mapGenerated');
 
-            new Notice(`Mapa guardado en: ${file.path}`);
+            new Notice(t('batch.savedTo', { path: file.path }));
 
             const leaf = this.app.workspace.getLeaf(false);
             await leaf.openFile(file);
@@ -377,13 +385,13 @@ export class BatchModal extends Modal {
             setTimeout(() => this.close(), 1500);
           },
           onError: (error) => {
-            progressText.textContent = `Error: ${error.message}`;
-            new Notice('Error al generar mapa');
+            progressText.textContent = t('chat.error', { message: error.message });
+            new Notice(t('batch.errorGenerating'));
           }
         }
       );
     } catch (error) {
-      progressText.textContent = `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`;
+      progressText.textContent = t('chat.error', { message: error instanceof Error ? error.message : t('chat.errorUnknown') });
     }
   }
 

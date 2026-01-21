@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeCompanionSettings } from './settings';
 import { VaultContext } from './vault-indexer';
 import { ExtractionTemplate } from './extraction-templates';
+import { t } from './i18n';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -71,11 +72,11 @@ export class ClaudeClient {
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
+      callbacks.onError?.(new Error(t('error.apiKeyMissing')));
       return;
     }
 
-    // Agregar mensaje del usuario al historial
+    // Add user message to history
     this.conversationHistory.push({
       role: 'user',
       content: userMessage
@@ -103,7 +104,7 @@ export class ClaudeClient {
 
       await stream.finalMessage();
 
-      // Agregar respuesta al historial
+      // Add response to history
       this.conversationHistory.push({
         role: 'assistant',
         content: fullResponse
@@ -112,22 +113,22 @@ export class ClaudeClient {
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
-      // Remover el mensaje del usuario si hubo error
+      // Remove user message if error
       this.conversationHistory.pop();
 
       if (error instanceof Error) {
-        // Mejorar mensajes de error comunes
+        // Improve common error messages
         if (error.message.includes('401')) {
-          callbacks.onError?.(new Error('API key inválida. Verifica tu clave en Settings.'));
+          callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
         } else if (error.message.includes('429')) {
-          callbacks.onError?.(new Error('Límite de requests excedido. Intenta en unos segundos.'));
+          callbacks.onError?.(new Error(t('error.rateLimit')));
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          callbacks.onError?.(new Error('Error de conexión. Verifica tu conexión a internet.'));
+          callbacks.onError?.(new Error(t('error.connection')));
         } else {
           callbacks.onError?.(error);
         }
       } else {
-        callbacks.onError?.(new Error('Error desconocido al comunicarse con Claude.'));
+        callbacks.onError?.(new Error(t('error.unknown')));
       }
     }
   }
@@ -139,7 +140,7 @@ export class ClaudeClient {
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
+      callbacks.onError?.(new Error(t('error.apiKeyMissing')));
       return;
     }
 
@@ -172,68 +173,34 @@ export class ClaudeClient {
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes('401')) {
-          callbacks.onError?.(new Error('API key inválida. Verifica tu clave en Settings.'));
+          callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
         } else if (error.message.includes('429')) {
-          callbacks.onError?.(new Error('Límite de requests excedido. Intenta en unos segundos.'));
+          callbacks.onError?.(new Error(t('error.rateLimit')));
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          callbacks.onError?.(new Error('Error de conexión. Verifica tu conexión a internet.'));
+          callbacks.onError?.(new Error(t('error.connection')));
         } else {
           callbacks.onError?.(error);
         }
       } else {
-        callbacks.onError?.(new Error('Error desconocido al comunicarse con Claude.'));
+        callbacks.onError?.(new Error(t('error.unknown')));
       }
     }
   }
 
   private buildProcessingSystemPrompt(vaultContext: VaultContext): string {
-    return `Eres un asistente especializado en organización de conocimiento para Obsidian. Tu tarea es analizar notas y sugerir mejoras para integrarlas mejor en la bóveda del usuario.
-
-CONTEXTO DE LA BÓVEDA:
-- Total de notas: ${vaultContext.noteCount}
-- Notas existentes: ${vaultContext.noteTitles.join(', ')}
-- Tags existentes: ${vaultContext.allTags.map(t => '#' + t).join(', ')}
-
-INSTRUCCIONES:
-1. Analiza el contenido de la nota proporcionada
-2. Sugiere tags relevantes (preferiblemente de los existentes, pero puedes proponer nuevos)
-3. Identifica conceptos que podrían enlazarse a notas existentes (wikilinks)
-4. Detecta conceptos atómicos que merecerían su propia nota
-5. Explica brevemente tu razonamiento
-
-RESPONDE ÚNICAMENTE con un objeto JSON válido con esta estructura exacta:
-{
-  "tags": ["tag1", "tag2"],
-  "wikilinks": [
-    {
-      "text": "texto a convertir en link",
-      "target": "Título de nota destino",
-      "context": "Breve explicación de por qué enlazar"
-    }
-  ],
-  "atomicConcepts": [
-    {
-      "title": "Título para nueva nota",
-      "summary": "Resumen de 1-2 oraciones",
-      "content": "Contenido sugerido para la nota (en Markdown)"
-    }
-  ],
-  "reasoning": "Explicación breve de tu análisis"
-}
-
-IMPORTANTE:
-- Solo sugiere wikilinks a notas que existan en la bóveda
-- Los tags no deben incluir el símbolo #
-- Los conceptos atómicos deben ser ideas que merezcan desarrollo propio
-- Mantén las sugerencias relevantes y útiles, no llenes de links innecesarios`;
+    return t('prompt.noteProcessor', {
+      noteCount: String(vaultContext.noteCount),
+      noteTitles: vaultContext.noteTitles.join(', '),
+      allTags: vaultContext.allTags.map(tag => '#' + tag).join(', ')
+    });
   }
 
   private buildProcessingUserMessage(noteContent: string, noteTitle: string): string {
-    return `Analiza la siguiente nota y proporciona sugerencias:
+    return `Analyze the following note and provide suggestions:
 
-TÍTULO: ${noteTitle}
+TITLE: ${noteTitle}
 
-CONTENIDO:
+CONTENT:
 ${noteContent}`;
   }
 
@@ -243,13 +210,15 @@ ${noteContent}`;
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
+      callbacks.onError?.(new Error(t('error.apiKeyMissing')));
       return;
     }
 
-    const systemPrompt = `Eres un asistente especializado en análisis y extracción de información de textos.
-Responde de manera estructurada y clara según las instrucciones proporcionadas.
-${template.outputFormat === 'json' ? 'IMPORTANTE: Responde ÚNICAMENTE con JSON válido.' : 'Usa formato Markdown para tu respuesta.'}`;
+    const jsonInstructions = template.outputFormat === 'json'
+      ? 'IMPORTANT: Respond ONLY with valid JSON.'
+      : 'Use Markdown format for your response.';
+
+    const systemPrompt = t('prompt.templateProcessor', { jsonInstructions });
 
     callbacks.onStart?.();
 
@@ -284,13 +253,11 @@ ${template.outputFormat === 'json' ? 'IMPORTANTE: Responde ÚNICAMENTE con JSON 
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
+      callbacks.onError?.(new Error(t('error.apiKeyMissing')));
       return;
     }
 
-    const systemPrompt = `Eres un asistente especializado en análisis de conocimiento y creación de mapas conceptuales.
-Tu tarea es identificar conceptos, relaciones y temas transversales en conjuntos de notas.
-IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`;
+    const systemPrompt = t('prompt.conceptMapGenerator');
 
     callbacks.onStart?.();
 
@@ -326,11 +293,11 @@ IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`
     callbacks: StreamCallbacks
   ): Promise<void> {
     if (!this.client) {
-      callbacks.onError?.(new Error('API key no configurada. Ve a Settings > Claudian.'));
+      callbacks.onError?.(new Error(t('error.apiKeyMissing')));
       return;
     }
 
-    // Agregar mensaje del usuario al historial
+    // Add user message to history
     this.conversationHistory.push({
       role: 'user',
       content: userMessage
@@ -358,7 +325,7 @@ IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`
 
       await stream.finalMessage();
 
-      // Agregar respuesta al historial
+      // Add response to history
       this.conversationHistory.push({
         role: 'assistant',
         content: fullResponse
@@ -367,7 +334,7 @@ IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
-      // Remover el mensaje del usuario si hubo error
+      // Remove user message if error
       this.conversationHistory.pop();
       this.handleError(error, callbacks);
     }
@@ -376,16 +343,16 @@ IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`
   private handleError(error: unknown, callbacks: StreamCallbacks): void {
     if (error instanceof Error) {
       if (error.message.includes('401')) {
-        callbacks.onError?.(new Error('API key inválida. Verifica tu clave en Settings.'));
+        callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
       } else if (error.message.includes('429')) {
-        callbacks.onError?.(new Error('Límite de requests excedido. Intenta en unos segundos.'));
+        callbacks.onError?.(new Error(t('error.rateLimit')));
       } else if (error.message.includes('network') || error.message.includes('fetch')) {
-        callbacks.onError?.(new Error('Error de conexión. Verifica tu conexión a internet.'));
+        callbacks.onError?.(new Error(t('error.connection')));
       } else {
         callbacks.onError?.(error);
       }
     } else {
-      callbacks.onError?.(new Error('Error desconocido al comunicarse con Claude.'));
+      callbacks.onError?.(new Error(t('error.unknown')));
     }
   }
 }

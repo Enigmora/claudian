@@ -1104,15 +1104,17 @@
 
 .confirmation-warning {
   padding: 12px;
-  background: var(--background-modifier-error-hover);
-  border-radius: 6px;
+  background: var(--background-secondary);
+  border-left: 3px solid var(--text-error);
+  border-radius: 4px;
   margin-bottom: 16px;
 }
 
 .confirmation-warning p {
   margin: 0;
   font-size: 13px;
-  color: var(--text-error);
+  color: var(--text-normal);
+  font-weight: 500;
 }
 
 .confirmation-buttons {
@@ -1148,4 +1150,29 @@
 
 .confirmation-btn-confirm:hover {
   filter: brightness(1.1);
+}
+
+/* ==================== */
+/* Settings Footer      */
+/* ==================== */
+
+.claudian-settings-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  text-align: center;
+}
+
+.claudian-settings-footer p {
+  margin: 4px 0;
+}
+
+.claudian-settings-footer a {
+  color: var(--text-accent);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.claudian-settings-footer a:hover {
+  color: var(--interactive-accent-hover);
+  text-decoration: underline;
 }

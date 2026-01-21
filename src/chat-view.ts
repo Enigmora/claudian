@@ -454,8 +454,14 @@ export class ChatView extends ItemView {
   ): Promise<void> {
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
-    let isShowingIndicator = false;
     let confirmedAsJson = false; // Once confirmed as JSON, stay in indicator mode
+    let confirmedAsText = false; // Once confirmed as text, stay in markdown mode
+    const MIN_CHARS_TO_DECIDE = 50; // Wait for this many chars before showing markdown
+
+    // In agent mode, show streaming indicator by default to avoid flash
+    cursorEl.remove();
+    contentEl.empty();
+    streamingIndicator = this.createStreamingIndicator(contentEl);
 
     // Phase 2: Context reinforcement
     let enhancedMessage = message;
@@ -492,38 +498,31 @@ export class ChatView extends ItemView {
       onToken: (token) => {
         fullResponse += token;
 
-        // Once confirmed as JSON, don't switch back to markdown view
-        if (!confirmedAsJson) {
-          confirmedAsJson = this.looksLikeAgentJsonResponse(fullResponse);
-        }
-
-        if (confirmedAsJson) {
-          // Show elegant processing indicator instead of raw JSON
-          if (!isShowingIndicator) {
-            cursorEl.remove();
-            contentEl.empty();
-            streamingIndicator = this.createStreamingIndicator(contentEl);
-            isShowingIndicator = true;
+        // Detection logic: once decided, stick with it
+        if (!confirmedAsJson && !confirmedAsText) {
+          if (this.looksLikeAgentJsonResponse(fullResponse)) {
+            confirmedAsJson = true;
+          } else if (fullResponse.length > MIN_CHARS_TO_DECIDE) {
+            // After enough characters, if it doesn't look like JSON, switch to markdown
+            confirmedAsText = true;
           }
-          // Update the indicator with current stats
-          this.updateStreamingIndicator(streamingIndicator, fullResponse);
-        } else {
-          // Not yet confirmed as JSON - show as markdown for now
-          cursorEl.remove();
-          contentEl.empty();
-
-          MarkdownRenderer.render(
-            this.app,
-            fullResponse,
-            contentEl,
-            '',
-            this
-          );
-
-          contentEl.appendChild(cursorEl);
         }
 
-        this.scrollToBottom();
+        if (confirmedAsText) {
+          // Confirmed as regular text - show as markdown
+          if (streamingIndicator) {
+            contentEl.empty();
+            streamingIndicator = null;
+          }
+          contentEl.empty();
+          MarkdownRenderer.render(this.app, fullResponse, contentEl, '', this);
+          const newCursor = contentEl.createSpan({ cls: 'claudian-cursor' });
+          this.scrollToBottom();
+        } else {
+          // Still showing indicator (either confirmed JSON or still deciding)
+          this.updateStreamingIndicator(streamingIndicator, fullResponse);
+          this.scrollToBottom();
+        }
       },
       onComplete: async (response) => {
         cursorEl.remove();
@@ -658,35 +657,40 @@ export class ChatView extends ItemView {
 
     // JSON detection state for continuation
     let streamingIndicator: HTMLElement | null = null;
-    let isShowingIndicator = false;
     let confirmedAsJson = false;
+    let confirmedAsText = false;
+    const MIN_CHARS_TO_DECIDE = 50;
+
+    // Show indicator by default
+    cursorEl.remove();
+    contentEl.empty();
+    streamingIndicator = this.createStreamingIndicator(contentEl);
 
     await this.client.sendAgentMessageStream(continuePrompt, agentSystemPrompt, {
       onStart: () => {},
       onToken: (token) => {
         continuationResponse += token;
 
-        // Detect JSON response
-        if (!confirmedAsJson) {
-          confirmedAsJson = this.looksLikeAgentJsonResponse(continuationResponse);
+        // Detection logic
+        if (!confirmedAsJson && !confirmedAsText) {
+          if (this.looksLikeAgentJsonResponse(continuationResponse)) {
+            confirmedAsJson = true;
+          } else if (continuationResponse.length > MIN_CHARS_TO_DECIDE) {
+            confirmedAsText = true;
+          }
         }
 
-        if (confirmedAsJson) {
-          // Show streaming indicator instead of raw JSON
-          if (!isShowingIndicator) {
-            cursorEl.remove();
+        if (confirmedAsText) {
+          if (streamingIndicator) {
             contentEl.empty();
-            streamingIndicator = this.createStreamingIndicator(contentEl);
-            isShowingIndicator = true;
+            streamingIndicator = null;
           }
-          this.updateStreamingIndicator(streamingIndicator, continuationResponse);
-        } else {
-          cursorEl.remove();
-          // Render combined response
           const combined = TruncationDetector.mergeResponses(partialResponse, continuationResponse);
           contentEl.empty();
           MarkdownRenderer.render(this.app, combined, contentEl, '', this);
-          contentEl.appendChild(cursorEl);
+          contentEl.createSpan({ cls: 'claudian-cursor' });
+        } else {
+          this.updateStreamingIndicator(streamingIndicator, continuationResponse);
         }
         this.scrollToBottom();
       },
@@ -783,33 +787,39 @@ export class ChatView extends ItemView {
 
     // JSON detection state for retry
     let streamingIndicator: HTMLElement | null = null;
-    let isShowingIndicator = false;
     let confirmedAsJson = false;
+    let confirmedAsText = false;
+    const MIN_CHARS_TO_DECIDE = 50;
+
+    // Show indicator by default
+    cursorEl.remove();
+    contentEl.empty();
+    streamingIndicator = this.createStreamingIndicator(contentEl);
 
     await this.client.sendAgentMessageStream(retryPrompt, agentSystemPrompt, {
       onStart: () => {},
       onToken: (token) => {
         retryResponse += token;
 
-        // Detect JSON response
-        if (!confirmedAsJson) {
-          confirmedAsJson = this.looksLikeAgentJsonResponse(retryResponse);
+        // Detection logic
+        if (!confirmedAsJson && !confirmedAsText) {
+          if (this.looksLikeAgentJsonResponse(retryResponse)) {
+            confirmedAsJson = true;
+          } else if (retryResponse.length > MIN_CHARS_TO_DECIDE) {
+            confirmedAsText = true;
+          }
         }
 
-        if (confirmedAsJson) {
-          // Show streaming indicator instead of raw JSON
-          if (!isShowingIndicator) {
-            cursorEl.remove();
+        if (confirmedAsText) {
+          if (streamingIndicator) {
             contentEl.empty();
-            streamingIndicator = this.createStreamingIndicator(contentEl);
-            isShowingIndicator = true;
+            streamingIndicator = null;
           }
-          this.updateStreamingIndicator(streamingIndicator, retryResponse);
-        } else {
-          cursorEl.remove();
           contentEl.empty();
           MarkdownRenderer.render(this.app, retryResponse, contentEl, '', this);
-          contentEl.appendChild(cursorEl);
+          contentEl.createSpan({ cls: 'claudian-cursor' });
+        } else {
+          this.updateStreamingIndicator(streamingIndicator, retryResponse);
         }
         this.scrollToBottom();
       },

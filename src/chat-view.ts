@@ -5,6 +5,7 @@ import { NoteCreatorModal } from './note-creator';
 import { AgentMode, AgentResponse } from './agent-mode';
 import { VaultActionExecutor, VaultAction } from './vault-actions';
 import { ConfirmationModal } from './confirmation-modal';
+import { t } from './i18n';
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -17,7 +18,7 @@ export class ChatView extends ItemView {
   private sendButton: HTMLButtonElement;
   private isStreaming: boolean = false;
 
-  // Modo Agente
+  // Agent Mode
   private agentMode: AgentMode;
   private executor: VaultActionExecutor;
   private isAgentModeActive: boolean = false;
@@ -52,7 +53,7 @@ export class ChatView extends ItemView {
     // Header
     const header = container.createDiv({ cls: 'claudian-header' });
 
-    // Logo y título
+    // Logo and title
     const headerTitle = header.createDiv({ cls: 'claudian-header-title' });
     const logoContainer = headerTitle.createDiv({ cls: 'claudian-logo' });
     logoContainer.innerHTML = `<svg width="24" height="24" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -65,12 +66,12 @@ export class ChatView extends ItemView {
     </svg>`;
     headerTitle.createEl('h4', { text: 'Claudian' });
 
-    // Controles del header
+    // Header controls
     const headerControls = header.createDiv({ cls: 'claudian-header-controls' });
 
-    // Toggle de modo agente
+    // Agent mode toggle
     this.agentToggle = headerControls.createDiv({ cls: 'claudian-agent-toggle' });
-    const agentLabel = this.agentToggle.createSpan({ cls: 'agent-toggle-label', text: 'Agente' });
+    const agentLabel = this.agentToggle.createSpan({ cls: 'agent-toggle-label', text: t('chat.agentLabel') });
     const toggleSwitch = this.agentToggle.createDiv({ cls: 'agent-toggle-switch' });
     if (this.isAgentModeActive) {
       toggleSwitch.addClass('is-active');
@@ -79,31 +80,31 @@ export class ChatView extends ItemView {
 
     const clearBtn = headerControls.createEl('button', { cls: 'claudian-clear-btn' });
     setIcon(clearBtn, 'trash-2');
-    clearBtn.setAttribute('aria-label', 'Limpiar chat');
+    clearBtn.setAttribute('aria-label', t('chat.clearLabel'));
     clearBtn.onclick = () => this.clearChat();
 
-    // Contenedor de mensajes
+    // Messages container
     this.messagesContainer = container.createDiv({ cls: 'claudian-messages' });
 
-    // Restaurar historial si existe
+    // Restore history if exists
     this.restoreHistory();
 
-    // Contenedor del área de input (para resize)
+    // Input wrapper container (for resize)
     const inputWrapper = container.createDiv({ cls: 'claudian-input-wrapper' });
 
-    // Handle para redimensionar
+    // Resize handle
     const resizeHandle = inputWrapper.createDiv({ cls: 'claudian-resize-handle' });
     this.setupResizeHandle(resizeHandle, inputWrapper, container as HTMLElement);
 
-    // Área de input
+    // Input area
     const inputArea = inputWrapper.createDiv({ cls: 'claudian-input-area' });
 
     this.inputEl = inputArea.createEl('textarea', {
       cls: 'claudian-input',
-      attr: { placeholder: 'Escribe tu mensaje...' }
+      attr: { placeholder: t('chat.placeholder') }
     });
 
-    // Enter para enviar, Shift+Enter para nueva línea
+    // Enter to send, Shift+Enter for new line
     this.inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -111,7 +112,7 @@ export class ChatView extends ItemView {
       }
     });
 
-    // Auto-resize textarea basado en contenido (respetando límites del wrapper)
+    // Auto-resize textarea based on content (respecting wrapper limits)
     this.inputEl.addEventListener('input', () => {
       this.inputEl.style.height = 'auto';
       const maxHeight = inputWrapper.clientHeight - 24; // padding
@@ -120,13 +121,13 @@ export class ChatView extends ItemView {
 
     this.sendButton = inputArea.createEl('button', {
       cls: 'claudian-send-btn',
-      text: 'Enviar'
+      text: t('chat.send')
     });
     this.sendButton.onclick = () => this.sendMessage();
   }
 
   async onClose(): Promise<void> {
-    // Limpieza si es necesaria
+    // Cleanup if needed
   }
 
   private restoreHistory(): void {
@@ -139,7 +140,7 @@ export class ChatView extends ItemView {
   private clearChat(): void {
     this.client.clearHistory();
     this.messagesContainer.empty();
-    new Notice('Chat limpiado');
+    new Notice(t('chat.cleared'));
   }
 
   private toggleAgentMode(toggleEl: HTMLElement): void {
@@ -147,10 +148,10 @@ export class ChatView extends ItemView {
 
     if (this.isAgentModeActive) {
       toggleEl.addClass('is-active');
-      new Notice('Modo agente activado');
+      new Notice(t('chat.agentEnabled'));
     } else {
       toggleEl.removeClass('is-active');
-      new Notice('Modo agente desactivado');
+      new Notice(t('chat.agentDisabled'));
     }
   }
 
@@ -158,21 +159,21 @@ export class ChatView extends ItemView {
     const message = this.inputEl.value.trim();
     if (!message || this.isStreaming) return;
 
-    // Actualizar settings por si cambiaron
+    // Update settings in case they changed
     this.client.updateSettings(this.plugin.settings);
 
-    // Limpiar input
+    // Clear input
     this.inputEl.value = '';
     this.inputEl.style.height = 'auto';
 
-    // Renderizar mensaje del usuario
+    // Render user message
     this.renderMessage('user', message);
 
-    // Preparar contenedor para respuesta
+    // Prepare container for response
     const responseEl = this.createMessageElement('assistant');
     const contentEl = responseEl.querySelector('.claudian-message-content') as HTMLElement;
 
-    // Agregar cursor de streaming
+    // Add streaming cursor
     const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
 
     this.isStreaming = true;
@@ -181,7 +182,7 @@ export class ChatView extends ItemView {
 
     let fullResponse = '';
 
-    // Elegir método según modo
+    // Choose method based on mode
     if (this.isAgentModeActive) {
       await this.sendAgentMessage(message, responseEl, contentEl, cursorEl);
     } else {
@@ -199,15 +200,15 @@ export class ChatView extends ItemView {
 
     await this.client.sendMessageStream(message, {
       onStart: () => {
-        // Streaming iniciado
+        // Streaming started
       },
       onToken: (token) => {
         fullResponse += token;
-        // Actualizar contenido mientras llega
+        // Update content as it arrives
         cursorEl.remove();
         contentEl.empty();
 
-        // Renderizar markdown
+        // Render markdown
         MarkdownRenderer.render(
           this.app,
           fullResponse,
@@ -216,18 +217,18 @@ export class ChatView extends ItemView {
           this
         );
 
-        // Re-agregar cursor
+        // Re-add cursor
         contentEl.appendChild(cursorEl);
 
-        // Scroll automático
+        // Auto scroll
         this.scrollToBottom();
       },
       onComplete: (response) => {
-        // Remover cursor y agregar botones de acción
+        // Remove cursor and add action buttons
         cursorEl.remove();
         contentEl.empty();
 
-        // Renderizar markdown final
+        // Render final markdown
         MarkdownRenderer.render(
           this.app,
           response,
@@ -236,25 +237,25 @@ export class ChatView extends ItemView {
           this
         );
 
-        // Agregar botones de acción
+        // Add action buttons
         this.addMessageActions(responseEl, response);
 
         this.isStreaming = false;
         this.sendButton.disabled = false;
-        this.sendButton.setText('Enviar');
+        this.sendButton.setText(t('chat.send'));
         this.scrollToBottom();
       },
       onError: (error) => {
         cursorEl.remove();
         contentEl.empty();
         contentEl.createEl('span', {
-          text: `Error: ${error.message}`,
+          text: t('chat.error', { message: error.message }),
           cls: 'claudian-error'
         });
 
         this.isStreaming = false;
         this.sendButton.disabled = false;
-        this.sendButton.setText('Enviar');
+        this.sendButton.setText(t('chat.send'));
       }
     });
   }
@@ -270,14 +271,14 @@ export class ChatView extends ItemView {
 
     await this.client.sendAgentMessageStream(message, agentSystemPrompt, {
       onStart: () => {
-        // Streaming iniciado
+        // Streaming started
       },
       onToken: (token) => {
         fullResponse += token;
         cursorEl.remove();
         contentEl.empty();
 
-        // Mostrar respuesta mientras llega
+        // Show response as it arrives
         MarkdownRenderer.render(
           this.app,
           fullResponse,
@@ -293,11 +294,11 @@ export class ChatView extends ItemView {
         cursorEl.remove();
         contentEl.empty();
 
-        // Verificar si es respuesta del agente con acciones
+        // Check if it's an agent response with actions
         if (this.agentMode.isAgentResponse(response)) {
           await this.handleAgentResponse(response, responseEl, contentEl);
         } else {
-          // Respuesta normal (conversación)
+          // Normal response (conversation)
           MarkdownRenderer.render(
             this.app,
             response,
@@ -310,20 +311,20 @@ export class ChatView extends ItemView {
 
         this.isStreaming = false;
         this.sendButton.disabled = false;
-        this.sendButton.setText('Enviar');
+        this.sendButton.setText(t('chat.send'));
         this.scrollToBottom();
       },
       onError: (error) => {
         cursorEl.remove();
         contentEl.empty();
         contentEl.createEl('span', {
-          text: `Error: ${error.message}`,
+          text: t('chat.error', { message: error.message }),
           cls: 'claudian-error'
         });
 
         this.isStreaming = false;
         this.sendButton.disabled = false;
-        this.sendButton.setText('Enviar');
+        this.sendButton.setText(t('chat.send'));
       }
     });
   }
@@ -336,7 +337,7 @@ export class ChatView extends ItemView {
     const agentResponse = this.agentMode.parseAgentResponse(response);
 
     if (!agentResponse || agentResponse.actions.length === 0) {
-      // No hay acciones, mostrar mensaje normal
+      // No actions, show normal message
       MarkdownRenderer.render(
         this.app,
         agentResponse?.message || response,
@@ -348,7 +349,7 @@ export class ChatView extends ItemView {
       return;
     }
 
-    // Mostrar mensaje inicial
+    // Show initial message
     MarkdownRenderer.render(
       this.app,
       agentResponse.message,
@@ -357,14 +358,14 @@ export class ChatView extends ItemView {
       this
     );
 
-    // Verificar si hay acciones destructivas que requieren confirmación
+    // Check for destructive actions that require confirmation
     const destructiveActions = this.agentMode.getDestructiveActions(agentResponse.actions);
 
     if (destructiveActions.length > 0 && this.plugin.settings.confirmDestructiveActions) {
-      // Mostrar modal de confirmación
+      // Show confirmation modal
       await this.showConfirmationAndExecute(agentResponse, responseEl, contentEl);
     } else {
-      // Ejecutar directamente
+      // Execute directly
       await this.executeAgentActions(agentResponse.actions, responseEl, contentEl, agentResponse.message);
     }
   }
@@ -381,7 +382,7 @@ export class ChatView extends ItemView {
         this.plugin,
         destructiveActions,
         async () => {
-          // Confirmado: ejecutar todas las acciones
+          // Confirmed: execute all actions
           await this.executeAgentActions(
             agentResponse.actions,
             responseEl,
@@ -391,9 +392,9 @@ export class ChatView extends ItemView {
           resolve();
         },
         () => {
-          // Cancelado: mostrar mensaje
+          // Cancelled: show message
           const cancelMsg = contentEl.createDiv({ cls: 'agent-action-cancelled' });
-          cancelMsg.setText('Acciones canceladas por el usuario.');
+          cancelMsg.setText(t('chat.actionsCancelled'));
           resolve();
         }
       ).open();
@@ -410,7 +411,7 @@ export class ChatView extends ItemView {
       const results = await this.agentMode.executeActions(actions);
       const summary = this.agentMode.getSummaryMessage(results, originalMessage);
 
-      // Actualizar contenido con resultados
+      // Update content with results
       contentEl.empty();
       MarkdownRenderer.render(
         this.app,
@@ -420,22 +421,22 @@ export class ChatView extends ItemView {
         this
       );
 
-      // Agregar indicador visual de acciones ejecutadas
+      // Add visual indicator for executed actions
       const actionsIndicator = contentEl.createDiv({ cls: 'agent-actions-indicator' });
       const successCount = results.filter(r => r.success).length;
       const failCount = results.filter(r => !r.success).length;
 
       if (failCount === 0) {
         actionsIndicator.addClass('all-success');
-        actionsIndicator.setText(`${successCount} acción(es) ejecutadas`);
+        actionsIndicator.setText(t('chat.actionsExecuted', { count: String(successCount) }));
       } else {
         actionsIndicator.addClass('has-errors');
-        actionsIndicator.setText(`${successCount} exitosas, ${failCount} fallidas`);
+        actionsIndicator.setText(t('chat.actionsPartial', { success: String(successCount), failed: String(failCount) }));
       }
 
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
-      contentEl.createDiv({ cls: 'agent-action-error' }).setText(`Error: ${errorMsg}`);
+      const errorMsg = error instanceof Error ? error.message : t('chat.errorUnknown');
+      contentEl.createDiv({ cls: 'agent-action-error' }).setText(t('chat.error', { message: errorMsg }));
     }
 
     this.addMessageActions(responseEl, originalMessage);
@@ -474,19 +475,19 @@ export class ChatView extends ItemView {
   private addMessageActions(messageEl: HTMLElement, content: string): void {
     const actionsEl = messageEl.createDiv({ cls: 'claudian-message-actions' });
 
-    // Botón copiar
+    // Copy button
     const copyBtn = actionsEl.createEl('button', { cls: 'claudian-action-btn' });
     setIcon(copyBtn, 'clipboard-copy');
-    copyBtn.setAttribute('aria-label', 'Copiar');
+    copyBtn.setAttribute('aria-label', t('chat.copyLabel'));
     copyBtn.onclick = async () => {
       await navigator.clipboard.writeText(content);
-      new Notice('Copiado al portapapeles');
+      new Notice(t('chat.copied'));
     };
 
-    // Botón crear nota
+    // Create note button
     const noteBtn = actionsEl.createEl('button', { cls: 'claudian-action-btn' });
     setIcon(noteBtn, 'file-plus');
-    noteBtn.setAttribute('aria-label', 'Crear nota');
+    noteBtn.setAttribute('aria-label', t('chat.createNoteLabel'));
     noteBtn.onclick = () => {
       new NoteCreatorModal(this.app, this.plugin, content).open();
     };
@@ -501,8 +502,8 @@ export class ChatView extends ItemView {
     wrapper: HTMLElement,
     container: HTMLElement
   ): void {
-    const MIN_HEIGHT = 64;  // Altura mínima en px
-    const MAX_RATIO = 0.5;  // Máximo 50% del contenedor padre
+    const MIN_HEIGHT = 64;  // Minimum height in px
+    const MAX_RATIO = 0.5;  // Maximum 50% of parent container
 
     let isResizing = false;
     let startY = 0;
@@ -526,7 +527,7 @@ export class ChatView extends ItemView {
 
       wrapper.style.height = newHeight + 'px';
 
-      // Ajustar el textarea al nuevo tamaño
+      // Adjust textarea to new size
       const inputArea = wrapper.querySelector('.claudian-input-area') as HTMLElement;
       if (inputArea) {
         this.inputEl.style.height = 'auto';
@@ -547,7 +548,7 @@ export class ChatView extends ItemView {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 
-    // Limpiar event listeners cuando se cierra la vista
+    // Clean up event listeners when view closes
     this.register(() => {
       handle.removeEventListener('mousedown', onMouseDown);
       document.removeEventListener('mousemove', onMouseMove);

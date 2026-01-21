@@ -1,6 +1,7 @@
 import { App, Modal, Setting, Notice, TFolder } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { generateNoteContent, extractSuggestedTags, suggestTitle } from './templates/default';
+import { t } from './i18n';
 
 export class NoteCreatorModal extends Modal {
   plugin: ClaudeCompanionPlugin;
@@ -15,7 +16,7 @@ export class NoteCreatorModal extends Modal {
     this.plugin = plugin;
     this.content = content;
 
-    // Valores iniciales
+    // Initial values
     this.title = suggestTitle(content);
     this.tags = extractSuggestedTags(content).join(', ');
     this.folder = plugin.settings.notesFolder;
@@ -24,20 +25,20 @@ export class NoteCreatorModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
 
-    contentEl.createEl('h2', { text: 'Crear nota desde chat' });
+    contentEl.createEl('h2', { text: t('noteCreator.title') });
 
-    // Preview del contenido
+    // Content preview
     const previewContainer = contentEl.createDiv({ cls: 'note-creator-preview' });
-    previewContainer.createEl('h4', { text: 'Vista previa' });
+    previewContainer.createEl('h4', { text: t('noteCreator.preview') });
     const previewText = this.content.length > 300
       ? this.content.slice(0, 300) + '...'
       : this.content;
     previewContainer.createEl('p', { text: previewText, cls: 'note-creator-preview-text' });
 
-    // Título
+    // Title
     new Setting(contentEl)
-      .setName('Título')
-      .setDesc('Nombre del archivo (sin extensión .md)')
+      .setName(t('noteCreator.titleField.name'))
+      .setDesc(t('noteCreator.titleField.desc'))
       .addText(text => text
         .setValue(this.title)
         .onChange(value => this.title = value)
@@ -46,31 +47,31 @@ export class NoteCreatorModal extends Modal {
 
     // Tags
     new Setting(contentEl)
-      .setName('Tags')
-      .setDesc('Separados por comas')
+      .setName(t('noteCreator.tags.name'))
+      .setDesc(t('noteCreator.tags.desc'))
       .addText(text => text
-        .setPlaceholder('tag1, tag2, tag3')
+        .setPlaceholder(t('noteCreator.tags.placeholder'))
         .setValue(this.tags)
         .onChange(value => this.tags = value)
       );
 
-    // Carpeta
+    // Folder
     new Setting(contentEl)
-      .setName('Carpeta')
-      .setDesc('Carpeta destino de la nota')
+      .setName(t('noteCreator.folder.name'))
+      .setDesc(t('noteCreator.folder.desc'))
       .addText(text => text
         .setValue(this.folder)
         .onChange(value => this.folder = value)
       );
 
-    // Botones
+    // Buttons
     const buttonContainer = contentEl.createDiv({ cls: 'note-creator-buttons' });
 
-    const cancelBtn = buttonContainer.createEl('button', { text: 'Cancelar' });
+    const cancelBtn = buttonContainer.createEl('button', { text: t('noteCreator.cancel') });
     cancelBtn.onclick = () => this.close();
 
     const createBtn = buttonContainer.createEl('button', {
-      text: 'Crear nota',
+      text: t('noteCreator.create'),
       cls: 'mod-cta'
     });
     createBtn.onclick = () => this.createNote();
@@ -83,15 +84,15 @@ export class NoteCreatorModal extends Modal {
 
   private async createNote(): Promise<void> {
     if (!this.title.trim()) {
-      new Notice('El título es requerido');
+      new Notice(t('noteCreator.titleRequired'));
       return;
     }
 
     try {
-      // Crear carpeta si no existe
+      // Create folder if it doesn't exist
       await this.ensureFolderExists(this.folder);
 
-      // Generar contenido de la nota
+      // Generate note content
       const tagsArray = this.tags
         .split(',')
         .map(t => t.trim())
@@ -106,32 +107,32 @@ export class NoteCreatorModal extends Modal {
         date: today
       });
 
-      // Crear archivo
+      // Create file
       const fileName = this.sanitizeFileName(this.title);
       const filePath = this.folder
         ? `${this.folder}/${fileName}.md`
         : `${fileName}.md`;
 
-      // Verificar si existe
+      // Check if exists
       const existingFile = this.app.vault.getAbstractFileByPath(filePath);
       if (existingFile) {
-        new Notice(`Ya existe un archivo con el nombre: ${fileName}`);
+        new Notice(t('noteCreator.fileExists', { name: fileName }));
         return;
       }
 
       const file = await this.app.vault.create(filePath, noteContent);
 
-      new Notice(`Nota creada: ${file.path}`);
+      new Notice(t('noteCreator.created', { path: file.path }));
 
-      // Abrir la nota
+      // Open the note
       const leaf = this.app.workspace.getLeaf(false);
       await leaf.openFile(file);
 
       this.close();
 
     } catch (error) {
-      console.error('Error creando nota:', error);
-      new Notice(`Error al crear la nota: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('Error creating note:', error);
+      new Notice(t('noteCreator.error', { message: error instanceof Error ? error.message : t('chat.errorUnknown') }));
     }
   }
 
@@ -145,7 +146,7 @@ export class NoteCreatorModal extends Modal {
   }
 
   private sanitizeFileName(name: string): string {
-    // Remover caracteres no permitidos en nombres de archivo
+    // Remove characters not allowed in file names
     return name
       .replace(/[\\/:*?"<>|]/g, '')
       .replace(/\s+/g, ' ')

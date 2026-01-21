@@ -2,6 +2,7 @@ import { TFile, Notice } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { ClaudeClient, NoteSuggestions, AtomicConcept, WikilinkSuggestion } from './claude-client';
 import { VaultIndexer } from './vault-indexer';
+import { t } from './i18n';
 
 export interface ProcessCallbacks {
   onStart?: () => void;
@@ -33,17 +34,17 @@ export class NoteProcessor {
     const file = this.plugin.app.workspace.getActiveFile();
 
     if (!file || file.extension !== 'md') {
-      callbacks.onError?.(new Error('No hay una nota markdown activa.'));
+      callbacks.onError?.(new Error(t('error.noActiveNote')));
       return;
     }
 
     callbacks.onStart?.();
-    callbacks.onProgress?.('Leyendo contenido de la nota...');
+    callbacks.onProgress?.(t('processor.reading'));
 
     const content = await this.plugin.app.vault.read(file);
     const vaultContext = this.indexer.getVaultContext();
 
-    callbacks.onProgress?.('Analizando con Claude...');
+    callbacks.onProgress?.(t('processor.analyzing'));
 
     let fullResponse = '';
 
@@ -62,7 +63,7 @@ export class NoteProcessor {
             const validated = this.validateWikilinks(suggestions);
             callbacks.onComplete?.(validated);
           } catch (error) {
-            callbacks.onError?.(error instanceof Error ? error : new Error('Error al parsear respuesta'));
+            callbacks.onError?.(error instanceof Error ? error : new Error(t('error.parseResponse')));
           }
         },
         onError: (error) => {
@@ -75,7 +76,7 @@ export class NoteProcessor {
   parseSuggestions(response: string): NoteSuggestions {
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('No se encontró JSON válido en la respuesta.');
+      throw new Error(t('error.parseJson'));
     }
 
     try {
@@ -88,7 +89,7 @@ export class NoteProcessor {
         reasoning: parsed.reasoning || ''
       };
     } catch (error) {
-      throw new Error('Error al parsear JSON de sugerencias.');
+      throw new Error(t('error.parseResponse'));
     }
   }
 
@@ -116,15 +117,15 @@ export class NoteProcessor {
       frontmatter.tags = mergedTags;
     });
 
-    new Notice(`${tags.length} tag(s) aplicados.`);
+    new Notice(t('suggestions.tagsApplied', { count: String(tags.length) }));
   }
 
   async insertWikilinks(file: TFile, wikilinks: WikilinkSuggestion[]): Promise<void> {
     if (wikilinks.length === 0) return;
 
     await this.plugin.app.vault.process(file, (content) => {
-      const sectionHeader = '## Enlaces relacionados';
-      const existingSectionRegex = /\n## Enlaces relacionados\n/;
+      const sectionHeader = `## ${t('processor.relatedLinks')}`;
+      const existingSectionRegex = new RegExp(`\n## ${t('processor.relatedLinks')}\n`);
 
       const newLinksFormatted = wikilinks
         .map(wl => `- [[${wl.target}]] - ${wl.context}`);
@@ -156,7 +157,7 @@ export class NoteProcessor {
       }
     });
 
-    new Notice(`${wikilinks.length} wikilink(s) insertados.`);
+    new Notice(t('suggestions.wikilinksInserted', { count: String(wikilinks.length) }));
   }
 
   async createAtomicNote(concept: AtomicConcept): Promise<TFile> {
@@ -177,7 +178,7 @@ export class NoteProcessor {
       frontmatter.source = 'atomic-concept';
     });
 
-    new Notice(`Nota "${concept.title}" creada.`);
+    new Notice(t('noteCreator.created', { path: concept.title }));
     return file;
   }
 }

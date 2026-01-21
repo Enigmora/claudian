@@ -1,3 +1,5 @@
+import { t } from './i18n';
+
 export interface ExtractionTemplate {
   id: string;
   name: string;
@@ -15,182 +17,183 @@ export interface TemplateResult {
   timestamp: string;
 }
 
-export const DEFAULT_TEMPLATES: ExtractionTemplate[] = [
-  {
-    id: 'key-ideas',
-    name: 'Extraer ideas clave',
-    description: 'Identifica y resume las ideas principales del contenido',
-    icon: 'lightbulb',
-    outputFormat: 'markdown',
-    prompt: `Analiza el siguiente contenido y extrae las ideas clave.
+/**
+ * Get all extraction templates with localized names and descriptions
+ */
+export function getAllTemplates(): ExtractionTemplate[] {
+  return [
+    {
+      id: 'key-ideas',
+      name: t('template.keyIdeas.name'),
+      description: t('template.keyIdeas.desc'),
+      icon: 'lightbulb',
+      outputFormat: 'markdown',
+      prompt: `Analyze the following content and extract the key ideas.
 
-INSTRUCCIONES:
-1. Identifica las 3-7 ideas más importantes
-2. Resume cada idea en 1-2 oraciones claras
-3. Ordénalas por relevancia
-4. Incluye citas textuales breves cuando sea útil
+INSTRUCTIONS:
+1. Identify the 3-7 most important ideas
+2. Summarize each idea in 1-2 clear sentences
+3. Order them by relevance
+4. Include brief textual quotes when useful
 
-FORMATO DE RESPUESTA:
-## Ideas Clave
+RESPONSE FORMAT:
+## Key Ideas
 
-1. **[Título de la idea]**
-   [Descripción concisa]
+1. **[Idea title]**
+   [Concise description]
 
-2. **[Título de la idea]**
-   [Descripción concisa]
+2. **[Idea title]**
+   [Concise description]
 
 ...`
-  },
-  {
-    id: 'executive-summary',
-    name: 'Resumen ejecutivo',
-    description: 'Genera un resumen conciso para lectura rápida',
-    icon: 'file-text',
-    outputFormat: 'markdown',
-    prompt: `Genera un resumen ejecutivo del siguiente contenido.
+    },
+    {
+      id: 'executive-summary',
+      name: t('template.summary.name'),
+      description: t('template.summary.desc'),
+      icon: 'file-text',
+      outputFormat: 'markdown',
+      prompt: `Generate an executive summary of the following content.
 
-INSTRUCCIONES:
-1. Máximo 3 párrafos
-2. Primer párrafo: contexto y tema principal
-3. Segundo párrafo: puntos clave y hallazgos
-4. Tercer párrafo: conclusiones o próximos pasos
-5. Usa lenguaje claro y directo
+INSTRUCTIONS:
+1. Maximum 3 paragraphs
+2. First paragraph: context and main topic
+3. Second paragraph: key points and findings
+4. Third paragraph: conclusions or next steps
+5. Use clear and direct language
 
-FORMATO DE RESPUESTA:
-## Resumen Ejecutivo
+RESPONSE FORMAT:
+## Executive Summary
 
-[Párrafo 1: Contexto]
+[Paragraph 1: Context]
 
-[Párrafo 2: Puntos clave]
+[Paragraph 2: Key points]
 
-[Párrafo 3: Conclusiones]`
-  },
-  {
-    id: 'open-questions',
-    name: 'Identificar preguntas abiertas',
-    description: 'Detecta preguntas sin resolver o áreas de exploración',
-    icon: 'help-circle',
-    outputFormat: 'markdown',
-    prompt: `Analiza el siguiente contenido e identifica preguntas abiertas y áreas de exploración.
+[Paragraph 3: Conclusions]`
+    },
+    {
+      id: 'open-questions',
+      name: t('template.questions.name'),
+      description: t('template.questions.desc'),
+      icon: 'help-circle',
+      outputFormat: 'markdown',
+      prompt: `Analyze the following content and identify open questions and areas for exploration.
 
-INSTRUCCIONES:
-1. Busca temas mencionados pero no desarrollados
-2. Identifica suposiciones que necesitan validación
-3. Detecta contradicciones o ambigüedades
-4. Sugiere preguntas para profundizar
+INSTRUCTIONS:
+1. Look for topics mentioned but not developed
+2. Identify assumptions that need validation
+3. Detect contradictions or ambiguities
+4. Suggest questions for deeper exploration
 
-FORMATO DE RESPUESTA:
-## Preguntas Abiertas
+RESPONSE FORMAT:
+## Open Questions
 
-### Temas por explorar
-- [Pregunta 1]
-- [Pregunta 2]
+### Topics to explore
+- [Question 1]
+- [Question 2]
 
-### Suposiciones a validar
-- [Suposición 1]
-- [Suposición 2]
+### Assumptions to validate
+- [Assumption 1]
+- [Assumption 2]
 
-### Preguntas para profundizar
-- [Pregunta 1]
-- [Pregunta 2]`
-  },
-  {
-    id: 'action-items',
-    name: 'Extraer acciones',
-    description: 'Identifica tareas y acciones mencionadas en el contenido',
-    icon: 'check-square',
-    outputFormat: 'markdown',
-    prompt: `Extrae todas las tareas y acciones del siguiente contenido.
+### Questions for deeper exploration
+- [Question 1]
+- [Question 2]`
+    },
+    {
+      id: 'action-items',
+      name: t('template.actions.name'),
+      description: t('template.actions.desc'),
+      icon: 'check-square',
+      outputFormat: 'markdown',
+      prompt: `Extract all tasks and actions from the following content.
 
-INSTRUCCIONES:
-1. Identifica acciones explícitas e implícitas
-2. Clasifica por prioridad si es posible inferirla
-3. Incluye responsables si se mencionan
-4. Detecta fechas límite mencionadas
+INSTRUCTIONS:
+1. Identify explicit and implicit actions
+2. Classify by priority if possible to infer
+3. Include responsible parties if mentioned
+4. Detect mentioned deadlines
 
-FORMATO DE RESPUESTA:
-## Acciones Identificadas
+RESPONSE FORMAT:
+## Identified Actions
 
-### Alta prioridad
-- [ ] [Acción] — [Responsable si aplica] — [Fecha si aplica]
+### High priority
+- [ ] [Action] — [Responsible if applicable] — [Date if applicable]
 
-### Media prioridad
-- [ ] [Acción]
+### Medium priority
+- [ ] [Action]
 
-### Baja prioridad / Futuro
-- [ ] [Acción]`
-  },
-  {
-    id: 'concepts-definitions',
-    name: 'Conceptos y definiciones',
-    description: 'Extrae términos importantes y sus definiciones',
-    icon: 'book-open',
-    outputFormat: 'markdown',
-    prompt: `Identifica los conceptos clave y sus definiciones en el siguiente contenido.
+### Low priority / Future
+- [ ] [Action]`
+    },
+    {
+      id: 'concepts-definitions',
+      name: t('template.concepts.name'),
+      description: t('template.concepts.desc'),
+      icon: 'book-open',
+      outputFormat: 'markdown',
+      prompt: `Identify key concepts and their definitions in the following content.
 
-INSTRUCCIONES:
-1. Extrae términos técnicos o especializados
-2. Incluye definiciones explícitas del texto
-3. Infiere definiciones cuando el contexto lo permita
-4. Agrupa conceptos relacionados
+INSTRUCTIONS:
+1. Extract technical or specialized terms
+2. Include explicit definitions from the text
+3. Infer definitions when context allows
+4. Group related concepts
 
-FORMATO DE RESPUESTA:
-## Glosario de Conceptos
+RESPONSE FORMAT:
+## Concept Glossary
 
-### [Categoría 1]
+### [Category 1]
 
-**[Término]**
-: [Definición]
+**[Term]**
+: [Definition]
 
-**[Término]**
-: [Definición]
+**[Term]**
+: [Definition]
 
-### [Categoría 2]
+### [Category 2]
 ...`
-  },
-  {
-    id: 'connections',
-    name: 'Conexiones y relaciones',
-    description: 'Identifica relaciones entre conceptos para crear enlaces',
-    icon: 'git-branch',
-    outputFormat: 'json',
-    prompt: `Analiza el siguiente contenido e identifica conexiones y relaciones entre conceptos.
+    },
+    {
+      id: 'connections',
+      name: t('template.connections.name'),
+      description: t('template.connections.desc'),
+      icon: 'git-branch',
+      outputFormat: 'json',
+      prompt: `Analyze the following content and identify connections and relationships between concepts.
 
-INSTRUCCIONES:
-1. Identifica conceptos principales mencionados
-2. Detecta relaciones causales, jerárquicas o asociativas
-3. Sugiere notas relacionadas que podrían existir
-4. Identifica temas transversales
+INSTRUCTIONS:
+1. Identify main concepts mentioned
+2. Detect causal, hierarchical, or associative relationships
+3. Suggest related notes that might exist
+4. Identify cross-cutting themes
 
-RESPONDE ÚNICAMENTE con JSON válido:
+RESPOND ONLY with valid JSON:
 {
   "concepts": [
     {
-      "name": "Nombre del concepto",
-      "type": "principal|secundario",
-      "relatedTo": ["Concepto A", "Concepto B"]
+      "name": "Concept name",
+      "type": "main|secondary",
+      "relatedTo": ["Concept A", "Concept B"]
     }
   ],
   "relationships": [
     {
-      "from": "Concepto A",
-      "to": "Concepto B",
-      "type": "causa|parte-de|relacionado|prerequisito",
-      "description": "Breve descripción de la relación"
+      "from": "Concept A",
+      "to": "Concept B",
+      "type": "cause|part-of|related|prerequisite",
+      "description": "Brief description of the relationship"
     }
   ],
-  "suggestedLinks": ["Título de nota sugerida 1", "Título de nota sugerida 2"],
-  "themes": ["Tema transversal 1", "Tema transversal 2"]
+  "suggestedLinks": ["Suggested note title 1", "Suggested note title 2"],
+  "themes": ["Cross-cutting theme 1", "Cross-cutting theme 2"]
 }`
-  }
-];
-
-export function getTemplateById(id: string): ExtractionTemplate | undefined {
-  return DEFAULT_TEMPLATES.find(t => t.id === id);
+    }
+  ];
 }
 
-export function getAllTemplates(): ExtractionTemplate[] {
-  return [...DEFAULT_TEMPLATES];
+export function getTemplateById(id: string): ExtractionTemplate | undefined {
+  return getAllTemplates().find(t => t.id === id);
 }
 
 export function buildTemplatePrompt(template: ExtractionTemplate, noteContent: string, noteTitle: string): string {
@@ -198,8 +201,8 @@ export function buildTemplatePrompt(template: ExtractionTemplate, noteContent: s
 
 ---
 
-TÍTULO DE LA NOTA: ${noteTitle}
+NOTE TITLE: ${noteTitle}
 
-CONTENIDO:
+CONTENT:
 ${noteContent}`;
 }

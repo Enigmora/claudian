@@ -128,6 +128,53 @@ The main `README.md` file is the source of truth for project documentation and m
 
 This ensures consistency across all documentation and maintains English as the canonical source.
 
+## Wiki Documentation
+
+**CRITICAL: Wiki canonical source is English.**
+
+Wiki documentation is stored in `/wiki` folder and follows these conventions:
+
+**File naming:**
+- English (canonical): `Page-Name.md`
+- Spanish: `Page-Name.es.md`
+- Future locales: `Page-Name.{locale}.md`
+
+**Wiki structure:**
+```
+wiki/
+├── Home.md                    # Main landing page
+├── Getting-Started.md         # Installation & setup
+├── Configuration.md           # Settings reference
+├── Troubleshooting.md         # Common issues
+├── FAQ.md                     # Frequently asked questions
+├── Features/
+│   ├── Chat-Interface.md      # Chat feature docs
+│   ├── Agent-Mode.md          # Agent mode docs
+│   ├── Batch-Processing.md    # Batch processing
+│   └── Concept-Maps.md        # Concept maps
+├── _Sidebar.md                # Navigation sidebar
+├── _Footer.md                 # Footer with credits
+└── images/                    # Screenshots (shared across languages)
+```
+
+**Update workflow:**
+1. Always update English version first
+2. Immediately update all localized versions (`.es.md`, etc.)
+3. Keep structure identical across languages
+4. Images are shared across all languages (stored in `wiki/images/`)
+
+**Adding new pages:**
+1. Create English version first
+2. Create translations for all supported locales
+3. Update `_Sidebar.md` and `_Sidebar.{locale}.md`
+4. Add any required screenshots to `wiki/images/`
+
+**Screenshots:**
+- Store in `wiki/images/`
+- Use descriptive kebab-case names
+- Recommended width: 800px
+- Document new screenshots in `docs/wiki-screenshots-guide.md`
+
 ## Specifications
 
 - `docs/obsidian-claude-plugin-spec.md` - Especificación completa del proyecto

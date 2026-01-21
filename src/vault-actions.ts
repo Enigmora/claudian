@@ -282,7 +282,7 @@ export class VaultActionExecutor {
   }
 
   private async readNote(path: string): Promise<{ content: string; frontmatter: any }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
@@ -299,7 +299,7 @@ export class VaultActionExecutor {
   }
 
   private async deleteNote(path: string): Promise<{ deleted: boolean }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
 
     if (this.isProtectedPath(normalizedPath)) {
       throw new Error(`Ruta protegida: ${normalizedPath}`);
@@ -315,10 +315,9 @@ export class VaultActionExecutor {
   }
 
   private async renameNote(from: string, to: string): Promise<{ from: string; to: string }> {
-    const normalizedFrom = this.normalizePath(from);
+    const normalizedFrom = this.normalizeNotePath(from);
     // Sanitize destination path
     let normalizedTo = this.sanitizePath(to);
-
     if (!normalizedTo.endsWith('.md')) {
       normalizedTo += '.md';
     }
@@ -343,7 +342,7 @@ export class VaultActionExecutor {
   // ==================== Modificación de Contenido ====================
 
   private async appendContent(path: string, content: string): Promise<{ appended: boolean }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
@@ -358,7 +357,7 @@ export class VaultActionExecutor {
   }
 
   private async prependContent(path: string, content: string): Promise<{ prepended: boolean }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
@@ -378,7 +377,7 @@ export class VaultActionExecutor {
   }
 
   private async replaceContent(path: string, content: string): Promise<{ replaced: boolean }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
@@ -397,7 +396,7 @@ export class VaultActionExecutor {
     path: string,
     fields: Record<string, any>
   ): Promise<{ updated: boolean }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
@@ -468,7 +467,7 @@ export class VaultActionExecutor {
     tags: string[];
     links: string[];
   }> {
-    const normalizedPath = this.normalizePath(path);
+    const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
@@ -523,6 +522,17 @@ export class VaultActionExecutor {
   private normalizePath(path: string): string {
     // Remover barras iniciales y finales, normalizar separadores
     return path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/');
+  }
+
+  /**
+   * Normalize a note path, ensuring it has .md extension
+   */
+  private normalizeNotePath(path: string): string {
+    let normalized = this.normalizePath(path);
+    if (!normalized.endsWith('.md')) {
+      normalized += '.md';
+    }
+    return normalized;
   }
 
   /**

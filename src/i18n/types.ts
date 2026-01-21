@@ -75,6 +75,8 @@ export type Translations = {
   'chat.actionsCancelled': string;
   'chat.error': string;
   'chat.errorUnknown': string;
+  'chat.stop': string;
+  'chat.streamStopped': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // ERRORS

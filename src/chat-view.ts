@@ -146,7 +146,40 @@ export class ChatView extends ItemView {
       cls: 'claudian-send-btn',
       text: t('chat.send')
     });
-    this.sendButton.onclick = () => this.sendMessage();
+    this.sendButton.onclick = () => this.handleButtonClick();
+  }
+
+  /**
+   * Handle send/stop button click
+   */
+  private handleButtonClick(): void {
+    if (this.isStreaming) {
+      // Stop the current stream
+      this.client.abortStream();
+      this.resetButtonToSend();
+    } else {
+      // Send new message
+      this.sendMessage();
+    }
+  }
+
+  /**
+   * Set button to Stop mode (during streaming)
+   */
+  private setButtonToStop(): void {
+    this.sendButton.setText(t('chat.stop'));
+    this.sendButton.addClass('is-stop');
+    this.sendButton.disabled = false;
+  }
+
+  /**
+   * Reset button to Send mode
+   */
+  private resetButtonToSend(): void {
+    this.isStreaming = false;
+    this.sendButton.setText(t('chat.send'));
+    this.sendButton.removeClass('is-stop');
+    this.sendButton.disabled = false;
   }
 
   async onClose(): Promise<void> {
@@ -209,8 +242,7 @@ export class ChatView extends ItemView {
     const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
 
     this.isStreaming = true;
-    this.sendButton.disabled = true;
-    this.sendButton.setText('...');
+    this.setButtonToStop();
 
     let fullResponse = '';
 
@@ -398,9 +430,7 @@ export class ChatView extends ItemView {
         // Add action buttons
         this.addMessageActions(responseEl, response);
 
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
         this.scrollToBottom();
       },
       onError: (error) => {
@@ -411,9 +441,7 @@ export class ChatView extends ItemView {
           cls: 'claudian-error'
         });
 
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
       }
     });
   }
@@ -565,9 +593,7 @@ export class ChatView extends ItemView {
         this.autoContinueCount = 0;
         this.currentPlan = null;
 
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
         this.scrollToBottom();
       },
       onError: (error) => {
@@ -581,9 +607,7 @@ export class ChatView extends ItemView {
         this.autoContinueCount = 0;
         this.currentPlan = null;
 
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
       }
     });
   }
@@ -687,9 +711,7 @@ export class ChatView extends ItemView {
         }
 
         this.autoContinueCount = 0;
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
         this.scrollToBottom();
       },
       onError: async (error) => {
@@ -706,9 +728,7 @@ export class ChatView extends ItemView {
           cls: 'claudian-error'
         });
         this.autoContinueCount = 0;
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
       }
     });
   }
@@ -775,9 +795,7 @@ export class ChatView extends ItemView {
         }
 
         this.autoContinueCount = 0;
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
         this.scrollToBottom();
       },
       onError: (error) => {
@@ -787,9 +805,7 @@ export class ChatView extends ItemView {
           cls: 'claudian-error'
         });
         this.autoContinueCount = 0;
-        this.isStreaming = false;
-        this.sendButton.disabled = false;
-        this.sendButton.setText(t('chat.send'));
+        this.resetButtonToSend();
       }
     });
   }
@@ -1085,10 +1101,17 @@ export class ChatView extends ItemView {
       return false;
     }
 
-    // Early detection: if it starts with { and has a quote after newline, likely JSON
-    // This catches cases like '{\n  "thinking"' before the colon appears
-    if (/^\{\s*"/.test(trimmed) && trimmed.length > 10) {
-      return true;
+    // Very early detection: just opening brace is enough if in agent mode
+    // This is aggressive but we're already in agent mode so JSON is expected
+    if (trimmed.length >= 1 && trimmed[0] === '{') {
+      // If it's just "{" wait for a bit more
+      if (trimmed.length < 3) {
+        return false;
+      }
+      // If we have "{ followed by whitespace or quote, it's JSON
+      if (/^\{\s*"?/.test(trimmed)) {
+        return true;
+      }
     }
 
     // Check for common agent response patterns

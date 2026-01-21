@@ -39,10 +39,37 @@ export class ClaudeClient {
   private client: Anthropic | null = null;
   private settings: ClaudeCompanionSettings;
   private conversationHistory: Message[] = [];
+  private currentStream: ReturnType<Anthropic['messages']['stream']> | null = null;
+  private abortController: AbortController | null = null;
 
   constructor(settings: ClaudeCompanionSettings) {
     this.settings = settings;
     this.initClient();
+  }
+
+  /**
+   * Abort any currently running stream
+   */
+  abortStream(): void {
+    if (this.currentStream) {
+      try {
+        this.currentStream.abort();
+      } catch (e) {
+        // Stream may already be closed
+      }
+      this.currentStream = null;
+    }
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+  }
+
+  /**
+   * Check if a stream is currently running
+   */
+  isStreaming(): boolean {
+    return this.currentStream !== null;
   }
 
   private initClient(): void {
@@ -87,6 +114,8 @@ export class ClaudeClient {
     let fullResponse = '';
 
     try {
+      this.abortController = new AbortController();
+
       const stream = this.client.messages.stream({
         model: this.settings.model,
         max_tokens: this.settings.maxTokens,
@@ -97,12 +126,17 @@ export class ClaudeClient {
         }))
       });
 
+      this.currentStream = stream;
+
       stream.on('text', (text) => {
         fullResponse += text;
         callbacks.onToken?.(text);
       });
 
       await stream.finalMessage();
+
+      this.currentStream = null;
+      this.abortController = null;
 
       // Add response to history
       this.conversationHistory.push({
@@ -113,6 +147,21 @@ export class ClaudeClient {
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
+      this.currentStream = null;
+      this.abortController = null;
+
+      // Check if aborted by user
+      if (error instanceof Error && error.message.includes('aborted')) {
+        if (fullResponse) {
+          this.conversationHistory.push({
+            role: 'assistant',
+            content: fullResponse + '\n\n[Response stopped by user]'
+          });
+        }
+        callbacks.onError?.(new Error(t('chat.streamStopped')));
+        return;
+      }
+
       // Remove user message if error
       this.conversationHistory.pop();
 
@@ -308,6 +357,8 @@ ${noteContent}`;
     let fullResponse = '';
 
     try {
+      this.abortController = new AbortController();
+
       const stream = this.client.messages.stream({
         model: this.settings.model,
         max_tokens: this.settings.maxTokens,
@@ -318,12 +369,17 @@ ${noteContent}`;
         }))
       });
 
+      this.currentStream = stream;
+
       stream.on('text', (text) => {
         fullResponse += text;
         callbacks.onToken?.(text);
       });
 
       await stream.finalMessage();
+
+      this.currentStream = null;
+      this.abortController = null;
 
       // Add response to history
       this.conversationHistory.push({
@@ -334,9 +390,23 @@ ${noteContent}`;
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
-      // Remove user message if error
-      this.conversationHistory.pop();
-      this.handleError(error, callbacks);
+      this.currentStream = null;
+      this.abortController = null;
+
+      // Remove user message if error (unless aborted)
+      if (error instanceof Error && error.message.includes('aborted')) {
+        // Stream was aborted by user, keep partial response
+        if (fullResponse) {
+          this.conversationHistory.push({
+            role: 'assistant',
+            content: fullResponse + '\n\n[Response stopped by user]'
+          });
+        }
+        callbacks.onError?.(new Error(t('chat.streamStopped')));
+      } else {
+        this.conversationHistory.pop();
+        this.handleError(error, callbacks);
+      }
     }
   }
 

@@ -292,6 +292,15 @@
   cursor: not-allowed;
 }
 
+/* Stop button state */
+.claudian-send-btn.is-stop {
+  background: var(--text-error);
+}
+
+.claudian-send-btn.is-stop:hover {
+  filter: brightness(1.1);
+}
+
 /* Modal de crear nota */
 .note-creator-preview {
   margin-bottom: 16px;

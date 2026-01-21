@@ -66,6 +66,8 @@ const translations: Translations = {
   'chat.actionsCancelled': 'Actions cancelled by user.',
   'chat.error': 'Error: {{message}}',
   'chat.errorUnknown': 'Unknown error',
+  'chat.stop': 'Stop',
+  'chat.streamStopped': 'Response stopped by user',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // ERRORS

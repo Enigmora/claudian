@@ -36,41 +36,107 @@ export class AgentMode {
     // Detect if response contains JSON with actions
     const trimmed = content.trim();
 
-    // Look for JSON pattern with "actions"
-    if (trimmed.includes('"actions"') && trimmed.includes('[')) {
-      try {
-        const jsonMatch = content.match(/\{[\s\S]*"actions"[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          return Array.isArray(parsed.actions);
-        }
-      } catch {
-        return false;
-      }
+    // Quick check first
+    if (!trimmed.includes('"actions"') || !trimmed.includes('[')) {
+      return false;
     }
 
-    return false;
+    // Try to extract valid JSON
+    const jsonObj = this.extractFirstValidJson(content);
+    return jsonObj !== null && Array.isArray(jsonObj.actions);
   }
 
   parseAgentResponse(content: string): AgentResponse | null {
     try {
-      const jsonMatch = content.match(/\{[\s\S]*"actions"[\s\S]*\}/);
-      if (!jsonMatch) {
+      // Try to extract and parse the first valid JSON object with "actions"
+      const jsonObj = this.extractFirstValidJson(content);
+      if (!jsonObj) {
         return null;
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
-
       return {
-        thinking: parsed.thinking,
-        actions: Array.isArray(parsed.actions) ? parsed.actions : [],
-        message: parsed.message || t('agent.actionsExecuted'),
-        requiresConfirmation: parsed.requiresConfirmation || false
+        thinking: jsonObj.thinking,
+        actions: Array.isArray(jsonObj.actions) ? jsonObj.actions : [],
+        message: jsonObj.message || t('agent.actionsExecuted'),
+        requiresConfirmation: jsonObj.requiresConfirmation || false
       };
     } catch (error) {
       console.error('Error parsing agent response:', error);
       return null;
     }
+  }
+
+  /**
+   * Extract the first valid JSON object from a string that may contain
+   * multiple JSONs or markdown code blocks with JSON
+   */
+  private extractFirstValidJson(content: string): any | null {
+    // First, try to find JSON in markdown code blocks
+    const codeBlockMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (codeBlockMatch) {
+      try {
+        const parsed = JSON.parse(codeBlockMatch[1]);
+        if (parsed.actions) {
+          return parsed;
+        }
+      } catch {
+        // Continue to other methods
+      }
+    }
+
+    // Try to extract JSON by finding balanced braces
+    const startIndex = content.indexOf('{');
+    if (startIndex === -1) {
+      return null;
+    }
+
+    // Find the matching closing brace by counting
+    let depth = 0;
+    let inString = false;
+    let escapeNext = false;
+
+    for (let i = startIndex; i < content.length; i++) {
+      const char = content[i];
+
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\' && inString) {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"' && !escapeNext) {
+        inString = !inString;
+        continue;
+      }
+
+      if (!inString) {
+        if (char === '{') {
+          depth++;
+        } else if (char === '}') {
+          depth--;
+          if (depth === 0) {
+            // Found complete JSON object
+            const jsonStr = content.substring(startIndex, i + 1);
+            try {
+              const parsed = JSON.parse(jsonStr);
+              if (parsed.actions) {
+                return parsed;
+              }
+            } catch {
+              // Invalid JSON, try to find next one
+              const remaining = content.substring(i + 1);
+              return this.extractFirstValidJson(remaining);
+            }
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   async executeActions(actions: VaultAction[], onProgress?: ProgressCallback): Promise<ActionResult[]> {

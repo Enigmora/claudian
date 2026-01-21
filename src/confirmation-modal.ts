@@ -101,6 +101,9 @@ export class ConfirmationModal extends Modal {
         return 'folder-input';
       case 'rename-note':
         return 'pencil';
+      case 'create-note':
+        // This appears in confirmation when file exists (overwrite)
+        return 'file-warning';
       default:
         return 'alert-circle';
     }
@@ -120,6 +123,9 @@ export class ConfirmationModal extends Modal {
         return t('confirmation.moveNote', { from: params.from, to: params.to });
       case 'rename-note':
         return t('confirmation.renameNote', { from: params.from, to: params.to });
+      case 'create-note':
+        // This appears in confirmation when file exists (overwrite)
+        return t('confirmation.overwriteNote', { path: params.path });
       default:
         return `${action.action}: ${JSON.stringify(params)}`;
     }
@@ -127,5 +133,12 @@ export class ConfirmationModal extends Modal {
 
   private isDestructive(action: VaultAction): boolean {
     return ['delete-note', 'delete-folder', 'replace-content'].includes(action.action);
+  }
+
+  /**
+   * Check if this is an overwrite action (create-note on existing file)
+   */
+  private isOverwrite(action: VaultAction): boolean {
+    return action.action === 'create-note';
   }
 }

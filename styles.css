@@ -1368,3 +1368,399 @@
 .claudian-truncation-warning::before {
   content: '⚡';
 }
+
+/* ==================== */
+/* Agent Progress UI    */
+/* ==================== */
+
+.agent-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-progress-message {
+  line-height: 1.6;
+}
+
+/* Progress bar */
+.agent-progress-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.agent-progress-bar-container.complete.all-success {
+  border-left: 3px solid var(--text-success);
+}
+
+.agent-progress-bar-container.complete.has-errors {
+  border-left: 3px solid var(--text-error);
+}
+
+.agent-progress-bar-container.error {
+  border-left: 3px solid var(--text-error);
+  background: var(--background-secondary);
+  border: 1px solid var(--text-error);
+}
+
+.agent-progress-bar-container.error .agent-progress-text {
+  color: var(--text-error);
+  font-weight: 500;
+}
+
+.agent-progress-bar {
+  height: 6px;
+  background: var(--interactive-accent);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.agent-progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Progress list */
+.agent-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.agent-progress-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  animation: slideIn 0.2s ease-out;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  /* Borde sutil completo */
+  border: 1px solid var(--background-modifier-border);
+  border-left-width: 3px;
+  border-left-color: var(--background-modifier-border);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.agent-progress-item.in-progress {
+  border-left-color: var(--interactive-accent);
+}
+
+.agent-progress-item.success {
+  border-left-color: var(--text-success);
+}
+
+.agent-progress-item.error {
+  border-left-color: var(--text-error);
+  background: var(--background-secondary);
+}
+
+.agent-progress-icon {
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.agent-progress-item.in-progress .agent-progress-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agent-progress-item.success .agent-progress-icon {
+  color: var(--text-success);
+}
+
+.agent-progress-item.error .agent-progress-icon {
+  color: var(--text-error);
+}
+
+.agent-progress-desc {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--text-normal);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.agent-progress-error {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--text-error);
+  margin-top: 4px;
+  margin-left: 26px; /* Align with desc (icon width + gap) */
+}
+
+/* Scrollbar for progress list */
+.agent-progress-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.agent-progress-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.agent-progress-list::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+}
+
+.agent-progress-list::-webkit-scrollbar-thumb:hover {
+  background: var(--background-modifier-border-hover);
+}
+
+/* ==================== */
+/* Agent Streaming Indicator */
+/* ==================== */
+
+.agent-streaming-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--interactive-accent);
+}
+
+.agent-streaming-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agent-streaming-spinner {
+  font-size: 18px;
+  animation: spin 2s linear infinite;
+}
+
+.agent-streaming-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+/* Stats */
+.agent-streaming-stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.agent-streaming-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.agent-streaming-stat .stat-label {
+  color: var(--text-muted);
+}
+
+.agent-streaming-stat .stat-value {
+  color: var(--text-normal);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Indeterminate progress bar */
+.agent-streaming-progress {
+  height: 4px;
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.agent-streaming-progress-bar {
+  height: 100%;
+  width: 30%;
+  background: var(--interactive-accent);
+  border-radius: 2px;
+  animation: indeterminateProgress 1.5s ease-in-out infinite;
+}
+
+@keyframes indeterminateProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(200%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Raw preview toggle */
+.agent-streaming-preview-toggle {
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+  transition: color 0.15s ease;
+}
+
+.agent-streaming-preview-toggle:hover {
+  color: var(--text-normal);
+}
+
+/* Raw preview container */
+.agent-streaming-preview {
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--background-primary);
+  border-radius: 6px;
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+.agent-streaming-preview.hidden {
+  display: none;
+}
+
+.agent-streaming-preview-content {
+  margin: 0;
+  font-size: 10px;
+  font-family: var(--font-monospace);
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+/* Scrollbar for preview */
+.agent-streaming-preview::-webkit-scrollbar {
+  width: 4px;
+}
+
+.agent-streaming-preview::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.agent-streaming-preview::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+}
+
+/* ==================== */
+/* Agent Mode Warning   */
+/* ==================== */
+
+.agent-mode-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--text-warning);
+  margin: 8px 0;
+  animation: slideIn 0.2s ease-out;
+}
+
+.agent-mode-warning .warning-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.agent-mode-warning .warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agent-mode-warning .warning-text strong {
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+.agent-mode-warning .warning-text p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.agent-mode-warning .warning-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.agent-mode-warning .warning-btn-primary,
+.agent-mode-warning .warning-btn-secondary,
+.agent-mode-warning .warning-btn-tertiary {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agent-mode-warning .warning-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.agent-mode-warning .warning-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.agent-mode-warning .warning-btn-secondary {
+  background: var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.agent-mode-warning .warning-btn-secondary:hover {
+  background: var(--background-modifier-border-hover);
+}
+
+.agent-mode-warning .warning-btn-tertiary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.agent-mode-warning .warning-btn-tertiary:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}

@@ -151,6 +151,7 @@ export type Translations = {
   'confirmation.deleteNote': string;
   'confirmation.deleteFolder': string;
   'confirmation.replaceContent': string;
+  'confirmation.overwriteNote': string;
   'confirmation.moveNote': string;
   'confirmation.renameNote': string;
 
@@ -215,6 +216,17 @@ export type Translations = {
   'agent.getNoteInfo': string;
   'agent.findLinks': string;
   'agent.genericAction': string;
+  'agent.progressStarting': string;
+  'agent.progressStatus': string;
+  'agent.generatingResponse': string;
+  'agent.streamingChars': string;
+  'agent.streamingActions': string;
+  'agent.showRawResponse': string;
+  'agent.hideRawResponse': string;
+  'agent.warningTitle': string;
+  'agent.warningDescription': string;
+  'agent.enableAgentMode': string;
+  'agent.continueAnyway': string;
   'agent.continuing': string;
   'agent.retryWithJson': string;
   'agent.planningTask': string;

@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
-import { VaultActionExecutor, VaultAction, ActionResult } from './vault-actions';
+import { VaultActionExecutor, VaultAction, ActionResult, ProgressCallback } from './vault-actions';
 import { VaultIndexer } from './vault-indexer';
 import { t } from './i18n';
 
@@ -73,14 +73,14 @@ export class AgentMode {
     }
   }
 
-  async executeActions(actions: VaultAction[]): Promise<ActionResult[]> {
+  async executeActions(actions: VaultAction[], onProgress?: ProgressCallback): Promise<ActionResult[]> {
     const maxActions = this.plugin.settings.maxActionsPerMessage || 10;
 
     if (actions.length > maxActions) {
       throw new Error(t('error.tooManyActions', { count: String(actions.length), max: String(maxActions) }));
     }
 
-    return this.executor.executeAll(actions);
+    return this.executor.executeAll(actions, onProgress);
   }
 
   hasDestructiveActions(actions: VaultAction[]): boolean {

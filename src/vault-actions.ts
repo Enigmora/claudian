@@ -20,6 +20,15 @@ export interface ActionResult {
   error?: string;
 }
 
+export interface ActionProgress {
+  current: number;
+  total: number;
+  action: VaultAction;
+  result?: ActionResult;
+}
+
+export type ProgressCallback = (progress: ActionProgress) => void;
+
 export class VaultActionExecutor {
   private plugin: ClaudeCompanionPlugin;
 
@@ -44,12 +53,34 @@ export class VaultActionExecutor {
     }
   }
 
-  async executeAll(actions: VaultAction[]): Promise<ActionResult[]> {
+  async executeAll(actions: VaultAction[], onProgress?: ProgressCallback): Promise<ActionResult[]> {
     const results: ActionResult[] = [];
+    const total = actions.length;
 
-    for (const action of actions) {
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+
+      // Notify progress before execution
+      if (onProgress) {
+        onProgress({
+          current: i + 1,
+          total,
+          action
+        });
+      }
+
       const result = await this.execute(action);
       results.push(result);
+
+      // Notify progress after execution with result
+      if (onProgress) {
+        onProgress({
+          current: i + 1,
+          total,
+          action,
+          result
+        });
+      }
 
       // Si una acción falla, continuar pero registrar
       if (!result.success) {
@@ -76,7 +107,7 @@ export class VaultActionExecutor {
 
       // Gestión de notas
       case 'create-note':
-        return this.createNote(params.path, params.content, params.frontmatter);
+        return this.createNote(params.path, params.content, params.frontmatter, params.overwrite);
 
       case 'read-note':
         return this.readNote(params.path);
@@ -121,7 +152,8 @@ export class VaultActionExecutor {
   // ==================== Gestión de Carpetas ====================
 
   private async createFolder(path: string): Promise<{ created: boolean; path: string }> {
-    const normalizedPath = this.normalizePath(path);
+    // Sanitize path to prevent filesystem issues
+    const normalizedPath = this.sanitizePath(path);
 
     if (this.isProtectedPath(normalizedPath)) {
       throw new Error(`Ruta protegida: ${normalizedPath}`);
@@ -194,9 +226,11 @@ export class VaultActionExecutor {
   private async createNote(
     path: string,
     content?: string,
-    frontmatter?: Record<string, any>
-  ): Promise<{ path: string; created: boolean }> {
-    let normalizedPath = this.normalizePath(path);
+    frontmatter?: Record<string, any>,
+    overwrite?: boolean
+  ): Promise<{ path: string; created: boolean; overwritten?: boolean }> {
+    // Sanitize path to prevent filesystem issues
+    let normalizedPath = this.sanitizePath(path);
 
     // Asegurar extensión .md
     if (!normalizedPath.endsWith('.md')) {
@@ -210,13 +244,28 @@ export class VaultActionExecutor {
     // Verificar si ya existe
     const existing = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
     if (existing) {
-      throw new Error(`Ya existe un archivo: ${normalizedPath}`);
+      if (!overwrite) {
+        throw new Error(`Ya existe un archivo: ${normalizedPath}. Usa overwrite: true para sobreescribir.`);
+      }
+      // Overwrite existing file
+      if (existing instanceof TFile) {
+        await this.plugin.app.vault.modify(existing, content || '');
+        // Update frontmatter if provided
+        if (frontmatter && Object.keys(frontmatter).length > 0) {
+          await this.plugin.app.fileManager.processFrontMatter(existing, (fm) => {
+            // Clear existing and set new
+            Object.keys(fm).forEach(key => delete fm[key]);
+            Object.assign(fm, frontmatter);
+          });
+        }
+        return { path: normalizedPath, created: false, overwritten: true };
+      }
     }
 
-    // Crear carpeta padre si no existe
+    // Crear carpetas padres recursivamente si no existen
     const parentPath = normalizedPath.substring(0, normalizedPath.lastIndexOf('/'));
-    if (parentPath && !this.plugin.app.vault.getAbstractFileByPath(parentPath)) {
-      await this.plugin.app.vault.createFolder(parentPath);
+    if (parentPath) {
+      await this.ensureFolderExists(parentPath);
     }
 
     // Crear nota
@@ -267,7 +316,8 @@ export class VaultActionExecutor {
 
   private async renameNote(from: string, to: string): Promise<{ from: string; to: string }> {
     const normalizedFrom = this.normalizePath(from);
-    let normalizedTo = this.normalizePath(to);
+    // Sanitize destination path
+    let normalizedTo = this.sanitizePath(to);
 
     if (!normalizedTo.endsWith('.md')) {
       normalizedTo += '.md';
@@ -475,6 +525,102 @@ export class VaultActionExecutor {
     return path.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/');
   }
 
+  /**
+   * Sanitize a file or folder name to be safe for all operating systems
+   * Handles: Windows, macOS, Linux restrictions
+   */
+  private sanitizeFileName(name: string): string {
+    if (!name) return 'untitled';
+
+    // Characters forbidden in Windows: \ / : * ? " < > |
+    // Also forbidden in macOS: : (legacy)
+    // Also forbidden in Linux: / (handled by path separator logic)
+    let sanitized = name
+      .replace(/[\\/:*?"<>|]/g, '-')  // Replace forbidden chars with dash
+      .replace(/\s+/g, ' ')           // Normalize multiple spaces to single
+      .trim();                         // Remove leading/trailing spaces
+
+    // Windows: names cannot end with a period or space
+    sanitized = sanitized.replace(/[.\s]+$/, '');
+
+    // Windows reserved names (case insensitive)
+    const reservedNames = [
+      'CON', 'PRN', 'AUX', 'NUL',
+      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+    ];
+
+    // Check if name (without extension) is reserved
+    const nameWithoutExt = sanitized.replace(/\.[^.]+$/, '');
+    if (reservedNames.includes(nameWithoutExt.toUpperCase())) {
+      sanitized = `_${sanitized}`;
+    }
+
+    // Ensure name is not empty after sanitization
+    if (!sanitized || sanitized === '.md') {
+      sanitized = 'untitled';
+    }
+
+    // Limit length (most filesystems support 255, but be conservative)
+    if (sanitized.length > 200) {
+      const ext = sanitized.match(/\.[^.]+$/)?.[0] || '';
+      sanitized = sanitized.slice(0, 200 - ext.length) + ext;
+    }
+
+    return sanitized;
+  }
+
+  /**
+   * Sanitize a full path, applying sanitization to each component
+   */
+  private sanitizePath(path: string): string {
+    const normalized = this.normalizePath(path);
+    if (!normalized) return 'untitled';
+
+    // Split path into components
+    const parts = normalized.split('/');
+
+    // Sanitize each component
+    const sanitizedParts = parts.map(part => this.sanitizeFileName(part));
+
+    // Filter out empty parts
+    const cleanParts = sanitizedParts.filter(p => p && p !== '.');
+
+    return cleanParts.join('/') || 'untitled';
+  }
+
+  /**
+   * Ensure a folder path exists, creating parent folders recursively if needed
+   */
+  private async ensureFolderExists(folderPath: string): Promise<void> {
+    const normalizedPath = this.normalizePath(folderPath);
+    if (!normalizedPath) return;
+
+    // Check if folder already exists
+    const existing = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
+    if (existing) return;
+
+    // Split path into parts and create each level
+    const parts = normalizedPath.split('/');
+    let currentPath = '';
+
+    for (const part of parts) {
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+      const folder = this.plugin.app.vault.getAbstractFileByPath(currentPath);
+      if (!folder) {
+        try {
+          await this.plugin.app.vault.createFolder(currentPath);
+        } catch (error) {
+          // Folder might have been created by another process, ignore
+          if (!(error instanceof Error && error.message.includes('Folder already exists'))) {
+            throw error;
+          }
+        }
+      }
+    }
+  }
+
   private isProtectedPath(path: string): boolean {
     const protectedFolders = this.plugin.settings.protectedFolders || [
       '.obsidian',
@@ -496,5 +642,47 @@ export class VaultActionExecutor {
       'replace-content'
     ];
     return destructiveActions.includes(action.action);
+  }
+
+  /**
+   * Check if a create-note action would overwrite an existing file
+   */
+  wouldOverwriteExisting(action: VaultAction): boolean {
+    if (action.action !== 'create-note') {
+      return false;
+    }
+
+    let path = this.normalizePath(action.params.path);
+    if (!path.endsWith('.md')) {
+      path += '.md';
+    }
+
+    const existing = this.plugin.app.vault.getAbstractFileByPath(path);
+    return existing !== null;
+  }
+
+  /**
+   * Get all actions that would overwrite existing files
+   */
+  getOverwriteActions(actions: VaultAction[]): VaultAction[] {
+    return actions.filter(action => this.wouldOverwriteExisting(action));
+  }
+
+  /**
+   * Mark create-note actions to overwrite if file exists
+   */
+  markForOverwrite(actions: VaultAction[]): VaultAction[] {
+    return actions.map(action => {
+      if (action.action === 'create-note' && this.wouldOverwriteExisting(action)) {
+        return {
+          ...action,
+          params: {
+            ...action.params,
+            overwrite: true
+          }
+        };
+      }
+      return action;
+    });
   }
 }

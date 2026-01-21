@@ -3,7 +3,7 @@ import ClaudeCompanionPlugin from './main';
 import { ClaudeClient, Message } from './claude-client';
 import { NoteCreatorModal } from './note-creator';
 import { AgentMode, AgentResponse } from './agent-mode';
-import { VaultActionExecutor, VaultAction } from './vault-actions';
+import { VaultActionExecutor, VaultAction, ActionProgress } from './vault-actions';
 import { ConfirmationModal } from './confirmation-modal';
 import { t } from './i18n';
 // Phase 2: Enhanced Agent Mode
@@ -182,6 +182,15 @@ export class ChatView extends ItemView {
     const message = this.inputEl.value.trim();
     if (!message || this.isStreaming) return;
 
+    // Check if user is asking for vault actions without agent mode
+    if (!this.isAgentModeActive && this.detectsVaultActionIntent(message)) {
+      // Show warning and offer to enable agent mode
+      const shouldContinue = await this.showAgentModeWarning();
+      if (!shouldContinue) {
+        return; // User cancelled or enabled agent mode
+      }
+    }
+
     // Update settings in case they changed
     this.client.updateSettings(this.plugin.settings);
 
@@ -211,6 +220,132 @@ export class ChatView extends ItemView {
     } else {
       await this.sendNormalMessage(message, responseEl, contentEl, cursorEl);
     }
+  }
+
+  /**
+   * Detect if the user message contains intent to perform vault actions
+   * This is a heuristic check to warn users when agent mode is needed
+   */
+  private detectsVaultActionIntent(message: string): boolean {
+    const lowerMessage = message.toLowerCase();
+
+    // Action verbs (Spanish and English)
+    const actionVerbs = [
+      // Create
+      'crea', 'crear', 'create', 'genera', 'generar', 'generate',
+      'escribe', 'escribir', 'write', 'haz', 'hacer', 'make',
+      // Delete
+      'elimina', 'eliminar', 'delete', 'borra', 'borrar', 'remove',
+      // Move/Rename
+      'mueve', 'mover', 'move', 'renombra', 'renombrar', 'rename',
+      // Modify
+      'modifica', 'modificar', 'modify', 'actualiza', 'actualizar', 'update',
+      'agrega', 'agregar', 'add', 'añade', 'añadir', 'append',
+      // Organize
+      'organiza', 'organizar', 'organize', 'ordena', 'ordenar', 'sort'
+    ];
+
+    // Target objects (Spanish and English)
+    const targetObjects = [
+      // Notes
+      'nota', 'notas', 'note', 'notes',
+      // Files
+      'archivo', 'archivos', 'file', 'files', 'documento', 'documentos',
+      // Folders
+      'carpeta', 'carpetas', 'folder', 'folders', 'directorio', 'directorios',
+      // Content
+      'contenido', 'content'
+    ];
+
+    // Vault references
+    const vaultReferences = [
+      'bóveda', 'boveda', 'vault', 'obsidian'
+    ];
+
+    // Check for action verb + target object combination
+    const hasActionVerb = actionVerbs.some(verb => lowerMessage.includes(verb));
+    const hasTargetObject = targetObjects.some(obj => lowerMessage.includes(obj));
+    const hasVaultReference = vaultReferences.some(ref => lowerMessage.includes(ref));
+
+    // Strong indicators: explicit vault mention with action
+    if (hasVaultReference && hasActionVerb) {
+      return true;
+    }
+
+    // Medium indicators: action + target object
+    if (hasActionVerb && hasTargetObject) {
+      return true;
+    }
+
+    // Check for specific phrases that strongly indicate vault actions
+    const strongPhrases = [
+      'en la carpeta', 'in the folder', 'in folder',
+      'crea un archivo', 'create a file', 'crear archivo',
+      'nueva nota', 'new note', 'crear nota', 'create note',
+      'elimina el archivo', 'delete the file', 'borrar archivo',
+      'mueve a', 'move to', 'mover a'
+    ];
+
+    return strongPhrases.some(phrase => lowerMessage.includes(phrase));
+  }
+
+  /**
+   * Show warning when user tries vault actions without agent mode
+   * Returns true if user wants to continue anyway, false if cancelled/enabled agent mode
+   */
+  private async showAgentModeWarning(): Promise<boolean> {
+    return new Promise((resolve) => {
+      // Create warning message element
+      const warningEl = this.messagesContainer.createDiv({ cls: 'agent-mode-warning' });
+
+      const iconEl = warningEl.createSpan({ cls: 'warning-icon' });
+      iconEl.setText('⚠️');
+
+      const textEl = warningEl.createDiv({ cls: 'warning-text' });
+      textEl.createEl('strong', { text: t('agent.warningTitle') });
+      textEl.createEl('p', { text: t('agent.warningDescription') });
+
+      const buttonsEl = warningEl.createDiv({ cls: 'warning-buttons' });
+
+      // Enable Agent Mode button
+      const enableBtn = buttonsEl.createEl('button', {
+        cls: 'warning-btn-primary',
+        text: t('agent.enableAgentMode')
+      });
+      enableBtn.onclick = () => {
+        // Enable agent mode
+        this.isAgentModeActive = true;
+        const toggleSwitch = this.agentToggle.querySelector('.agent-toggle-switch');
+        if (toggleSwitch) {
+          toggleSwitch.addClass('is-active');
+        }
+        new Notice(t('chat.agentEnabled'));
+        warningEl.remove();
+        resolve(false); // Don't continue, let user re-send with agent mode
+      };
+
+      // Continue anyway button
+      const continueBtn = buttonsEl.createEl('button', {
+        cls: 'warning-btn-secondary',
+        text: t('agent.continueAnyway')
+      });
+      continueBtn.onclick = () => {
+        warningEl.remove();
+        resolve(true); // Continue without agent mode
+      };
+
+      // Cancel button
+      const cancelBtn = buttonsEl.createEl('button', {
+        cls: 'warning-btn-tertiary',
+        text: t('confirmation.cancel')
+      });
+      cancelBtn.onclick = () => {
+        warningEl.remove();
+        resolve(false); // Don't continue
+      };
+
+      this.scrollToBottom();
+    });
   }
 
   private async sendNormalMessage(
@@ -290,6 +425,8 @@ export class ChatView extends ItemView {
     cursorEl: HTMLElement
   ): Promise<void> {
     let fullResponse = '';
+    let streamingIndicator: HTMLElement | null = null;
+    let isShowingIndicator = false;
 
     // Phase 2: Context reinforcement
     let enhancedMessage = message;
@@ -325,19 +462,38 @@ export class ChatView extends ItemView {
       },
       onToken: (token) => {
         fullResponse += token;
-        cursorEl.remove();
-        contentEl.empty();
 
-        // Show response as it arrives
-        MarkdownRenderer.render(
-          this.app,
-          fullResponse,
-          contentEl,
-          '',
-          this
-        );
+        // Detect if this looks like an agent JSON response
+        const looksLikeAgentJson = this.looksLikeAgentJsonResponse(fullResponse);
 
-        contentEl.appendChild(cursorEl);
+        if (looksLikeAgentJson) {
+          // Show elegant processing indicator instead of raw JSON
+          if (!isShowingIndicator) {
+            cursorEl.remove();
+            contentEl.empty();
+            streamingIndicator = this.createStreamingIndicator(contentEl);
+            isShowingIndicator = true;
+          }
+          // Update the indicator with current stats
+          this.updateStreamingIndicator(streamingIndicator, fullResponse);
+        } else {
+          // Normal text response - show it as markdown
+          cursorEl.remove();
+          contentEl.empty();
+          isShowingIndicator = false;
+          streamingIndicator = null;
+
+          MarkdownRenderer.render(
+            this.app,
+            fullResponse,
+            contentEl,
+            '',
+            this
+          );
+
+          contentEl.appendChild(cursorEl);
+        }
+
         this.scrollToBottom();
       },
       onComplete: async (response) => {
@@ -657,23 +813,22 @@ export class ChatView extends ItemView {
       return;
     }
 
-    // Show initial message
-    MarkdownRenderer.render(
-      this.app,
-      agentResponse.message,
-      contentEl,
-      '',
-      this
-    );
-
     // Check for destructive actions that require confirmation
     const destructiveActions = this.agentMode.getDestructiveActions(agentResponse.actions);
 
-    if (destructiveActions.length > 0 && this.plugin.settings.confirmDestructiveActions) {
-      // Show confirmation modal
-      await this.showConfirmationAndExecute(agentResponse, responseEl, contentEl);
+    // Check for actions that would overwrite existing files
+    const overwriteActions = this.executor.getOverwriteActions(agentResponse.actions);
+
+    // Combine actions that need confirmation
+    const actionsNeedingConfirmation = [...destructiveActions, ...overwriteActions];
+
+    if (actionsNeedingConfirmation.length > 0 && this.plugin.settings.confirmDestructiveActions) {
+      // Show message before confirmation modal
+      MarkdownRenderer.render(this.app, agentResponse.message, contentEl, '', this);
+      // Show confirmation modal (including overwrite warnings)
+      await this.showConfirmationAndExecute(agentResponse, responseEl, contentEl, overwriteActions.length > 0);
     } else {
-      // Execute directly
+      // Execute directly - executeAgentActions will render the message
       await this.executeAgentActions(agentResponse.actions, responseEl, contentEl, agentResponse.message);
     }
   }
@@ -681,18 +836,27 @@ export class ChatView extends ItemView {
   private async showConfirmationAndExecute(
     agentResponse: AgentResponse,
     responseEl: HTMLElement,
-    contentEl: HTMLElement
+    contentEl: HTMLElement,
+    hasOverwrites: boolean = false
   ): Promise<void> {
     const destructiveActions = this.agentMode.getDestructiveActions(agentResponse.actions);
+    const overwriteActions = this.executor.getOverwriteActions(agentResponse.actions);
+
+    // Combine both types of actions for the modal
+    const allConfirmActions = [...destructiveActions, ...overwriteActions];
 
     return new Promise((resolve) => {
       new ConfirmationModal(
         this.plugin,
-        destructiveActions,
+        allConfirmActions,
         async () => {
-          // Confirmed: execute all actions
+          // Confirmed: mark overwrite actions and execute
+          let actionsToExecute = agentResponse.actions;
+          if (hasOverwrites) {
+            actionsToExecute = this.executor.markForOverwrite(agentResponse.actions);
+          }
           await this.executeAgentActions(
-            agentResponse.actions,
+            actionsToExecute,
             responseEl,
             contentEl,
             agentResponse.message
@@ -715,39 +879,141 @@ export class ChatView extends ItemView {
     contentEl: HTMLElement,
     originalMessage: string
   ): Promise<void> {
+    // Clear any previous content (e.g., from confirmation modal flow)
+    contentEl.empty();
+
+    // Create progress container
+    const progressContainer = contentEl.createDiv({ cls: 'agent-progress-container' });
+
+    // Show initial message
+    const messageEl = progressContainer.createDiv({ cls: 'agent-progress-message' });
+    MarkdownRenderer.render(this.app, originalMessage, messageEl, '', this);
+
+    // Create progress list for real-time updates
+    const progressList = progressContainer.createDiv({ cls: 'agent-progress-list' });
+
+    // Progress bar
+    const progressBarContainer = progressContainer.createDiv({ cls: 'agent-progress-bar-container' });
+    const progressBar = progressBarContainer.createDiv({ cls: 'agent-progress-bar' });
+    const progressText = progressBarContainer.createDiv({ cls: 'agent-progress-text' });
+    progressText.setText(t('agent.progressStarting'));
+
+    // Track completed results for final summary
+    const completedResults: Map<number, { element: HTMLElement, result: any }> = new Map();
+
     try {
-      const results = await this.agentMode.executeActions(actions);
-      const summary = this.agentMode.getSummaryMessage(results, originalMessage);
+      const results = await this.agentMode.executeActions(actions, (progress: ActionProgress) => {
+        const { current, total, action, result } = progress;
 
-      // Update content with results
-      contentEl.empty();
-      MarkdownRenderer.render(
-        this.app,
-        summary,
-        contentEl,
-        '',
-        this
-      );
+        // Update progress bar
+        const percentage = (current / total) * 100;
+        progressBar.style.width = `${percentage}%`;
+        progressText.setText(t('agent.progressStatus', {
+          current: String(current),
+          total: String(total)
+        }));
 
-      // Add visual indicator for executed actions
-      const actionsIndicator = contentEl.createDiv({ cls: 'agent-actions-indicator' });
+        // Get or create progress item for this action
+        let itemEl = completedResults.get(current)?.element;
+
+        if (!itemEl) {
+          // Create new progress item (before execution completes)
+          itemEl = progressList.createDiv({ cls: 'agent-progress-item in-progress' });
+          const iconEl = itemEl.createSpan({ cls: 'agent-progress-icon' });
+          iconEl.setText('⏳');
+          const descEl = itemEl.createSpan({ cls: 'agent-progress-desc' });
+          descEl.setText(action.description || this.getActionDescription(action));
+          completedResults.set(current, { element: itemEl, result: null });
+        }
+
+        // Update item when result is available
+        if (result) {
+          itemEl.removeClass('in-progress');
+          const iconEl = itemEl.querySelector('.agent-progress-icon') as HTMLElement;
+
+          if (result.success) {
+            itemEl.addClass('success');
+            iconEl.setText('✓');
+          } else {
+            itemEl.addClass('error');
+            iconEl.setText('✗');
+            // Add error message
+            const errorEl = itemEl.createSpan({ cls: 'agent-progress-error' });
+            errorEl.setText(result.error || t('chat.errorUnknown'));
+          }
+
+          completedResults.set(current, { element: itemEl, result });
+        }
+
+        // Auto scroll to show progress
+        this.scrollToBottom();
+      });
+
+      // Final summary
+      progressBar.style.width = '100%';
+      progressBarContainer.addClass('complete');
+
       const successCount = results.filter(r => r.success).length;
       const failCount = results.filter(r => !r.success).length;
 
+      // Update progress text with final status
       if (failCount === 0) {
-        actionsIndicator.addClass('all-success');
-        actionsIndicator.setText(t('chat.actionsExecuted', { count: String(successCount) }));
+        progressText.setText(t('chat.actionsExecuted', { count: String(successCount) }));
+        progressBarContainer.addClass('all-success');
       } else {
-        actionsIndicator.addClass('has-errors');
-        actionsIndicator.setText(t('chat.actionsPartial', { success: String(successCount), failed: String(failCount) }));
+        progressText.setText(t('chat.actionsPartial', { success: String(successCount), failed: String(failCount) }));
+        progressBarContainer.addClass('has-errors');
       }
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : t('chat.errorUnknown');
-      contentEl.createDiv({ cls: 'agent-action-error' }).setText(t('chat.error', { message: errorMsg }));
+      progressBarContainer.addClass('error');
+      progressText.setText(t('chat.error', { message: errorMsg }));
     }
 
     this.addMessageActions(responseEl, originalMessage);
+  }
+
+  /**
+   * Get human-readable description for an action
+   */
+  private getActionDescription(action: VaultAction): string {
+    const { params } = action;
+
+    switch (action.action) {
+      case 'create-folder':
+        return t('agent.createFolder', { path: params.path });
+      case 'delete-folder':
+        return t('agent.deleteFolder', { path: params.path });
+      case 'list-folder':
+        return t('agent.listFolder', { path: params.path || '/' });
+      case 'create-note':
+        return t('agent.createNote', { path: params.path });
+      case 'read-note':
+        return t('agent.readNote', { path: params.path });
+      case 'delete-note':
+        return t('agent.deleteNote', { path: params.path });
+      case 'rename-note':
+        return t('agent.renameNote', { from: params.from, to: params.to });
+      case 'move-note':
+        return t('agent.moveNote', { from: params.from, to: params.to });
+      case 'append-content':
+        return t('agent.appendContent', { path: params.path });
+      case 'prepend-content':
+        return t('agent.prependContent', { path: params.path });
+      case 'replace-content':
+        return t('agent.replaceContent', { path: params.path });
+      case 'update-frontmatter':
+        return t('agent.updateFrontmatter', { path: params.path });
+      case 'search-notes':
+        return t('agent.searchNotes', { query: params.query });
+      case 'get-note-info':
+        return t('agent.getNoteInfo', { path: params.path });
+      case 'find-links':
+        return t('agent.findLinks', { target: params.target });
+      default:
+        return t('agent.genericAction', { action: action.action });
+    }
   }
 
   private renderMessage(role: 'user' | 'assistant', content: string): void {
@@ -803,6 +1069,118 @@ export class ChatView extends ItemView {
 
   private scrollToBottom(): void {
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+  }
+
+  /**
+   * Detect if the response looks like an agent JSON response
+   * This helps us show a nice indicator instead of raw JSON during streaming
+   */
+  private looksLikeAgentJsonResponse(response: string): boolean {
+    const trimmed = response.trim();
+
+    // Check if it starts with { (JSON object)
+    if (!trimmed.startsWith('{')) {
+      return false;
+    }
+
+    // Check for common agent response patterns
+    const hasActionsPattern = /"actions"\s*:/.test(trimmed);
+    const hasThinkingPattern = /"thinking"\s*:/.test(trimmed);
+    const hasMessagePattern = /"message"\s*:/.test(trimmed);
+
+    // If it has any of these patterns, it's likely an agent response
+    return hasActionsPattern || hasThinkingPattern || hasMessagePattern;
+  }
+
+  /**
+   * Create a streaming indicator for agent responses
+   */
+  private createStreamingIndicator(container: HTMLElement): HTMLElement {
+    const indicator = container.createDiv({ cls: 'agent-streaming-indicator' });
+
+    // Header with spinner
+    const header = indicator.createDiv({ cls: 'agent-streaming-header' });
+    const spinner = header.createSpan({ cls: 'agent-streaming-spinner' });
+    spinner.setText('⚙️');
+    header.createSpan({ cls: 'agent-streaming-title', text: t('agent.generatingResponse') });
+
+    // Stats container
+    const stats = indicator.createDiv({ cls: 'agent-streaming-stats' });
+
+    // Character count
+    const charStat = stats.createDiv({ cls: 'agent-streaming-stat' });
+    charStat.createSpan({ cls: 'stat-label', text: t('agent.streamingChars') });
+    charStat.createSpan({ cls: 'stat-value chars-count', text: '0' });
+
+    // Actions detected
+    const actionsStat = stats.createDiv({ cls: 'agent-streaming-stat' });
+    actionsStat.createSpan({ cls: 'stat-label', text: t('agent.streamingActions') });
+    actionsStat.createSpan({ cls: 'stat-value actions-count', text: '0' });
+
+    // Progress bar (indeterminate)
+    const progressContainer = indicator.createDiv({ cls: 'agent-streaming-progress' });
+    progressContainer.createDiv({ cls: 'agent-streaming-progress-bar' });
+
+    // Collapsible raw preview (for debugging)
+    const previewToggle = indicator.createDiv({ cls: 'agent-streaming-preview-toggle' });
+    previewToggle.setText(t('agent.showRawResponse'));
+
+    const previewContainer = indicator.createDiv({ cls: 'agent-streaming-preview hidden' });
+    const previewContent = previewContainer.createEl('pre', { cls: 'agent-streaming-preview-content' });
+
+    previewToggle.onclick = () => {
+      previewContainer.classList.toggle('hidden');
+      previewToggle.setText(
+        previewContainer.classList.contains('hidden')
+          ? t('agent.showRawResponse')
+          : t('agent.hideRawResponse')
+      );
+    };
+
+    return indicator;
+  }
+
+  /**
+   * Update the streaming indicator with current response stats
+   */
+  private updateStreamingIndicator(indicator: HTMLElement | null, response: string): void {
+    if (!indicator) return;
+
+    // Update character count
+    const charsEl = indicator.querySelector('.chars-count');
+    if (charsEl) {
+      charsEl.setText(this.formatNumber(response.length));
+    }
+
+    // Count actions detected so far
+    const actionsCount = (response.match(/"action"\s*:/g) || []).length;
+    const actionsEl = indicator.querySelector('.actions-count');
+    if (actionsEl) {
+      actionsEl.setText(String(actionsCount));
+    }
+
+    // Update raw preview
+    const previewContent = indicator.querySelector('.agent-streaming-preview-content');
+    if (previewContent) {
+      // Show last 500 chars to keep it manageable
+      const previewText = response.length > 500
+        ? '...' + response.slice(-500)
+        : response;
+      previewContent.setText(previewText);
+    }
+  }
+
+  /**
+   * Format large numbers with K/M suffix
+   */
+  private formatNumber(num: number): string {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return String(num);
   }
 
   private setupResizeHandle(

@@ -1,6 +1,6 @@
 {
   "name": "claudian",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "The ultimate Claude AI integration for Obsidian. Powered by Claude.",
   "main": "main.js",
   "scripts": {

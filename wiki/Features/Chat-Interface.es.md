@@ -26,6 +26,37 @@ El panel de chat consiste en:
 | **Área de Mensajes** | Historial de conversación con scroll |
 | **Área de Entrada** | Entrada de texto redimensionable para tus mensajes |
 | **Botón Enviar/Detener** | Envía mensajes o detiene solicitudes en progreso |
+| **Pie de Tokens** | Muestra el uso de tokens de la sesión actual |
+
+---
+
+## Pantalla de Bienvenida
+
+Cuando abres el chat sin historial de mensajes, se muestra una pantalla de bienvenida:
+
+![Pantalla de Bienvenida](../images/welcome-screen.png)
+
+### Elementos
+
+- **Logo y título**: Marca de Claudian
+- **Saludo**: "¿Cómo puedo ayudarte hoy?"
+- **Ejemplos de prompts**: Ejemplos clickeables de tareas que puedes solicitar
+- **Indicación de Modo Agente**: Recordatorio sobre activar el Modo Agente para operaciones de bóveda
+
+### Ejemplos Interactivos
+
+La pantalla de bienvenida incluye 5 ejemplos de prompts ordenados por complejidad. **Haz clic en cualquier ejemplo** para copiarlo directamente al campo de entrada, luego envía o modifica según necesites.
+
+Los ejemplos incluyen tareas como:
+- Organizar notas en carpetas
+- Generar mapas de conceptos
+- Sugerir wikilinks
+- Crear notas de resumen
+- Buscar por temas
+
+### Soporte de Idiomas
+
+La pantalla de bienvenida se actualiza automáticamente cuando cambias el idioma del plugin en Configuración.
 
 ---
 

@@ -727,7 +727,20 @@ VAULT CONTEXT:
   'settings.showTokens.desc': 'Display token usage in the chat footer.',
   'settings.section.tokenTracking': 'Token Tracking',
   'error.quotaExhausted': 'API quota exhausted. Check your usage limits at console.anthropic.com.',
-  'error.billingIssue': 'Billing issue detected. Check your account at console.anthropic.com.'
+  'error.billingIssue': 'Billing issue detected. Check your account at console.anthropic.com.',
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WELCOME SCREEN
+  // ═══════════════════════════════════════════════════════════════════════════
+  'welcome.title': 'Claudian',
+  'welcome.greeting': 'How can I help you today?',
+  'welcome.examplesHeader': 'Examples of what I can do:',
+  'welcome.example1': '"Organize my productivity notes into folders by topic and create a linked index"',
+  'welcome.example2': '"Find all notes with the #project tag and generate a concept map with their connections"',
+  'welcome.example3': '"Read my Ideas.md note and suggest wikilinks to related notes"',
+  'welcome.example4': '"Create a note with a summary of this week\'s meetings"',
+  'welcome.example5': '"What notes do I have about artificial intelligence?"',
+  'welcome.agentModeHint': 'Enable Agent Mode to create, modify and organize notes automatically.'
 };
 
 export default translations;

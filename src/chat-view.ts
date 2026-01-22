@@ -54,6 +54,9 @@ export class ChatView extends ItemView {
   private tokenIndicator: HTMLElement | null = null;
   private tokenUsageCleanup: (() => void) | null = null;
 
+  // Welcome Screen
+  private welcomeScreen: HTMLElement | null = null;
+
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
     this.plugin = plugin;
@@ -213,15 +216,92 @@ export class ChatView extends ItemView {
 
   private restoreHistory(): void {
     const history = this.client.getHistory();
-    history.forEach(msg => {
-      this.renderMessage(msg.role, msg.content);
-    });
+    if (history.length === 0) {
+      this.showWelcomeScreen();
+    } else {
+      history.forEach(msg => {
+        this.renderMessage(msg.role, msg.content);
+      });
+    }
   }
 
   private clearChat(): void {
     this.client.clearHistory();
     this.messagesContainer.empty();
+    this.showWelcomeScreen();
     new Notice(t('chat.cleared'));
+  }
+
+  private showWelcomeScreen(): void {
+    // Remove existing welcome screen if any
+    this.hideWelcomeScreen();
+
+    this.welcomeScreen = this.messagesContainer.createDiv({ cls: 'claudian-welcome' });
+
+    // Logo SVG
+    const logoEl = this.welcomeScreen.createDiv({ cls: 'claudian-welcome-logo' });
+    logoEl.innerHTML = `<svg width="64" height="64" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
+            stroke="var(--interactive-accent)"
+            stroke-width="24"
+            stroke-linejoin="round"/>
+      <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
+            fill="var(--text-accent)"/>
+    </svg>`;
+
+    // Title
+    this.welcomeScreen.createEl('h2', {
+      text: t('welcome.title'),
+      cls: 'claudian-welcome-title'
+    });
+
+    // Greeting
+    this.welcomeScreen.createEl('p', {
+      text: t('welcome.greeting'),
+      cls: 'claudian-welcome-greeting'
+    });
+
+    // Spacer
+    this.welcomeScreen.createDiv({ cls: 'claudian-welcome-spacer' });
+
+    // Examples section
+    const examplesEl = this.welcomeScreen.createDiv({ cls: 'claudian-welcome-examples' });
+    examplesEl.createEl('p', {
+      text: t('welcome.examplesHeader'),
+      cls: 'claudian-welcome-examples-header'
+    });
+
+    const examplesList = examplesEl.createEl('ul', { cls: 'claudian-welcome-examples-list' });
+    const examples = [
+      t('welcome.example1'),
+      t('welcome.example2'),
+      t('welcome.example3'),
+      t('welcome.example4'),
+      t('welcome.example5')
+    ];
+
+    examples.forEach(example => {
+      const li = examplesList.createEl('li', { text: example });
+      li.onclick = () => {
+        // Remove quotes from example text
+        const cleanText = example.replace(/^"|"$/g, '');
+        this.inputEl.value = cleanText;
+        this.inputEl.focus();
+      };
+    });
+
+    // Agent mode hint
+    this.welcomeScreen.createEl('p', {
+      text: t('welcome.agentModeHint'),
+      cls: 'claudian-welcome-agent-hint'
+    });
+  }
+
+  private hideWelcomeScreen(): void {
+    if (this.welcomeScreen) {
+      this.welcomeScreen.remove();
+      this.welcomeScreen = null;
+    }
   }
 
   private toggleAgentMode(toggleEl: HTMLElement): void {
@@ -255,6 +335,9 @@ export class ChatView extends ItemView {
     // Clear input
     this.inputEl.value = '';
     this.inputEl.style.height = 'auto';
+
+    // Hide welcome screen if visible
+    this.hideWelcomeScreen();
 
     // Render user message
     this.renderMessage('user', message);
@@ -1854,6 +1937,11 @@ ${completedActions}
       if (historyLink) {
         historyLink.setText(t('tokens.historyLink'));
       }
+    }
+
+    // Update welcome screen if visible
+    if (this.welcomeScreen) {
+      this.showWelcomeScreen();
     }
   }
 

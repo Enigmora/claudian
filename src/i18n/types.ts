@@ -392,6 +392,19 @@ export type Translations = {
   'settings.section.tokenTracking': string;
   'error.quotaExhausted': string;
   'error.billingIssue': string;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WELCOME SCREEN
+  // ═══════════════════════════════════════════════════════════════════════════
+  'welcome.title': string;
+  'welcome.greeting': string;
+  'welcome.examplesHeader': string;
+  'welcome.example1': string;
+  'welcome.example2': string;
+  'welcome.example3': string;
+  'welcome.example4': string;
+  'welcome.example5': string;
+  'welcome.agentModeHint': string;
 };
 
 /**

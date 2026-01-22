@@ -3,3 +3,6 @@ dist/
 *.js.map
 .DS_Store
 data.json
+
+# Claude Code local settings
+.claude/

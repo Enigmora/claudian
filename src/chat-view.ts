@@ -676,7 +676,10 @@ export class ChatView extends ItemView {
         }
 
         // Normal processing
-        if (this.agentMode.isAgentResponse(response)) {
+        if (parsedResponse && parsedResponse.actions.length > 0) {
+          // Pass already-parsed response to avoid double parsing
+          await this.handleAgentResponse(response, responseEl, contentEl, 0, parsedResponse);
+        } else if (this.agentMode.isAgentResponse(response)) {
           await this.handleAgentResponse(response, responseEl, contentEl);
         } else {
           // Normal response (conversation)
@@ -932,9 +935,13 @@ export class ChatView extends ItemView {
     response: string,
     responseEl: HTMLElement,
     contentEl: HTMLElement,
-    loopCount: number = 0
+    loopCount: number = 0,
+    preParseResponse?: AgentResponse | null
   ): Promise<void> {
-    const agentResponse = this.agentMode.parseAgentResponse(response);
+    // Use pre-parsed response if available to avoid double parsing
+    const agentResponse = preParseResponse !== undefined
+      ? preParseResponse
+      : this.agentMode.parseAgentResponse(response);
 
     if (!agentResponse || agentResponse.actions.length === 0) {
       // No actions, show normal message

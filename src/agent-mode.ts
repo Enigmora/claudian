@@ -86,12 +86,33 @@ export class AgentMode {
       }
     }
 
+    // Check for concatenated JSONs pattern (truncation followed by new response)
+    // This happens when: ...truncated content{ "thinking": "new response..."
+    const concatenatedPattern = /\}\s*\{\s*"thinking"/g;
+    let match;
+    while ((match = concatenatedPattern.exec(content)) !== null) {
+      // Found potential concatenation point - try to parse the second JSON
+      const secondJsonStart = match.index + 1;
+      const secondJson = this.extractJsonFromPosition(content, secondJsonStart);
+      if (secondJson && secondJson.actions && Array.isArray(secondJson.actions)) {
+        console.log('Detected concatenated JSONs - using the second (complete) one');
+        return secondJson;
+      }
+    }
+
     // Try to extract JSON by finding balanced braces
     const startIndex = content.indexOf('{');
     if (startIndex === -1) {
       return null;
     }
 
+    return this.extractJsonFromPosition(content, startIndex);
+  }
+
+  /**
+   * Extract a JSON object starting from a specific position
+   */
+  private extractJsonFromPosition(content: string, startIndex: number): any | null {
     // Find the matching closing brace by counting
     let depth = 0;
     let inString = false;
@@ -136,6 +157,105 @@ export class AgentMode {
           }
         }
       }
+    }
+
+    // If we didn't find a complete JSON, try to recover from truncated one
+    if (depth > 0) {
+      const truncatedJson = content.substring(startIndex);
+      const recovered = this.attemptTruncatedJsonRecovery(truncatedJson);
+      if (recovered) {
+        return recovered;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Attempt to recover a valid response from truncated JSON
+   * by extracting complete actions
+   */
+  private attemptTruncatedJsonRecovery(truncated: string): any | null {
+    try {
+      // Try to find complete actions within the truncated JSON
+      const actionsMatch = truncated.match(/"actions"\s*:\s*\[/);
+      if (!actionsMatch) return null;
+
+      const actionsStart = actionsMatch.index! + actionsMatch[0].length;
+      const completeActions: any[] = [];
+
+      let depth = 1; // Inside actions array
+      let actionStart = actionsStart;
+      let inString = false;
+      let escapeNext = false;
+      let bracketDepth = 0;
+
+      for (let i = actionsStart; i < truncated.length; i++) {
+        const char = truncated[i];
+
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (char === '\\' && inString) {
+          escapeNext = true;
+          continue;
+        }
+
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+
+        if (inString) continue;
+
+        if (char === '{') {
+          if (depth === 1 && bracketDepth === 0) {
+            actionStart = i;
+          }
+          depth++;
+          bracketDepth++;
+        } else if (char === '}') {
+          depth--;
+          bracketDepth--;
+          if (depth === 1 && bracketDepth === 0) {
+            // Completed an action object
+            const actionStr = truncated.substring(actionStart, i + 1);
+            try {
+              const action = JSON.parse(actionStr);
+              if (action.action && action.params) {
+                completeActions.push(action);
+              }
+            } catch {
+              // Skip invalid action
+            }
+          }
+        } else if (char === '[') {
+          depth++;
+        } else if (char === ']') {
+          depth--;
+          if (depth === 0) break; // End of actions array
+        }
+      }
+
+      if (completeActions.length > 0) {
+        // Extract thinking if present
+        const thinkingMatch = truncated.match(/"thinking"\s*:\s*"([^"]*)"/);
+        const thinking = thinkingMatch ? thinkingMatch[1] : '';
+
+        console.log(`Recovered ${completeActions.length} complete actions from truncated JSON`);
+
+        return {
+          thinking,
+          actions: completeActions,
+          message: '[Respuesta parcialmente recuperada de JSON truncado]',
+          requiresConfirmation: false,
+          awaitResults: false
+        };
+      }
+    } catch (e) {
+      console.error('Failed to recover from truncated JSON:', e);
     }
 
     return null;

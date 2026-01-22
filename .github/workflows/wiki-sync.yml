@@ -60,9 +60,30 @@ jobs:
       - name: Update internal links
         run: |
           cd wiki-repo
+
           # Update links to Features/ subdirectory to use Features- prefix
           find . -name "*.md" -type f -exec sed -i 's|\](Features/|\](Features-|g' {} +
+
+          # Remove parent directory references (../)
           find . -name "*.md" -type f -exec sed -i 's|\](\.\.\/|\](|g' {} +
+
+          # Fix internal links within Features- files
+          # These files reference each other without the Features- prefix
+          for file in Features-*.md; do
+            if [ -f "$file" ]; then
+              # Add Features- prefix to known feature page links
+              sed -i 's|\](Agent-Mode)|\](Features-Agent-Mode)|g' "$file"
+              sed -i 's|\](Agent-Mode\.es)|\](Features-Agent-Mode.es)|g' "$file"
+              sed -i 's|\](Agent-Actions-Reference)|\](Features-Agent-Actions-Reference)|g' "$file"
+              sed -i 's|\](Agent-Actions-Reference\.es)|\](Features-Agent-Actions-Reference.es)|g' "$file"
+              sed -i 's|\](Chat-Interface)|\](Features-Chat-Interface)|g' "$file"
+              sed -i 's|\](Chat-Interface\.es)|\](Features-Chat-Interface.es)|g' "$file"
+              sed -i 's|\](Batch-Processing)|\](Features-Batch-Processing)|g' "$file"
+              sed -i 's|\](Batch-Processing\.es)|\](Features-Batch-Processing.es)|g' "$file"
+              sed -i 's|\](Concept-Maps)|\](Features-Concept-Maps)|g' "$file"
+              sed -i 's|\](Concept-Maps\.es)|\](Features-Concept-Maps.es)|g' "$file"
+            fi
+          done
 
       - name: Push to wiki
         run: |

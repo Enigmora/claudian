@@ -33,11 +33,11 @@ export type Translations = {
   'settings.folder.placeholder': string;
   'settings.maxTokens.name': string;
   'settings.maxTokens.desc': string;
-  'settings.systemPrompt.name': string;
-  'settings.systemPrompt.desc': string;
-  'settings.systemPrompt.placeholder': string;
-  'settings.systemPrompt.restore': string;
-  'settings.systemPrompt.restored': string;
+  'settings.customInstructions.name': string;
+  'settings.customInstructions.desc': string;
+  'settings.customInstructions.placeholder': string;
+  'settings.customInstructions.clear': string;
+  'settings.customInstructions.cleared': string;
   'settings.section.noteProcessing': string;
   'settings.maxNotesContext.name': string;
   'settings.maxNotesContext.desc': string;
@@ -348,7 +348,8 @@ export type Translations = {
   // ═══════════════════════════════════════════════════════════════════════════
   // SYSTEM PROMPTS
   // ═══════════════════════════════════════════════════════════════════════════
-  'prompt.default': string;
+  'prompt.baseIdentity': string;
+  'prompt.chatMode': string;
   'prompt.noteProcessor': string;
   'prompt.templateProcessor': string;
   'prompt.conceptMapGenerator': string;

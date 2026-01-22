@@ -324,13 +324,24 @@ export class AgentMode {
     });
     const folderList = Array.from(folders).slice(0, 30).join(', ') || '(none)';
 
-    return t('prompt.agentMode', {
-      maxActions: String(this.plugin.settings.maxActionsPerMessage || 10),
-      noteCount: String(vaultContext.noteCount),
-      folders: folderList,
-      tags: vaultContext.allTags.slice(0, 20).map(tag => '#' + tag).join(', ') || '(none)',
-      noteTitles: vaultContext.noteTitles.slice(0, 15).join(', ')
-    });
+    // Build complete agent prompt: base identity + agent mode + custom instructions
+    const parts = [
+      t('prompt.baseIdentity'),
+      t('prompt.agentMode', {
+        maxActions: String(this.plugin.settings.maxActionsPerMessage || 10),
+        noteCount: String(vaultContext.noteCount),
+        folders: folderList,
+        tags: vaultContext.allTags.slice(0, 20).map(tag => '#' + tag).join(', ') || '(none)',
+        noteTitles: vaultContext.noteTitles.slice(0, 15).join(', ')
+      })
+    ];
+
+    // Add custom instructions if present
+    if (this.plugin.settings.customInstructions?.trim()) {
+      parts.push(`\nUSER CUSTOM INSTRUCTIONS:\n${this.plugin.settings.customInstructions.trim()}`);
+    }
+
+    return parts.join('\n\n');
   }
 
   getSummaryMessage(results: ActionResult[], originalMessage: string): string {

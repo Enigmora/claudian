@@ -10,7 +10,7 @@ export interface ClaudeCompanionSettings {
   model: string;
   notesFolder: string;
   maxTokens: number;
-  systemPrompt: string;
+  customInstructions: string;
   maxNotesInContext: number;
   maxTagsInContext: number;
   // Agent Mode
@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   model: 'claude-sonnet-4-20250514',
   notesFolder: 'Claude Notes',
   maxTokens: 4096,
-  systemPrompt: '', // Will be set from i18n on load
+  customInstructions: '',
   maxNotesInContext: 100,
   maxTagsInContext: 50,
   // Agent Mode
@@ -187,29 +187,29 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         })
       );
 
-    // System prompt
-    const systemPromptSetting = new Setting(containerEl)
-      .setName(t('settings.systemPrompt.name'))
-      .setDesc(t('settings.systemPrompt.desc'))
+    // Custom instructions
+    new Setting(containerEl)
+      .setName(t('settings.customInstructions.name'))
+      .setDesc(t('settings.customInstructions.desc'))
       .addTextArea(text => {
         text
-          .setPlaceholder(t('settings.systemPrompt.placeholder'))
-          .setValue(this.plugin.settings.systemPrompt)
+          .setPlaceholder(t('settings.customInstructions.placeholder'))
+          .setValue(this.plugin.settings.customInstructions)
           .onChange(async (value) => {
-            this.plugin.settings.systemPrompt = value;
+            this.plugin.settings.customInstructions = value;
             await this.plugin.saveSettings();
           });
-        text.inputEl.rows = 8;
+        text.inputEl.rows = 4;
         text.inputEl.cols = 50;
       })
       .addButton(button => {
         button
-          .setButtonText(t('settings.systemPrompt.restore'))
+          .setButtonText(t('settings.customInstructions.clear'))
           .onClick(async () => {
-            this.plugin.settings.systemPrompt = t('prompt.default');
+            this.plugin.settings.customInstructions = '';
             await this.plugin.saveSettings();
-            this.display(); // Refresh to show updated value
-            new Notice(t('settings.systemPrompt.restored'));
+            this.display();
+            new Notice(t('settings.customInstructions.cleared'));
           });
       });
 

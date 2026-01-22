@@ -24,11 +24,11 @@ const translations: Translations = {
   'settings.folder.placeholder': 'Claude Notes',
   'settings.maxTokens.name': 'Max tokens',
   'settings.maxTokens.desc': 'Maximum number of tokens in responses (1000-8192).',
-  'settings.systemPrompt.name': 'System prompt',
-  'settings.systemPrompt.desc': 'Instructions that define Claude\'s behavior. Click "Restore default" to reset.',
-  'settings.systemPrompt.placeholder': 'You are an assistant...',
-  'settings.systemPrompt.restore': 'Restore default',
-  'settings.systemPrompt.restored': 'System prompt restored to default',
+  'settings.customInstructions.name': 'Custom instructions',
+  'settings.customInstructions.desc': 'Additional instructions to personalize Claude\'s behavior. These are added to the base instructions (not replaced).',
+  'settings.customInstructions.placeholder': 'E.g.: Always respond in formal English, use bullet points...',
+  'settings.customInstructions.clear': 'Clear',
+  'settings.customInstructions.cleared': 'Custom instructions cleared',
   'settings.section.noteProcessing': 'Note Processing',
   'settings.maxNotesContext.name': 'Max notes in context',
   'settings.maxNotesContext.desc': 'Maximum number of note titles to include when processing (10-500).',
@@ -376,15 +376,21 @@ Please provide the EXACT actions as JSON:
   // ═══════════════════════════════════════════════════════════════════════════
   // SYSTEM PROMPTS
   // ═══════════════════════════════════════════════════════════════════════════
-  'prompt.default': `You are an intelligent assistant integrated into Obsidian to help organize and manage notes. You were created by Enigmora.
+  'prompt.baseIdentity': `You are Claude, Anthropic's AI assistant, integrated into Obsidian through the Claudian plugin developed by Enigmora.
+
+IDENTITY:
+- You are Claude - always identify yourself as Claude when asked who you are
+- You are operating as an assistant for Obsidian through the Claudian plugin
+- Claudian was developed by Enigmora (https://enigmora.com)
+- Be authentic: you are Claude helping users manage their Obsidian vault
 
 GUIDELINES:
 - Respond clearly and in a structured manner, using Markdown format when appropriate
 - If asked to create content for a note, include relevant tag suggestions
 - Use wikilinks ([[Note Name]]) when referencing concepts that could be separate notes
-- Be concise but thorough
+- Be concise but thorough`,
 
-IMPORTANT - AGENT MODE:
+  'prompt.chatMode': `IMPORTANT - AGENT MODE:
 If the user asks you to perform actions on the vault (create, move, delete, rename notes or folders, modify content, etc.), and Agent Mode is NOT currently enabled, you must inform them:
 "To perform actions on your vault, please enable **Agent Mode** using the toggle in the chat header."
 Do NOT attempt to describe or simulate vault actions without Agent Mode enabled.`,

@@ -88,6 +88,23 @@ export class ClaudeClient {
     this.initClient();
   }
 
+  /**
+   * Build the complete system prompt for chat mode.
+   * Combines: base identity + chat mode instructions + custom instructions
+   */
+  private buildChatSystemPrompt(): string {
+    const parts = [
+      t('prompt.baseIdentity'),
+      t('prompt.chatMode')
+    ];
+
+    if (this.settings.customInstructions?.trim()) {
+      parts.push(`\nUSER CUSTOM INSTRUCTIONS:\n${this.settings.customInstructions.trim()}`);
+    }
+
+    return parts.join('\n\n');
+  }
+
   clearHistory(): void {
     this.conversationHistory = [];
   }
@@ -121,7 +138,7 @@ export class ClaudeClient {
       const stream = this.client.messages.stream({
         model: this.settings.model,
         max_tokens: this.settings.maxTokens,
-        system: this.settings.systemPrompt,
+        system: this.buildChatSystemPrompt(),
         messages: this.conversationHistory.map(msg => ({
           role: msg.role,
           content: msg.content

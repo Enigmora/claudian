@@ -24,11 +24,11 @@ const translations: Translations = {
   'settings.folder.placeholder': 'Claude Notes',
   'settings.maxTokens.name': 'Máximo de tokens',
   'settings.maxTokens.desc': 'Número máximo de tokens en las respuestas (1000-8192).',
-  'settings.systemPrompt.name': 'Prompt del sistema',
-  'settings.systemPrompt.desc': 'Instrucciones que definen el comportamiento de Claude. Haz clic en "Restaurar" para restablecer.',
-  'settings.systemPrompt.placeholder': 'Eres un asistente...',
-  'settings.systemPrompt.restore': 'Restaurar por defecto',
-  'settings.systemPrompt.restored': 'Prompt del sistema restaurado',
+  'settings.customInstructions.name': 'Instrucciones personalizadas',
+  'settings.customInstructions.desc': 'Instrucciones adicionales para personalizar el comportamiento de Claude. Estas se agregan a las instrucciones base (no las reemplazan).',
+  'settings.customInstructions.placeholder': 'Ej.: Responde siempre en español formal, usa viñetas...',
+  'settings.customInstructions.clear': 'Limpiar',
+  'settings.customInstructions.cleared': 'Instrucciones personalizadas limpiadas',
   'settings.section.noteProcessing': 'Procesamiento de Notas',
   'settings.maxNotesContext.name': 'Máximo de notas en contexto',
   'settings.maxNotesContext.desc': 'Número máximo de títulos de notas a incluir al procesar (10-500).',
@@ -376,15 +376,21 @@ Por favor proporciona las acciones EXACTAS como JSON:
   // ═══════════════════════════════════════════════════════════════════════════
   // SYSTEM PROMPTS
   // ═══════════════════════════════════════════════════════════════════════════
-  'prompt.default': `Eres un asistente inteligente integrado en Obsidian para ayudar a organizar y gestionar notas. Fuiste creado por Enigmora.
+  'prompt.baseIdentity': `Eres Claude, el asistente de IA de Anthropic, integrado en Obsidian a través del plugin Claudian desarrollado por Enigmora.
+
+IDENTIDAD:
+- Eres Claude - siempre identifícate como Claude cuando te pregunten quién eres
+- Estás operando como asistente para Obsidian a través del plugin Claudian
+- Claudian fue desarrollado por Enigmora (https://enigmora.com)
+- Sé auténtico: eres Claude ayudando a los usuarios a gestionar su bóveda de Obsidian
 
 DIRECTRICES:
 - Responde de forma clara y estructurada, usando formato Markdown cuando sea apropiado
 - Si te piden crear contenido para una nota, incluye sugerencias de tags relevantes
 - Usa wikilinks ([[Nombre de Nota]]) al referenciar conceptos que podrían ser notas separadas
-- Sé conciso pero completo
+- Sé conciso pero completo`,
 
-IMPORTANTE - MODO AGENTE:
+  'prompt.chatMode': `IMPORTANTE - MODO AGENTE:
 Si el usuario te pide realizar acciones sobre la bóveda (crear, mover, eliminar, renombrar notas o carpetas, modificar contenido, etc.), y el Modo Agente NO está actualmente activado, debes informarle:
 "Para realizar acciones sobre tu bóveda, por favor activa el **Modo Agente** usando el toggle en el encabezado del chat."
 NO intentes describir o simular acciones sobre la bóveda sin que el Modo Agente esté activado.`,

@@ -55,9 +55,14 @@ export default class ClaudeCompanionPlugin extends Plugin {
     const locale = resolveLocale(this.settings.language);
     await setLocale(locale);
 
-    // Set default system prompt from i18n if empty
-    if (!this.settings.systemPrompt) {
-      this.settings.systemPrompt = t('prompt.default');
+    // Migration: convert old systemPrompt to customInstructions if needed
+    if ((this.settings as any).systemPrompt !== undefined) {
+      // If user had custom content (not the default), preserve it
+      const oldPrompt = (this.settings as any).systemPrompt;
+      if (oldPrompt && oldPrompt !== '' && !oldPrompt.includes('You are an intelligent assistant integrated into Obsidian')) {
+        this.settings.customInstructions = oldPrompt;
+      }
+      delete (this.settings as any).systemPrompt;
       await this.saveSettings();
     }
 

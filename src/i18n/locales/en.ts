@@ -733,6 +733,7 @@ VAULT CONTEXT:
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': 'Claudian',
+  'welcome.developedBy': 'Developed by Enigmora',
   'welcome.greeting': 'How can I help you today?',
   'welcome.examplesHeader': 'Examples of what I can do:',
   'welcome.example1': '"Organize my productivity notes into folders by topic and create a linked index"',

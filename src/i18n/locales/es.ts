@@ -727,7 +727,20 @@ CONTEXTO DE LA BÓVEDA:
   'settings.showTokens.desc': 'Muestra el uso de tokens en el pie del chat.',
   'settings.section.tokenTracking': 'Seguimiento de Tokens',
   'error.quotaExhausted': 'Cuota de API agotada. Revisa tus límites en console.anthropic.com.',
-  'error.billingIssue': 'Problema de facturación detectado. Revisa tu cuenta en console.anthropic.com.'
+  'error.billingIssue': 'Problema de facturación detectado. Revisa tu cuenta en console.anthropic.com.',
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WELCOME SCREEN
+  // ═══════════════════════════════════════════════════════════════════════════
+  'welcome.title': 'Claudian',
+  'welcome.greeting': '¿Cómo puedo ayudarte hoy?',
+  'welcome.examplesHeader': 'Ejemplos de lo que puedo hacer:',
+  'welcome.example1': '"Organiza mis notas sobre productividad en carpetas por tema y crea un índice enlazado"',
+  'welcome.example2': '"Busca todas las notas con el tag #proyecto y genera un mapa conceptual con sus conexiones"',
+  'welcome.example3': '"Lee mi nota de Ideas.md y sugiere wikilinks a otras notas relacionadas"',
+  'welcome.example4': '"Crea una nota con un resumen de las reuniones de esta semana"',
+  'welcome.example5': '"¿Qué notas tengo sobre inteligencia artificial?"',
+  'welcome.agentModeHint': 'Activa el Modo Agente para crear, modificar y organizar notas automáticamente.'
 };
 
 export default translations;

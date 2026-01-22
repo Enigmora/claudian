@@ -90,8 +90,9 @@ Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente
 ### Chat con Claude
 
 1. Abre el panel con el comando **"Abrir chat con Claude"** o desde el ribbon
-2. Escribe tu mensaje y presiona `Enter`
-3. Las respuestas aparecerán en tiempo real con streaming
+2. Una pantalla de bienvenida muestra ejemplos de prompts que puedes clickear para empezar
+3. Escribe tu mensaje y presiona `Enter`
+4. Las respuestas aparecerán en tiempo real con streaming
 
 ### Crear notas desde el chat
 

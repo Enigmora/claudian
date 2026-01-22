@@ -26,6 +26,37 @@ The chat panel consists of:
 | **Message Area** | Scrollable conversation history |
 | **Input Area** | Resizable text input for your messages |
 | **Send/Stop Button** | Sends messages or stops ongoing requests |
+| **Token Footer** | Shows token usage for current session |
+
+---
+
+## Welcome Screen
+
+When you open the chat with no message history, a welcome screen is displayed:
+
+![Welcome Screen](../images/welcome-screen.png)
+
+### Elements
+
+- **Logo and title**: Claudian branding
+- **Greeting**: "How can I help you today?"
+- **Example prompts**: Clickable examples of tasks you can ask
+- **Agent Mode hint**: Reminder about enabling Agent Mode for vault operations
+
+### Interactive Examples
+
+The welcome screen includes 5 example prompts ordered by complexity. **Click any example** to copy it directly to the input field, then send or modify as needed.
+
+Examples include tasks like:
+- Organizing notes into folders
+- Generating concept maps
+- Suggesting wikilinks
+- Creating summary notes
+- Searching for topics
+
+### Language Support
+
+The welcome screen automatically updates when you change the plugin language in Settings.
 
 ---
 

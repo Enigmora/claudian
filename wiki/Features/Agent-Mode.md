@@ -14,8 +14,16 @@ With Agent Mode enabled, you can:
 - Translate or transform content on request
 - Search notes by title, content, or tags
 - Update frontmatter (YAML metadata)
+- **Real-time editor manipulation** (insert, select, navigate)
+- **Execute Obsidian commands** programmatically
+- **Daily Notes, Templates, and Bookmarks** management
+- **Canvas manipulation** (nodes, edges, groups)
+- **Advanced search** (by heading, block ID, tags)
+- **Workspace control** (open files, split views)
 
 All through simple, conversational requests.
+
+> **See also:** [Agent Actions Reference](Agent-Actions-Reference) for the complete list of 52 available actions.
 
 ### Visual Progress
 
@@ -291,5 +299,6 @@ See [Troubleshooting](../Troubleshooting) for more solutions.
 
 ## Related Features
 
+- [Agent Actions Reference](Agent-Actions-Reference) - Complete action catalog (52 actions)
 - [Chat Interface](Chat-Interface) - Basic chat usage
 - [Configuration](../Configuration) - Agent Mode settings

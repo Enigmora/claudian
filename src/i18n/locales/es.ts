@@ -209,6 +209,60 @@ const translations: Translations = {
   'agent.searchNotes': 'Buscar notas: "{{query}}"',
   'agent.getNoteInfo': 'Obtener info: {{path}}',
   'agent.findLinks': 'Buscar enlaces a: {{target}}',
+  // Editor API actions
+  'agent.editorGetContent': 'Obtener contenido del editor',
+  'agent.editorSetContent': 'Establecer contenido del editor',
+  'agent.editorGetSelection': 'Obtener texto seleccionado',
+  'agent.editorReplaceSelection': 'Reemplazar selección con: {{text}}',
+  'agent.editorInsertAtCursor': 'Insertar en cursor: {{text}}',
+  'agent.editorGetLine': 'Obtener línea {{line}}',
+  'agent.editorSetLine': 'Establecer línea {{line}}',
+  'agent.editorGoToLine': 'Ir a línea {{line}}',
+  'agent.editorUndo': 'Deshacer',
+  'agent.editorRedo': 'Rehacer',
+  // Commands API actions
+  'agent.executeCommand': 'Ejecutar comando: {{commandId}}',
+  'agent.listCommands': 'Listar comandos',
+  'agent.getCommandInfo': 'Info del comando: {{commandId}}',
+  // Daily Notes actions
+  'agent.openDailyNote': 'Abrir nota diaria',
+  'agent.createDailyNote': 'Crear nota diaria: {{date}}',
+  // Templates actions
+  'agent.insertTemplate': 'Insertar plantilla: {{templateName}}',
+  'agent.listTemplates': 'Listar plantillas',
+  // Bookmarks actions
+  'agent.addBookmark': 'Agregar marcador: {{path}}',
+  'agent.removeBookmark': 'Eliminar marcador: {{path}}',
+  'agent.listBookmarks': 'Listar marcadores',
+  // Canvas API actions
+  'agent.canvasCreateTextNode': 'Crear nodo de texto: {{text}}',
+  'agent.canvasCreateFileNode': 'Crear nodo de archivo: {{file}}',
+  'agent.canvasCreateLinkNode': 'Crear nodo de enlace: {{url}}',
+  'agent.canvasCreateGroup': 'Crear grupo: {{label}}',
+  'agent.canvasAddEdge': 'Agregar conexión: {{fromNode}} → {{toNode}}',
+  'agent.canvasSelectAll': 'Seleccionar todos los nodos',
+  'agent.canvasZoomToFit': 'Ajustar zoom al canvas',
+  // Enhanced Search actions
+  'agent.searchByHeading': 'Buscar por encabezado: {{heading}}',
+  'agent.searchByBlock': 'Buscar por ID de bloque: {{blockId}}',
+  'agent.getAllTags': 'Obtener todos los tags',
+  'agent.openSearch': 'Abrir búsqueda: {{query}}',
+  // Workspace actions
+  'agent.openFile': 'Abrir archivo: {{path}}',
+  'agent.revealInExplorer': 'Mostrar en explorador: {{path}}',
+  'agent.getActiveFile': 'Obtener info del archivo activo',
+  'agent.closeActiveLeaf': 'Cerrar pestaña activa',
+  'agent.splitLeaf': 'Dividir vista: {{direction}}',
+  // Error messages for new actions
+  'error.noActiveEditor': 'No hay editor activo. Abre un archivo markdown primero.',
+  'error.noActiveCanvas': 'No hay canvas activo. Abre un archivo canvas primero.',
+  'error.pluginNotEnabled': 'El plugin "{{plugin}}" no está habilitado.',
+  'error.commandNotFound': 'Comando no encontrado: {{commandId}}',
+  'error.templateNotFound': 'Plantilla no encontrada: {{templateName}}',
+  'error.bookmarkNotFound': 'Marcador no encontrado: {{path}}',
+  'error.canvasNodeNotFound': 'Nodo de canvas no encontrado: {{nodeId}}',
+  'error.headingNotFound': 'No se encontraron notas con encabezado: {{heading}}',
+  'error.blockNotFound': 'Bloque no encontrado: {{blockId}}',
   'agent.genericAction': 'Acción: {{action}}',
   'agent.progressStarting': 'Iniciando ejecución...',
   'agent.progressStatus': 'Ejecutando {{current}}/{{total}}',
@@ -322,7 +376,7 @@ Por favor proporciona las acciones EXACTAS como JSON:
   // ═══════════════════════════════════════════════════════════════════════════
   // SYSTEM PROMPTS
   // ═══════════════════════════════════════════════════════════════════════════
-  'prompt.default': `Eres Claudian, un asistente inteligente integrado en Obsidian para ayudar a organizar y gestionar notas. Fuiste creado por Enigmora.
+  'prompt.default': `Eres un asistente inteligente integrado en Obsidian para ayudar a organizar y gestionar notas. Fuiste creado por Enigmora.
 
 DIRECTRICES:
 - Responde de forma clara y estructurada, usando formato Markdown cuando sea apropiado
@@ -383,15 +437,21 @@ Responde de manera estructurada y clara según las instrucciones proporcionadas.
 Tu tarea es identificar conceptos, relaciones y temas transversales en conjuntos de notas.
 IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`,
 
-  'prompt.agentMode': `Eres un asistente que ayuda a gestionar una bóveda de Obsidian. Puedes ejecutar acciones sobre archivos y carpetas.
+  'prompt.agentMode': `Eres un asistente que ayuda a gestionar una bóveda de Obsidian. Puedes ejecutar acciones sobre archivos, carpetas y controlar varias funciones de Obsidian.
 
 CAPACIDADES:
 - Crear, mover, renombrar y eliminar notas y carpetas
 - Leer y modificar contenido de notas
-- Buscar notas por título, contenido o tags
-- Actualizar frontmatter (YAML)
+- Manipulación del editor en tiempo real (insertar, seleccionar, navegar)
+- Ejecutar comandos de Obsidian
+- Gestión de Notas Diarias, Plantillas y Marcadores
+- Manipulación de Canvas (nodos, conexiones, grupos)
+- Búsqueda avanzada (por encabezado, ID de bloque, tags)
+- Control del espacio de trabajo (abrir archivos, dividir vistas)
 
 ACCIONES DISPONIBLES:
+
+=== Gestión de Archivos y Carpetas ===
 - create-folder: { path }
 - delete-folder: { path }
 - list-folder: { path, recursive? }
@@ -408,6 +468,58 @@ ACCIONES DISPONIBLES:
 - search-notes: { query, field?, folder? }
 - get-note-info: { path }
 - find-links: { target }
+
+=== API del Editor (nota activa) ===
+- editor-get-content: {} - Obtener contenido del editor
+- editor-set-content: { content } - Reemplazar contenido del editor
+- editor-get-selection: {} - Obtener texto seleccionado
+- editor-replace-selection: { text } - Reemplazar selección
+- editor-insert-at-cursor: { text } - Insertar en cursor
+- editor-get-line: { line } - Obtener línea por número (0-indexed)
+- editor-set-line: { line, text } - Establecer contenido de línea
+- editor-go-to-line: { line } - Navegar a línea
+- editor-undo: {} - Deshacer último cambio
+- editor-redo: {} - Rehacer último cambio
+
+=== API de Comandos ===
+- execute-command: { commandId } - Ejecutar cualquier comando de Obsidian
+- list-commands: { filter? } - Listar comandos disponibles
+- get-command-info: { commandId } - Obtener detalles del comando
+
+=== Notas Diarias ===
+- open-daily-note: {} - Abrir nota de hoy
+- create-daily-note: { date? } - Crear nota para fecha (YYYY-MM-DD)
+
+=== Plantillas ===
+- insert-template: { templateName? } - Insertar plantilla en cursor
+- list-templates: {} - Listar plantillas disponibles
+
+=== Marcadores ===
+- add-bookmark: { path } - Marcar una nota
+- remove-bookmark: { path } - Eliminar marcador
+- list-bookmarks: {} - Listar todos los marcadores
+
+=== API de Canvas (cuando canvas está activo) ===
+- canvas-create-text-node: { text, x?, y? } - Crear nodo de texto
+- canvas-create-file-node: { file, x?, y? } - Crear nodo de archivo
+- canvas-create-link-node: { url, x?, y? } - Crear nodo de enlace
+- canvas-create-group: { label? } - Crear grupo
+- canvas-add-edge: { fromNode, toNode } - Conectar nodos
+- canvas-select-all: {} - Seleccionar todos los nodos
+- canvas-zoom-to-fit: {} - Ajustar zoom al contenido
+
+=== Búsqueda Avanzada ===
+- search-by-heading: { heading, folder? } - Buscar notas con encabezado
+- search-by-block: { blockId } - Buscar nota con ID de bloque
+- get-all-tags: {} - Obtener todos los tags de la bóveda
+- open-search: { query } - Abrir búsqueda global
+
+=== Espacio de Trabajo ===
+- open-file: { path, mode? } - Abrir archivo (mode: 'source' | 'preview')
+- reveal-in-explorer: { path } - Mostrar archivo en explorador
+- get-active-file: {} - Obtener info del archivo activo
+- close-active-leaf: {} - Cerrar pestaña actual
+- split-leaf: { direction } - Dividir vista ('horizontal' | 'vertical')
 
 FORMATO DE RESPUESTA:
 Cuando el usuario solicite una acción sobre la bóveda, responde ÚNICAMENTE con JSON válido:

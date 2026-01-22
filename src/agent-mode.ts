@@ -179,12 +179,15 @@ export class AgentMode {
     const { params } = action;
 
     switch (action.action) {
+      // Folder actions
       case 'create-folder':
         return t('agent.createFolder', { path: params.path });
       case 'delete-folder':
         return t('agent.deleteFolder', { path: params.path });
       case 'list-folder':
         return t('agent.listFolder', { path: params.path || '/' });
+
+      // Note actions
       case 'create-note':
         return t('agent.createNote', { path: params.path });
       case 'read-note':
@@ -195,6 +198,10 @@ export class AgentMode {
         return t('agent.renameNote', { from: params.from, to: params.to });
       case 'move-note':
         return t('agent.moveNote', { from: params.from, to: params.to });
+      case 'copy-note':
+        return t('agent.copyNote', { from: params.from, to: params.to });
+
+      // Content actions
       case 'append-content':
         return t('agent.appendContent', { path: params.path });
       case 'prepend-content':
@@ -203,12 +210,103 @@ export class AgentMode {
         return t('agent.replaceContent', { path: params.path });
       case 'update-frontmatter':
         return t('agent.updateFrontmatter', { path: params.path });
+
+      // Search actions
       case 'search-notes':
         return t('agent.searchNotes', { query: params.query });
       case 'get-note-info':
         return t('agent.getNoteInfo', { path: params.path });
       case 'find-links':
         return t('agent.findLinks', { target: params.target });
+
+      // Editor API actions
+      case 'editor-get-content':
+        return t('agent.editorGetContent');
+      case 'editor-set-content':
+        return t('agent.editorSetContent');
+      case 'editor-get-selection':
+        return t('agent.editorGetSelection');
+      case 'editor-replace-selection':
+        return t('agent.editorReplaceSelection', { text: params.text?.substring(0, 30) + '...' });
+      case 'editor-insert-at-cursor':
+        return t('agent.editorInsertAtCursor', { text: params.text?.substring(0, 30) + '...' });
+      case 'editor-get-line':
+        return t('agent.editorGetLine', { line: params.line });
+      case 'editor-set-line':
+        return t('agent.editorSetLine', { line: params.line });
+      case 'editor-go-to-line':
+        return t('agent.editorGoToLine', { line: params.line });
+      case 'editor-undo':
+        return t('agent.editorUndo');
+      case 'editor-redo':
+        return t('agent.editorRedo');
+
+      // Commands API actions
+      case 'execute-command':
+        return t('agent.executeCommand', { commandId: params.commandId });
+      case 'list-commands':
+        return t('agent.listCommands');
+      case 'get-command-info':
+        return t('agent.getCommandInfo', { commandId: params.commandId });
+
+      // Daily Notes actions
+      case 'open-daily-note':
+        return t('agent.openDailyNote');
+      case 'create-daily-note':
+        return t('agent.createDailyNote', { date: params.date || 'today' });
+
+      // Templates actions
+      case 'insert-template':
+        return t('agent.insertTemplate', { templateName: params.templateName || 'picker' });
+      case 'list-templates':
+        return t('agent.listTemplates');
+
+      // Bookmarks actions
+      case 'add-bookmark':
+        return t('agent.addBookmark', { path: params.path });
+      case 'remove-bookmark':
+        return t('agent.removeBookmark', { path: params.path });
+      case 'list-bookmarks':
+        return t('agent.listBookmarks');
+
+      // Canvas API actions
+      case 'canvas-create-text-node':
+        return t('agent.canvasCreateTextNode', { text: params.text?.substring(0, 30) + '...' });
+      case 'canvas-create-file-node':
+        return t('agent.canvasCreateFileNode', { file: params.file });
+      case 'canvas-create-link-node':
+        return t('agent.canvasCreateLinkNode', { url: params.url });
+      case 'canvas-create-group':
+        return t('agent.canvasCreateGroup', { label: params.label || '' });
+      case 'canvas-add-edge':
+        return t('agent.canvasAddEdge', { fromNode: params.fromNode, toNode: params.toNode });
+      case 'canvas-select-all':
+        return t('agent.canvasSelectAll');
+      case 'canvas-zoom-to-fit':
+        return t('agent.canvasZoomToFit');
+
+      // Enhanced Search actions
+      case 'search-by-heading':
+        return t('agent.searchByHeading', { heading: params.heading });
+      case 'search-by-block':
+        return t('agent.searchByBlock', { blockId: params.blockId });
+      case 'get-all-tags':
+        return t('agent.getAllTags');
+      case 'open-search':
+        return t('agent.openSearch', { query: params.query });
+
+      // Workspace actions
+      case 'open-file':
+        return t('agent.openFile', { path: params.path });
+      case 'reveal-in-explorer':
+        return t('agent.revealInExplorer', { path: params.path });
+      case 'get-active-file':
+        return t('agent.getActiveFile');
+      case 'close-active-leaf':
+        return t('agent.closeActiveLeaf');
+      case 'split-leaf':
+        return t('agent.splitLeaf', { direction: params.direction });
+
       default:
         return t('agent.genericAction', { action: action.action });
     }

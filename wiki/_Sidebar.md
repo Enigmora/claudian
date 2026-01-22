@@ -9,6 +9,7 @@
 **Features**
 - [Chat Interface](Features/Chat-Interface)
 - [Agent Mode](Features/Agent-Mode)
+- [Agent Actions Reference](Features/Agent-Actions-Reference)
 - [Batch Processing](Features/Batch-Processing)
 - [Concept Maps](Features/Concept-Maps)
 

@@ -14,8 +14,16 @@ Con el Modo Agente activado, puedes:
 - Traducir o transformar contenido bajo petición
 - Buscar notas por título, contenido o tags
 - Actualizar frontmatter (metadatos YAML)
+- **Manipulación del editor en tiempo real** (insertar, seleccionar, navegar)
+- **Ejecutar comandos de Obsidian** programáticamente
+- **Gestión de Notas Diarias, Plantillas y Marcadores**
+- **Manipulación de Canvas** (nodos, conexiones, grupos)
+- **Búsqueda avanzada** (por encabezado, ID de bloque, tags)
+- **Control del espacio de trabajo** (abrir archivos, dividir vistas)
 
 Todo a través de solicitudes simples y conversacionales.
+
+> **Ver también:** [Referencia de Acciones del Agente](Agent-Actions-Reference.es) para la lista completa de 52 acciones disponibles.
 
 ### Progreso Visual
 
@@ -291,5 +299,6 @@ Consulta [Solución de Problemas](../Troubleshooting.es) para más soluciones.
 
 ## Características Relacionadas
 
+- [Referencia de Acciones del Agente](Agent-Actions-Reference.es) - Catálogo completo de acciones (52 acciones)
 - [Interfaz de Chat](Chat-Interface.es) - Uso básico del chat
 - [Configuración](../Configuration.es) - Ajustes del Modo Agente

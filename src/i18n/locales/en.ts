@@ -209,6 +209,60 @@ const translations: Translations = {
   'agent.searchNotes': 'Search notes: "{{query}}"',
   'agent.getNoteInfo': 'Get info: {{path}}',
   'agent.findLinks': 'Find links to: {{target}}',
+  // Editor API actions
+  'agent.editorGetContent': 'Get editor content',
+  'agent.editorSetContent': 'Set editor content',
+  'agent.editorGetSelection': 'Get selected text',
+  'agent.editorReplaceSelection': 'Replace selection with: {{text}}',
+  'agent.editorInsertAtCursor': 'Insert at cursor: {{text}}',
+  'agent.editorGetLine': 'Get line {{line}}',
+  'agent.editorSetLine': 'Set line {{line}}',
+  'agent.editorGoToLine': 'Go to line {{line}}',
+  'agent.editorUndo': 'Undo',
+  'agent.editorRedo': 'Redo',
+  // Commands API actions
+  'agent.executeCommand': 'Execute command: {{commandId}}',
+  'agent.listCommands': 'List commands',
+  'agent.getCommandInfo': 'Get command info: {{commandId}}',
+  // Daily Notes actions
+  'agent.openDailyNote': 'Open daily note',
+  'agent.createDailyNote': 'Create daily note: {{date}}',
+  // Templates actions
+  'agent.insertTemplate': 'Insert template: {{templateName}}',
+  'agent.listTemplates': 'List templates',
+  // Bookmarks actions
+  'agent.addBookmark': 'Add bookmark: {{path}}',
+  'agent.removeBookmark': 'Remove bookmark: {{path}}',
+  'agent.listBookmarks': 'List bookmarks',
+  // Canvas API actions
+  'agent.canvasCreateTextNode': 'Create text node: {{text}}',
+  'agent.canvasCreateFileNode': 'Create file node: {{file}}',
+  'agent.canvasCreateLinkNode': 'Create link node: {{url}}',
+  'agent.canvasCreateGroup': 'Create group: {{label}}',
+  'agent.canvasAddEdge': 'Add edge: {{fromNode}} → {{toNode}}',
+  'agent.canvasSelectAll': 'Select all canvas nodes',
+  'agent.canvasZoomToFit': 'Zoom to fit canvas',
+  // Enhanced Search actions
+  'agent.searchByHeading': 'Search by heading: {{heading}}',
+  'agent.searchByBlock': 'Search by block ID: {{blockId}}',
+  'agent.getAllTags': 'Get all tags',
+  'agent.openSearch': 'Open search: {{query}}',
+  // Workspace actions
+  'agent.openFile': 'Open file: {{path}}',
+  'agent.revealInExplorer': 'Reveal in explorer: {{path}}',
+  'agent.getActiveFile': 'Get active file info',
+  'agent.closeActiveLeaf': 'Close active tab',
+  'agent.splitLeaf': 'Split view: {{direction}}',
+  // Error messages for new actions
+  'error.noActiveEditor': 'No active editor. Open a markdown file first.',
+  'error.noActiveCanvas': 'No active canvas. Open a canvas file first.',
+  'error.pluginNotEnabled': 'Plugin "{{plugin}}" is not enabled.',
+  'error.commandNotFound': 'Command not found: {{commandId}}',
+  'error.templateNotFound': 'Template not found: {{templateName}}',
+  'error.bookmarkNotFound': 'Bookmark not found: {{path}}',
+  'error.canvasNodeNotFound': 'Canvas node not found: {{nodeId}}',
+  'error.headingNotFound': 'No notes found with heading: {{heading}}',
+  'error.blockNotFound': 'Block not found: {{blockId}}',
   'agent.genericAction': 'Action: {{action}}',
   'agent.progressStarting': 'Starting execution...',
   'agent.progressStatus': 'Executing {{current}}/{{total}}',
@@ -322,7 +376,7 @@ Please provide the EXACT actions as JSON:
   // ═══════════════════════════════════════════════════════════════════════════
   // SYSTEM PROMPTS
   // ═══════════════════════════════════════════════════════════════════════════
-  'prompt.default': `You are Claudian, an intelligent assistant integrated into Obsidian to help organize and manage notes. You were created by Enigmora.
+  'prompt.default': `You are an intelligent assistant integrated into Obsidian to help organize and manage notes. You were created by Enigmora.
 
 GUIDELINES:
 - Respond clearly and in a structured manner, using Markdown format when appropriate
@@ -383,15 +437,21 @@ Respond in a structured and clear manner according to the provided instructions.
 Your task is to identify concepts, relationships, and cross-cutting themes in sets of notes.
 IMPORTANT: Respond ONLY with valid JSON according to the requested format.`,
 
-  'prompt.agentMode': `You are an assistant that helps manage an Obsidian vault. You can execute actions on files and folders.
+  'prompt.agentMode': `You are an assistant that helps manage an Obsidian vault. You can execute actions on files, folders, and control various Obsidian features.
 
 CAPABILITIES:
 - Create, move, rename, and delete notes and folders
 - Read and modify note content
-- Search notes by title, content, or tags
-- Update frontmatter (YAML)
+- Real-time editor manipulation (insert, select, navigate)
+- Execute Obsidian commands
+- Daily Notes, Templates, and Bookmarks management
+- Canvas manipulation (nodes, edges, groups)
+- Advanced search (by heading, block ID, tags)
+- Workspace control (open files, split views)
 
 AVAILABLE ACTIONS:
+
+=== File & Folder Management ===
 - create-folder: { path }
 - delete-folder: { path }
 - list-folder: { path, recursive? }
@@ -408,6 +468,58 @@ AVAILABLE ACTIONS:
 - search-notes: { query, field?, folder? }
 - get-note-info: { path }
 - find-links: { target }
+
+=== Editor API (active note) ===
+- editor-get-content: {} - Get full editor content
+- editor-set-content: { content } - Replace editor content
+- editor-get-selection: {} - Get selected text
+- editor-replace-selection: { text } - Replace selection
+- editor-insert-at-cursor: { text } - Insert at cursor
+- editor-get-line: { line } - Get line by number (0-indexed)
+- editor-set-line: { line, text } - Set line content
+- editor-go-to-line: { line } - Navigate to line
+- editor-undo: {} - Undo last change
+- editor-redo: {} - Redo last change
+
+=== Commands API ===
+- execute-command: { commandId } - Execute any Obsidian command
+- list-commands: { filter? } - List available commands
+- get-command-info: { commandId } - Get command details
+
+=== Daily Notes ===
+- open-daily-note: {} - Open today's note
+- create-daily-note: { date? } - Create note for date (YYYY-MM-DD)
+
+=== Templates ===
+- insert-template: { templateName? } - Insert template at cursor
+- list-templates: {} - List available templates
+
+=== Bookmarks ===
+- add-bookmark: { path } - Bookmark a note
+- remove-bookmark: { path } - Remove bookmark
+- list-bookmarks: {} - List all bookmarks
+
+=== Canvas API (when canvas is active) ===
+- canvas-create-text-node: { text, x?, y? } - Create text node
+- canvas-create-file-node: { file, x?, y? } - Create file node
+- canvas-create-link-node: { url, x?, y? } - Create link node
+- canvas-create-group: { label? } - Create group
+- canvas-add-edge: { fromNode, toNode } - Connect nodes
+- canvas-select-all: {} - Select all nodes
+- canvas-zoom-to-fit: {} - Zoom to fit content
+
+=== Enhanced Search ===
+- search-by-heading: { heading, folder? } - Find notes with heading
+- search-by-block: { blockId } - Find note with block ID
+- get-all-tags: {} - Get all vault tags
+- open-search: { query } - Open global search UI
+
+=== Workspace ===
+- open-file: { path, mode? } - Open file (mode: 'source' | 'preview')
+- reveal-in-explorer: { path } - Show file in explorer
+- get-active-file: {} - Get active file info
+- close-active-leaf: {} - Close current tab
+- split-leaf: { direction } - Split view ('horizontal' | 'vertical')
 
 RESPONSE FORMAT:
 When the user requests an action on the vault, respond ONLY with valid JSON:

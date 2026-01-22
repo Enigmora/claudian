@@ -218,6 +218,60 @@ export type Translations = {
   'agent.searchNotes': string;
   'agent.getNoteInfo': string;
   'agent.findLinks': string;
+  // Editor API actions
+  'agent.editorGetContent': string;
+  'agent.editorSetContent': string;
+  'agent.editorGetSelection': string;
+  'agent.editorReplaceSelection': string;
+  'agent.editorInsertAtCursor': string;
+  'agent.editorGetLine': string;
+  'agent.editorSetLine': string;
+  'agent.editorGoToLine': string;
+  'agent.editorUndo': string;
+  'agent.editorRedo': string;
+  // Commands API actions
+  'agent.executeCommand': string;
+  'agent.listCommands': string;
+  'agent.getCommandInfo': string;
+  // Daily Notes actions
+  'agent.openDailyNote': string;
+  'agent.createDailyNote': string;
+  // Templates actions
+  'agent.insertTemplate': string;
+  'agent.listTemplates': string;
+  // Bookmarks actions
+  'agent.addBookmark': string;
+  'agent.removeBookmark': string;
+  'agent.listBookmarks': string;
+  // Canvas API actions
+  'agent.canvasCreateTextNode': string;
+  'agent.canvasCreateFileNode': string;
+  'agent.canvasCreateLinkNode': string;
+  'agent.canvasCreateGroup': string;
+  'agent.canvasAddEdge': string;
+  'agent.canvasSelectAll': string;
+  'agent.canvasZoomToFit': string;
+  // Enhanced Search actions
+  'agent.searchByHeading': string;
+  'agent.searchByBlock': string;
+  'agent.getAllTags': string;
+  'agent.openSearch': string;
+  // Workspace actions
+  'agent.openFile': string;
+  'agent.revealInExplorer': string;
+  'agent.getActiveFile': string;
+  'agent.closeActiveLeaf': string;
+  'agent.splitLeaf': string;
+  // Error messages for new actions
+  'error.noActiveEditor': string;
+  'error.noActiveCanvas': string;
+  'error.pluginNotEnabled': string;
+  'error.commandNotFound': string;
+  'error.templateNotFound': string;
+  'error.bookmarkNotFound': string;
+  'error.canvasNodeNotFound': string;
+  'error.headingNotFound': string;
+  'error.blockNotFound': string;
   'agent.genericAction': string;
   'agent.progressStarting': string;
   'agent.progressStatus': string;

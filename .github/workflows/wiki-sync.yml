@@ -1,0 +1,76 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'wiki/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+
+      - name: Checkout wiki repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki-repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync wiki content
+        run: |
+          # Remove old content (except .git)
+          find wiki-repo -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+
+          # Copy new content from wiki folder
+          cp -r wiki/* wiki-repo/
+
+          # Flatten Features subfolder for GitHub wiki compatibility
+          # GitHub wiki doesn't support subdirectories, so we prefix with "Features-"
+          if [ -d "wiki-repo/Features" ]; then
+            for file in wiki-repo/Features/*.md; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                mv "$file" "wiki-repo/Features-$filename"
+              fi
+            done
+            rm -rf wiki-repo/Features
+          fi
+
+          # Copy images folder if it exists
+          if [ -d "wiki/images" ]; then
+            mkdir -p wiki-repo/images
+            cp -r wiki/images/* wiki-repo/images/ 2>/dev/null || true
+          fi
+
+      - name: Update internal links
+        run: |
+          cd wiki-repo
+          # Update links to Features/ subdirectory to use Features- prefix
+          find . -name "*.md" -type f -exec sed -i 's|\](Features/|\](Features-|g' {} +
+          find . -name "*.md" -type f -exec sed -i 's|\](\.\.\/|\](|g' {} +
+
+      - name: Push to wiki
+        run: |
+          cd wiki-repo
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to sync"
+          else
+            git commit -m "Sync wiki from main repository"
+            git push
+          fi

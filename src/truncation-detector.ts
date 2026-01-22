@@ -149,18 +149,33 @@ export class TruncationDetector {
    */
   private static generateContinuationPrompt(truncatedResponse: string, isAgentMode: boolean): string {
     const lastChars = truncatedResponse.slice(-100);
+    const last200 = truncatedResponse.slice(-200);
 
     if (isAgentMode) {
+      // CRITICAL: Be very specific to prevent Claude from starting a new JSON
+      const baseInstruction = 'IMPORTANTE: Tu respuesta anterior se truncó. NO generes un nuevo JSON. ';
+
       // Check what part of the JSON is incomplete
+      if (/"content":\s*"[^"]*$/.test(last200)) {
+        // We're in the middle of a "content" field - most common truncation point
+        const contentMatch = last200.match(/"content":\s*"([^"]*)$/);
+        const lastContent = contentMatch ? contentMatch[1].slice(-50) : '';
+        return baseInstruction +
+          `Continúa EXACTAMENTE desde donde quedó el texto. Las últimas palabras fueron: "...${lastContent}". ` +
+          'Completa el contenido de la nota, cierra la comilla del campo content, cierra el objeto de la acción con }, ' +
+          'y si hay más acciones pendientes, agrégalas. Finalmente cierra el array de actions con ] y agrega los campos "message" y "requiresConfirmation".';
+      }
+
       if (/"actions":\s*\[/.test(truncatedResponse) && !/\]\s*,?\s*"message"/.test(truncatedResponse)) {
-        return 'Continue completing the actions array. Remember to close with ] and include "message" and "requiresConfirmation" fields.';
+        return baseInstruction +
+          'Continúa desde el último punto donde quedó el JSON. ' +
+          'Si estabas en medio de un campo "content", completa ese texto primero. ' +
+          'Luego cierra el array de actions con ] y agrega "message" y "requiresConfirmation".';
       }
 
-      if (/"content":\s*"[^"]*$/.test(lastChars)) {
-        return 'Continue from where you stopped. Complete the content field and finish the JSON structure.';
-      }
-
-      return 'Continue from where you stopped. Complete the JSON response with all required fields: actions, message, and requiresConfirmation.';
+      return baseInstruction +
+        'Continúa el JSON desde el punto exacto donde se cortó. ' +
+        'NO repitas el contenido anterior. Solo agrega lo que falta para completar el JSON válido.';
     }
 
     // Non-agent mode
@@ -176,11 +191,41 @@ export class TruncationDetector {
   }
 
   /**
+   * Check if a string looks like a new JSON response rather than a continuation
+   */
+  static isNewJsonResponse(text: string): boolean {
+    const trimmed = text.trimStart();
+    // Patterns indicating Claude started a new response instead of continuing
+    return /^\s*\{\s*"thinking"/.test(trimmed) ||
+           /^\s*\{\s*"actions"/.test(trimmed) ||
+           /^\s*```json\s*\{/.test(trimmed);
+  }
+
+  /**
    * Attempt to merge a truncated response with its continuation
    */
   static mergeResponses(original: string, continuation: string): string {
     const trimmedOriginal = original.trimEnd();
     const trimmedContinuation = continuation.trimStart();
+
+    // CRITICAL: Check if Claude generated a new JSON instead of continuing
+    // This happens when the original was truncated mid-content and Claude "restarts"
+    if (this.isNewJsonResponse(trimmedContinuation)) {
+      // Check if original contains a valid truncated JSON that we can try to recover
+      const recoveredJson = this.attemptJsonRecovery(trimmedOriginal);
+      if (recoveredJson) {
+        // Return recovered JSON - continuation will be processed separately
+        return recoveredJson;
+      }
+      // If we can't recover, try to use the new response
+      // But first check if the original had any complete actions we should keep
+      const partialActions = this.extractCompleteActionsFromTruncated(trimmedOriginal);
+      if (partialActions) {
+        return partialActions;
+      }
+      // Last resort: return the continuation (new JSON) as it's more likely to be valid
+      return trimmedContinuation;
+    }
 
     // Try to find overlap
     const overlapLength = this.findOverlap(trimmedOriginal, trimmedContinuation);
@@ -201,6 +246,171 @@ export class TruncationDetector {
 
     // Default: simple concatenation
     return trimmedOriginal + trimmedContinuation;
+  }
+
+  /**
+   * Attempt to recover a valid JSON from a truncated response
+   * by closing incomplete structures
+   */
+  private static attemptJsonRecovery(truncated: string): string | null {
+    // Check if it looks like JSON
+    if (!truncated.trim().startsWith('{')) {
+      return null;
+    }
+
+    try {
+      // First, try to parse as-is (might be valid)
+      JSON.parse(truncated);
+      return truncated;
+    } catch {
+      // Try to close incomplete structures
+    }
+
+    // Find where the actions array ends properly
+    // Look for complete action objects
+    const actionsMatch = truncated.match(/"actions"\s*:\s*\[/);
+    if (!actionsMatch) {
+      return null;
+    }
+
+    const actionsStart = actionsMatch.index! + actionsMatch[0].length;
+
+    // Find complete actions (ones that have proper closing braces)
+    let depth = 1; // We're inside the actions array
+    let lastCompleteActionEnd = actionsStart;
+    let inString = false;
+    let escapeNext = false;
+    let actionDepth = 0;
+
+    for (let i = actionsStart; i < truncated.length; i++) {
+      const char = truncated[i];
+
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\' && inString) {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (inString) continue;
+
+      if (char === '{') {
+        if (depth === 1) actionDepth = 0; // Starting new action
+        depth++;
+        actionDepth++;
+      } else if (char === '}') {
+        depth--;
+        actionDepth--;
+        if (depth === 1 && actionDepth === 0) {
+          // Completed an action object
+          lastCompleteActionEnd = i + 1;
+        }
+      } else if (char === '[') {
+        depth++;
+      } else if (char === ']') {
+        depth--;
+        if (depth === 0) {
+          // Actions array properly closed
+          lastCompleteActionEnd = i + 1;
+        }
+      }
+    }
+
+    // If we found at least one complete action, try to construct valid JSON
+    if (lastCompleteActionEnd > actionsStart) {
+      const partialJson = truncated.substring(0, lastCompleteActionEnd);
+
+      // Try to close the JSON properly
+      const closingBrackets = this.calculateClosingBrackets(partialJson);
+      const recovered = partialJson + closingBrackets;
+
+      try {
+        JSON.parse(recovered);
+        return recovered;
+      } catch {
+        // Recovery failed
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Calculate what brackets are needed to close a JSON string
+   */
+  private static calculateClosingBrackets(json: string): string {
+    let brackets: string[] = [];
+    let inString = false;
+    let escapeNext = false;
+
+    for (const char of json) {
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\' && inString) {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (inString) continue;
+
+      if (char === '{') {
+        brackets.push('}');
+      } else if (char === '[') {
+        brackets.push(']');
+      } else if (char === '}' || char === ']') {
+        if (brackets.length > 0 && brackets[brackets.length - 1] === char) {
+          brackets.pop();
+        }
+      }
+    }
+
+    // If we're in an unclosed string, close it first
+    if (inString) {
+      return '"' + brackets.reverse().join('');
+    }
+
+    return brackets.reverse().join('');
+  }
+
+  /**
+   * Extract complete actions from a truncated JSON response
+   */
+  private static extractCompleteActionsFromTruncated(truncated: string): string | null {
+    const recovered = this.attemptJsonRecovery(truncated);
+    if (recovered) {
+      try {
+        const parsed = JSON.parse(recovered);
+        if (parsed.actions && Array.isArray(parsed.actions) && parsed.actions.length > 0) {
+          // Reconstruct with a message about truncation
+          return JSON.stringify({
+            thinking: parsed.thinking || '',
+            actions: parsed.actions,
+            message: (parsed.message || '') + ' [Nota: Respuesta truncada, se procesaron las acciones completas]',
+            requiresConfirmation: parsed.requiresConfirmation || false,
+            awaitResults: parsed.awaitResults || false
+          });
+        }
+      } catch {
+        // Parse failed
+      }
+    }
+    return null;
   }
 
   /**

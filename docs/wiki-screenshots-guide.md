@@ -38,6 +38,13 @@ This document provides guidelines for capturing and maintaining screenshots for 
 | Concept Map Result | `concept-map-result.png` | Generated concept map note | After generating a concept map |
 | Concept Map Mermaid | `concept-map-mermaid.png` | Rendered Mermaid diagram | Preview mode showing the diagram |
 
+### Token Tracking
+
+| Screenshot | Filename | Description | How to Capture |
+|------------|----------|-------------|----------------|
+| Token Indicator | `token-indicator.png` | Token usage indicator in chat footer | Send a message, capture the footer showing input/output tokens |
+| Token History Modal | `token-history-modal.png` | Token usage history modal | Click on token indicator to open modal |
+
 ## Technical Specifications
 
 ### Dimensions
@@ -76,7 +83,9 @@ wiki/
     ├── note-creator-modal.png
     ├── concept-map-result.png
     ├── concept-map-mermaid.png
-    └── suggestions-modal.png
+    ├── suggestions-modal.png
+    ├── token-indicator.png
+    └── token-history-modal.png
 ```
 
 ## Capture Workflow
@@ -148,6 +157,10 @@ Use this checklist to track screenshot progress:
 - [ ] `concept-map-result.png` - Generated concept map note
 - [ ] `concept-map-mermaid.png` - Rendered Mermaid diagram
 
+### Token Tracking
+- [ ] `token-indicator.png` - Token usage indicator in chat footer
+- [ ] `token-history-modal.png` - Token usage history modal
+
 ### Quick Capture Steps
 
 1. **Stop Button** (`stop-button.png`)
@@ -164,6 +177,23 @@ Use this checklist to track screenshot progress:
    - Create a note that already exists
    - Capture the confirmation modal
 
+4. **Token Indicator** (`token-indicator.png`)
+   - Send any message in chat
+   - Look at the footer showing "↑X ↓Y tokens"
+   - Capture the token indicator area
+
+5. **Token History Modal** (`token-history-modal.png`)
+   - Click on the token indicator in the footer
+   - Modal opens showing usage history
+   - Capture the full modal
+
+### Settings Panel Notes
+
+The `settings-panel.png` screenshot should show:
+- **Custom Instructions** field (replaced "System Prompt")
+- **Token Tracking** section with "Show token indicator" toggle
+- All Agent Mode settings (52 actions now available)
+
 ---
 
-*Last updated: 2025-01-21*
+*Last updated: 2026-01-22*

@@ -74,12 +74,14 @@ Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente
 | Modelo | Modelo de Claude a utilizar | Claude Sonnet 4 |
 | Carpeta de notas | Destino para notas generadas | `Claude Notes` |
 | Máx. tokens | Límite de tokens en respuestas | 4096 |
+| Instrucciones personalizadas | Instrucciones adicionales añadidas al prompt del sistema | Vacío |
 | Notas en contexto | Títulos a incluir al procesar | 100 |
 | Tags en contexto | Tags a incluir al procesar | 50 |
-| Máx. acciones | Máximo de acciones del agente por mensaje | 20 |
+| Máx. acciones | Máximo de acciones del agente por mensaje | 25 |
 | Auto-continuar | Continuar automáticamente respuestas truncadas | Activado |
 | Auto-planificar | Descomponer tareas complejas en pasos | Activado |
 | Refuerzo de contexto | Reforzar contexto del agente en conversaciones largas | Activado |
+| Mostrar indicador de tokens | Mostrar uso de tokens en el pie del chat | Activado |
 
 ---
 
@@ -140,17 +142,22 @@ Claudian es un plugin de Obsidian que integra el poder de Claude AI directamente
    - *"Copia mis notas de reuniones a Archivo/2025/"*
    - *"Traduce esta nota al inglés"*
    - *"Elimina las notas vacías en Borradores/"*
+   - *"Inserta texto en el cursor"* o *"Ve a la línea 10"*
+   - *"Abre la nota diaria de hoy"* o *"Inserta una plantilla"*
+   - *"Añade un marcador"* o *"Busca por encabezado"*
 3. Claude interpretará tu solicitud y ejecutará las acciones
 4. Indicadores de progreso visual muestran cada acción mientras se ejecuta
 5. Las acciones destructivas y sobrescrituras de archivos requieren confirmación
 
-**Acciones disponibles:**
-- Crear, mover, renombrar y eliminar notas y carpetas
-- Copiar notas a nuevas ubicaciones (preserva contenido exacto)
-- Leer y modificar contenido de notas
-- Traducir o transformar contenido bajo petición
-- Buscar notas por título, contenido o tags
-- Actualizar frontmatter (YAML)
+**Acciones disponibles (52 en total en 8 categorías):**
+- **Gestión de Archivos y Carpetas (16):** Crear, mover, renombrar, eliminar, copiar notas y carpetas
+- **API del Editor (10):** Insertar en cursor, reemplazar selección, navegar líneas, deshacer/rehacer
+- **API de Comandos (3):** Ejecutar cualquier comando de Obsidian programáticamente
+- **Notas Diarias (2):** Abrir o crear notas diarias
+- **Plantillas (2):** Insertar plantillas, listar plantillas disponibles
+- **Marcadores (3):** Añadir, eliminar, listar marcadores
+- **API de Canvas (7):** Crear nodos, añadir conexiones, gestionar elementos del canvas
+- **Búsqueda Avanzada (4):** Buscar por encabezado, ID de bloque, obtener todos los tags
 
 **Operaciones de archivo vs transformación de contenido:**
 - **Operaciones de archivo** (copiar, mover, respaldar): Preservan el contenido exactamente

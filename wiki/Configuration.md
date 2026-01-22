@@ -77,15 +77,22 @@ Higher values allow longer responses but may increase API costs.
 
 ---
 
-### System Prompt
+### Custom Instructions
 
 | Setting | Description |
 |---------|-------------|
-| **Name** | System prompt |
-| **Description** | Custom instructions for Claude |
-| **Default** | Built-in Obsidian-aware prompt |
+| **Name** | Custom instructions |
+| **Description** | Additional instructions for Claude |
+| **Default** | Empty |
 
-You can customize Claude's behavior by modifying the system prompt. Click **Restore default** to reset to the original prompt.
+Add your own instructions to customize Claude's behavior. These instructions are **appended** to the built-in system prompt, so core functionality is always preserved. Click **Clear** to remove all custom instructions.
+
+**Examples of custom instructions:**
+- "Always respond in formal English"
+- "Prefer using bullet points over paragraphs"
+- "When creating notes, always add a 'status: draft' field"
+
+**Note:** You cannot override Claude's core identity or base functionality. Custom instructions supplement the default behavior.
 
 ---
 
@@ -205,6 +212,28 @@ When enabled, Claude will break down complex requests into a series of manageabl
 | **Default** | On |
 
 When enabled, the agent's system context is periodically reinforced during long conversations to maintain consistent behavior and prevent context drift.
+
+---
+
+## Token Tracking
+
+Settings for monitoring API token usage.
+
+### Show Token Indicator
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Show token indicator |
+| **Description** | Display token usage in chat footer |
+| **Default** | On |
+
+When enabled, shows the current session's token usage in the chat footer. Click the indicator to view detailed usage history.
+
+**Token indicator shows:**
+- Input tokens (sent to Claude)
+- Output tokens (received from Claude)
+- Session totals
+- Click to expand usage history modal
 
 ---
 

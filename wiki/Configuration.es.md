@@ -77,15 +77,22 @@ Valores más altos permiten respuestas más largas pero pueden aumentar los cost
 
 ---
 
-### Prompt del Sistema
+### Instrucciones Personalizadas
 
 | Ajuste | Descripción |
 |--------|-------------|
-| **Nombre** | Prompt del sistema |
-| **Descripción** | Instrucciones personalizadas para Claude |
-| **Por defecto** | Prompt integrado consciente de Obsidian |
+| **Nombre** | Instrucciones personalizadas |
+| **Descripción** | Instrucciones adicionales para Claude |
+| **Por defecto** | Vacío |
 
-Puedes personalizar el comportamiento de Claude modificando el prompt del sistema. Haz clic en **Restaurar predeterminado** para restablecer el prompt original.
+Agrega tus propias instrucciones para personalizar el comportamiento de Claude. Estas instrucciones se **añaden** al prompt del sistema integrado, por lo que la funcionalidad principal siempre se preserva. Haz clic en **Limpiar** para eliminar todas las instrucciones personalizadas.
+
+**Ejemplos de instrucciones personalizadas:**
+- "Siempre responde en español formal"
+- "Prefiere usar viñetas en lugar de párrafos"
+- "Al crear notas, siempre agrega un campo 'status: draft'"
+
+**Nota:** No puedes anular la identidad central de Claude ni la funcionalidad base. Las instrucciones personalizadas complementan el comportamiento predeterminado.
 
 ---
 
@@ -205,6 +212,28 @@ Cuando está activado, Claude desglosará solicitudes complejas en una serie de 
 | **Por defecto** | Activado |
 
 Cuando está activado, el contexto del sistema del agente se refuerza periódicamente durante conversaciones largas para mantener un comportamiento consistente y prevenir la deriva del contexto.
+
+---
+
+## Seguimiento de Tokens
+
+Ajustes para monitorear el uso de tokens de la API.
+
+### Mostrar Indicador de Tokens
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Mostrar indicador de tokens |
+| **Descripción** | Mostrar uso de tokens en el pie del chat |
+| **Por defecto** | Activado |
+
+Cuando está activado, muestra el uso de tokens de la sesión actual en el pie del chat. Haz clic en el indicador para ver el historial de uso detallado.
+
+**El indicador de tokens muestra:**
+- Tokens de entrada (enviados a Claude)
+- Tokens de salida (recibidos de Claude)
+- Totales de sesión
+- Clic para expandir el modal de historial de uso
 
 ---
 

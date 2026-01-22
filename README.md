@@ -74,12 +74,14 @@ Claudian is an Obsidian plugin that brings the power of Claude AI directly into 
 | Model | Claude model to use | Claude Sonnet 4 |
 | Notes folder | Destination for generated notes | `Claude Notes` |
 | Max tokens | Token limit in responses | 4096 |
+| Custom instructions | Additional instructions appended to system prompt | Empty |
 | Notes in context | Titles to include when processing | 100 |
 | Tags in context | Tags to include when processing | 50 |
-| Max actions | Maximum vault actions per agent message | 20 |
+| Max actions | Maximum vault actions per agent message | 25 |
 | Auto-continue | Automatically continue truncated responses | Enabled |
 | Auto-plan | Decompose complex tasks into steps | Enabled |
 | Context reinforcement | Reinforce agent context in long conversations | Enabled |
+| Show token indicator | Display token usage in chat footer | Enabled |
 
 ---
 
@@ -140,17 +142,22 @@ Claudian is an Obsidian plugin that brings the power of Claude AI directly into 
    - *"Copy my meeting notes to Archive/2025/"*
    - *"Translate this note to English"*
    - *"Delete empty notes in Drafts/"*
+   - *"Insert text at cursor"* or *"Go to line 10"*
+   - *"Open today's daily note"* or *"Insert a template"*
+   - *"Add a bookmark"* or *"Search by heading"*
 3. Claude will interpret your request and execute the actions
 4. Visual progress indicators show each action as it executes
 5. Destructive actions and file overwrites require confirmation
 
-**Available actions:**
-- Create, move, rename, and delete notes and folders
-- Copy notes to new locations (preserves exact content)
-- Read and modify note content
-- Translate or transform content on request
-- Search notes by title, content, or tags
-- Update frontmatter (YAML)
+**Available actions (52 total across 8 categories):**
+- **File & Folder Management (16):** Create, move, rename, delete, copy notes and folders
+- **Editor API (10):** Insert at cursor, replace selection, navigate lines, undo/redo
+- **Commands API (3):** Execute any Obsidian command programmatically
+- **Daily Notes (2):** Open or create daily notes
+- **Templates (2):** Insert templates, list available templates
+- **Bookmarks (3):** Add, remove, list bookmarks
+- **Canvas API (7):** Create nodes, add edges, manage canvas elements
+- **Enhanced Search (4):** Search by heading, block ID, get all tags
 
 **File operations vs content transformation:**
 - **File operations** (copy, move, backup): Preserve content exactly as-is

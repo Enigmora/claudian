@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { t, getSupportedLocales, setLocale, resolveLocale } from './i18n';
 import type { Locale } from './i18n';
+import { VIEW_TYPE_CHAT, ChatView } from './chat-view';
 
 export interface ClaudeCompanionSettings {
   language: 'auto' | Locale;
@@ -21,6 +22,8 @@ export interface ClaudeCompanionSettings {
   autoContinueOnTruncation: boolean;
   enableAutoPlan: boolean;
   enableContextReinforcement: boolean;
+  // Phase 5: Token Tracking
+  showTokenIndicator: boolean;
 }
 
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
@@ -40,7 +43,9 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   // Phase 2: Advanced Agent Mode
   autoContinueOnTruncation: true,
   enableAutoPlan: true,
-  enableContextReinforcement: true
+  enableContextReinforcement: true,
+  // Phase 5: Token Tracking
+  showTokenIndicator: true
 };
 
 export interface ModelOption {
@@ -105,6 +110,14 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
             const newLocale = resolveLocale(value);
             await setLocale(newLocale);
             this.display();
+            // Update chat view language
+            const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CHAT);
+            for (const leaf of leaves) {
+              const view = leaf.view;
+              if (view instanceof ChatView) {
+                view.updateLanguage();
+              }
+            }
           });
       });
 
@@ -327,6 +340,30 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         .onChange(async (value) => {
           this.plugin.settings.enableContextReinforcement = value;
           await this.plugin.saveSettings();
+        })
+      );
+
+    // Token Tracking Section (Phase 5)
+    containerEl.createEl('hr');
+    containerEl.createEl('h3', { text: t('settings.section.tokenTracking') });
+
+    // Show token indicator
+    new Setting(containerEl)
+      .setName(t('settings.showTokens.name'))
+      .setDesc(t('settings.showTokens.desc'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showTokenIndicator)
+        .onChange(async (value) => {
+          this.plugin.settings.showTokenIndicator = value;
+          await this.plugin.saveSettings();
+          // Update chat view immediately if open
+          const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CHAT);
+          for (const leaf of leaves) {
+            const view = leaf.view;
+            if (view instanceof ChatView) {
+              view.updateTokenFooterVisibility();
+            }
+          }
         })
       );
 

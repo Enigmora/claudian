@@ -473,7 +473,30 @@ CONTEXTO DE LA BÓVEDA:
 - Total de notas: {{noteCount}}
 - Carpetas existentes: {{folders}}
 - Tags existentes: {{tags}}
-- Algunas notas: {{noteTitles}}`
+- Algunas notas: {{noteTitles}}`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TOKEN TRACKING (Phase 5)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'tokens.sessionCount': '{{count}} tokens',
+  'tokens.tooltip': 'Entrada: {{input}} | Salida: {{output}} | Llamadas: {{calls}}',
+  'tokens.inputLabel': 'Entrada',
+  'tokens.outputLabel': 'Salida',
+  'tokens.callsLabel': 'Llamadas',
+  'tokens.totalLabel': 'Total',
+  'tokens.today': 'Hoy: {{count}}',
+  'tokens.week': 'Esta semana: {{count}}',
+  'tokens.month': 'Este mes: {{count}}',
+  'tokens.allTime': 'Histórico: {{count}}',
+  'tokens.historyLink': 'Historial de uso',
+  'tokens.historyTitle': 'Historial de Uso de Tokens',
+  'tokens.sessionTitle': 'Sesión Actual',
+  'tokens.closeButton': 'Cerrar',
+  'settings.showTokens.name': 'Mostrar indicador de tokens',
+  'settings.showTokens.desc': 'Muestra el uso de tokens en el pie del chat.',
+  'settings.section.tokenTracking': 'Seguimiento de Tokens',
+  'error.quotaExhausted': 'Cuota de API agotada. Revisa tus límites en console.anthropic.com.',
+  'error.billingIssue': 'Problema de facturación detectado. Revisa tu cuenta en console.anthropic.com.'
 };
 
 export default translations;

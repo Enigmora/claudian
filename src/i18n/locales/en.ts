@@ -473,7 +473,30 @@ VAULT CONTEXT:
 - Total notes: {{noteCount}}
 - Existing folders: {{folders}}
 - Existing tags: {{tags}}
-- Some notes: {{noteTitles}}`
+- Some notes: {{noteTitles}}`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TOKEN TRACKING (Phase 5)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'tokens.sessionCount': '{{count}} tokens',
+  'tokens.tooltip': 'Input: {{input}} | Output: {{output}} | Calls: {{calls}}',
+  'tokens.inputLabel': 'Input',
+  'tokens.outputLabel': 'Output',
+  'tokens.callsLabel': 'Calls',
+  'tokens.totalLabel': 'Total',
+  'tokens.today': 'Today: {{count}}',
+  'tokens.week': 'This week: {{count}}',
+  'tokens.month': 'This month: {{count}}',
+  'tokens.allTime': 'All time: {{count}}',
+  'tokens.historyLink': 'Usage history',
+  'tokens.historyTitle': 'Token Usage History',
+  'tokens.sessionTitle': 'Current Session',
+  'tokens.closeButton': 'Close',
+  'settings.showTokens.name': 'Show token indicator',
+  'settings.showTokens.desc': 'Display token usage in the chat footer.',
+  'settings.section.tokenTracking': 'Token Tracking',
+  'error.quotaExhausted': 'API quota exhausted. Check your usage limits at console.anthropic.com.',
+  'error.billingIssue': 'Billing issue detected. Check your account at console.anthropic.com.'
 };
 
 export default translations;

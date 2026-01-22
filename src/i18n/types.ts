@@ -299,6 +299,29 @@ export type Translations = {
   'prompt.templateProcessor': string;
   'prompt.conceptMapGenerator': string;
   'prompt.agentMode': string;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TOKEN TRACKING (Phase 5)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'tokens.sessionCount': string;
+  'tokens.tooltip': string;
+  'tokens.inputLabel': string;
+  'tokens.outputLabel': string;
+  'tokens.callsLabel': string;
+  'tokens.totalLabel': string;
+  'tokens.today': string;
+  'tokens.week': string;
+  'tokens.month': string;
+  'tokens.allTime': string;
+  'tokens.historyLink': string;
+  'tokens.historyTitle': string;
+  'tokens.sessionTitle': string;
+  'tokens.closeButton': string;
+  'settings.showTokens.name': string;
+  'settings.showTokens.desc': string;
+  'settings.section.tokenTracking': string;
+  'error.quotaExhausted': string;
+  'error.billingIssue': string;
 };
 
 /**

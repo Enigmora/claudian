@@ -3,6 +3,7 @@ import { ClaudeCompanionSettings } from './settings';
 import { VaultContext } from './vault-indexer';
 import { ExtractionTemplate } from './extraction-templates';
 import { t } from './i18n';
+import type { TokenUsage, UsageMethod } from './token-tracker';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -14,6 +15,7 @@ export interface StreamCallbacks {
   onToken?: (token: string) => void;
   onComplete?: (fullResponse: string) => void;
   onError?: (error: Error) => void;
+  onUsage?: (usage: TokenUsage) => void;
 }
 
 export interface AtomicConcept {
@@ -133,10 +135,20 @@ export class ClaudeClient {
         callbacks.onToken?.(text);
       });
 
-      await stream.finalMessage();
+      const finalMessage = await stream.finalMessage();
 
       this.currentStream = null;
       this.abortController = null;
+
+      // Extract usage from final message
+      if (finalMessage.usage && callbacks.onUsage) {
+        callbacks.onUsage({
+          inputTokens: finalMessage.usage.input_tokens,
+          outputTokens: finalMessage.usage.output_tokens,
+          timestamp: Date.now(),
+          method: 'chat'
+        });
+      }
 
       // Add response to history
       this.conversationHistory.push({
@@ -170,7 +182,17 @@ export class ClaudeClient {
         if (error.message.includes('401')) {
           callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
         } else if (error.message.includes('429')) {
-          callbacks.onError?.(new Error(t('error.rateLimit')));
+          // Check for quota exhaustion vs rate limit
+          if (error.message.toLowerCase().includes('quota') ||
+              error.message.toLowerCase().includes('exceeded')) {
+            callbacks.onError?.(new Error(t('error.quotaExhausted')));
+          } else {
+            callbacks.onError?.(new Error(t('error.rateLimit')));
+          }
+        } else if (error.message.includes('400') &&
+                   (error.message.toLowerCase().includes('billing') ||
+                    error.message.toLowerCase().includes('payment'))) {
+          callbacks.onError?.(new Error(t('error.billingIssue')));
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
           callbacks.onError?.(new Error(t('error.connection')));
         } else {
@@ -216,23 +238,22 @@ export class ClaudeClient {
         callbacks.onToken?.(text);
       });
 
-      await stream.finalMessage();
+      const finalMessage = await stream.finalMessage();
+
+      // Extract usage from final message
+      if (finalMessage.usage && callbacks.onUsage) {
+        callbacks.onUsage({
+          inputTokens: finalMessage.usage.input_tokens,
+          outputTokens: finalMessage.usage.output_tokens,
+          timestamp: Date.now(),
+          method: 'process'
+        });
+      }
+
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('401')) {
-          callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
-        } else if (error.message.includes('429')) {
-          callbacks.onError?.(new Error(t('error.rateLimit')));
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          callbacks.onError?.(new Error(t('error.connection')));
-        } else {
-          callbacks.onError?.(error);
-        }
-      } else {
-        callbacks.onError?.(new Error(t('error.unknown')));
-      }
+      this.handleErrorWithQuota(error, callbacks);
     }
   }
 
@@ -289,11 +310,22 @@ ${noteContent}`;
         callbacks.onToken?.(text);
       });
 
-      await stream.finalMessage();
+      const finalMessage = await stream.finalMessage();
+
+      // Extract usage from final message
+      if (finalMessage.usage && callbacks.onUsage) {
+        callbacks.onUsage({
+          inputTokens: finalMessage.usage.input_tokens,
+          outputTokens: finalMessage.usage.output_tokens,
+          timestamp: Date.now(),
+          method: 'template'
+        });
+      }
+
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
-      this.handleError(error, callbacks);
+      this.handleErrorWithQuota(error, callbacks);
     }
   }
 
@@ -328,11 +360,22 @@ ${noteContent}`;
         callbacks.onToken?.(text);
       });
 
-      await stream.finalMessage();
+      const finalMessage = await stream.finalMessage();
+
+      // Extract usage from final message
+      if (finalMessage.usage && callbacks.onUsage) {
+        callbacks.onUsage({
+          inputTokens: finalMessage.usage.input_tokens,
+          outputTokens: finalMessage.usage.output_tokens,
+          timestamp: Date.now(),
+          method: 'conceptMap'
+        });
+      }
+
       callbacks.onComplete?.(fullResponse);
 
     } catch (error) {
-      this.handleError(error, callbacks);
+      this.handleErrorWithQuota(error, callbacks);
     }
   }
 
@@ -376,10 +419,20 @@ ${noteContent}`;
         callbacks.onToken?.(text);
       });
 
-      await stream.finalMessage();
+      const finalMessage = await stream.finalMessage();
 
       this.currentStream = null;
       this.abortController = null;
+
+      // Extract usage from final message
+      if (finalMessage.usage && callbacks.onUsage) {
+        callbacks.onUsage({
+          inputTokens: finalMessage.usage.input_tokens,
+          outputTokens: finalMessage.usage.output_tokens,
+          timestamp: Date.now(),
+          method: 'agent'
+        });
+      }
 
       // Add response to history
       this.conversationHistory.push({
@@ -405,7 +458,7 @@ ${noteContent}`;
         callbacks.onError?.(new Error(t('chat.streamStopped')));
       } else {
         this.conversationHistory.pop();
-        this.handleError(error, callbacks);
+        this.handleErrorWithQuota(error, callbacks);
       }
     }
   }
@@ -417,6 +470,35 @@ ${noteContent}`;
       } else if (error.message.includes('429')) {
         callbacks.onError?.(new Error(t('error.rateLimit')));
       } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        callbacks.onError?.(new Error(t('error.connection')));
+      } else {
+        callbacks.onError?.(error);
+      }
+    } else {
+      callbacks.onError?.(new Error(t('error.unknown')));
+    }
+  }
+
+  /**
+   * Enhanced error handling with quota and billing detection
+   */
+  private handleErrorWithQuota(error: unknown, callbacks: StreamCallbacks): void {
+    if (error instanceof Error) {
+      const errorMsg = error.message.toLowerCase();
+
+      if (error.message.includes('401')) {
+        callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
+      } else if (error.message.includes('429')) {
+        // Check for quota exhaustion vs rate limit
+        if (errorMsg.includes('quota') || errorMsg.includes('exceeded') || errorMsg.includes('limit')) {
+          callbacks.onError?.(new Error(t('error.quotaExhausted')));
+        } else {
+          callbacks.onError?.(new Error(t('error.rateLimit')));
+        }
+      } else if (error.message.includes('400') &&
+                 (errorMsg.includes('billing') || errorMsg.includes('payment') || errorMsg.includes('credit'))) {
+        callbacks.onError?.(new Error(t('error.billingIssue')));
+      } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
         callbacks.onError?.(new Error(t('error.connection')));
       } else {
         callbacks.onError?.(error);

@@ -24,6 +24,8 @@ import { t, setLocale, resolveLocale, initSync } from './i18n';
 import { ContextStorage } from './context-storage';
 import { ContextManager } from './context-manager';
 import { PurgeManager } from './purge-strategies';
+// Phase 5: Token Tracking
+import { TokenUsageTracker, TokenUsageHistory, createEmptyHistory } from './token-tracker';
 
 export default class ClaudeCompanionPlugin extends Plugin {
   settings: ClaudeCompanionSettings;
@@ -36,6 +38,9 @@ export default class ClaudeCompanionPlugin extends Plugin {
   contextStorage: ContextStorage;
   contextManager: ContextManager;
   private purgeIntervalId: number | null = null;
+  // Phase 5: Token Tracking
+  tokenTracker: TokenUsageTracker;
+  private tokenUsageHistory: TokenUsageHistory;
 
   async onload() {
     // Register custom icon
@@ -55,6 +60,11 @@ export default class ClaudeCompanionPlugin extends Plugin {
       this.settings.systemPrompt = t('prompt.default');
       await this.saveSettings();
     }
+
+    // Phase 5: Initialize token tracker
+    this.tokenUsageHistory = await this.loadTokenHistory();
+    this.tokenTracker = new TokenUsageTracker(this.tokenUsageHistory);
+    this.tokenTracker.setSaveCallback((history) => this.saveTokenHistory(history));
 
     // Initialize Claude client
     this.claudeClient = new ClaudeClient(this.settings);
@@ -202,6 +212,34 @@ export default class ClaudeCompanionPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+
+  /**
+   * Phase 5: Load token usage history from separate storage
+   */
+  private async loadTokenHistory(): Promise<TokenUsageHistory> {
+    try {
+      const data = await this.loadData();
+      if (data && data.tokenUsageHistory) {
+        return data.tokenUsageHistory;
+      }
+    } catch (e) {
+      console.error('Error loading token history:', e);
+    }
+    return createEmptyHistory();
+  }
+
+  /**
+   * Phase 5: Save token usage history
+   */
+  private async saveTokenHistory(history: TokenUsageHistory): Promise<void> {
+    try {
+      const data = await this.loadData() || {};
+      data.tokenUsageHistory = history;
+      await this.saveData(data);
+    } catch (e) {
+      console.error('Error saving token history:', e);
+    }
   }
 
   async activateChatView() {

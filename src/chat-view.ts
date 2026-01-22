@@ -11,6 +11,8 @@ import { TruncationDetector, TruncationDetectionResult } from './truncation-dete
 import { ContextReinforcer, ConversationAnalysis } from './context-reinforcer';
 import { ResponseValidator, ValidationResult } from './response-validator';
 import { TaskPlanner, TaskPlan, TaskAnalysis } from './task-planner';
+// Phase 5: Token Tracking
+import type { TokenUsage, SessionTokenStats } from './token-tracker';
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -38,6 +40,11 @@ export class ChatView extends ItemView {
 
   // Phase 3: Context Management
   private currentPartialId: string | null = null;
+
+  // Phase 5: Token Tracking
+  private tokenFooter: HTMLElement | null = null;
+  private tokenIndicator: HTMLElement | null = null;
+  private tokenUsageCleanup: (() => void) | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
@@ -147,6 +154,10 @@ export class ChatView extends ItemView {
       text: t('chat.send')
     });
     this.sendButton.onclick = () => this.handleButtonClick();
+
+    // Phase 5: Token usage footer
+    this.createTokenFooter(inputWrapper);
+    this.setupTokenTracking();
   }
 
   /**
@@ -183,7 +194,11 @@ export class ChatView extends ItemView {
   }
 
   async onClose(): Promise<void> {
-    // Cleanup if needed
+    // Cleanup token tracking subscription
+    if (this.tokenUsageCleanup) {
+      this.tokenUsageCleanup();
+      this.tokenUsageCleanup = null;
+    }
   }
 
   private restoreHistory(): void {
@@ -392,6 +407,9 @@ export class ChatView extends ItemView {
       onStart: () => {
         // Streaming started
       },
+      onUsage: (usage) => {
+        this.trackTokenUsage(usage);
+      },
       onToken: (token) => {
         fullResponse += token;
         // Update content as it arrives
@@ -494,6 +512,9 @@ export class ChatView extends ItemView {
     await this.client.sendAgentMessageStream(enhancedMessage, agentSystemPrompt, {
       onStart: () => {
         // Streaming started
+      },
+      onUsage: (usage) => {
+        this.trackTokenUsage(usage);
       },
       onToken: (token) => {
         fullResponse += token;
@@ -668,6 +689,9 @@ export class ChatView extends ItemView {
 
     await this.client.sendAgentMessageStream(continuePrompt, agentSystemPrompt, {
       onStart: () => {},
+      onUsage: (usage) => {
+        this.trackTokenUsage(usage);
+      },
       onToken: (token) => {
         continuationResponse += token;
 
@@ -798,6 +822,9 @@ export class ChatView extends ItemView {
 
     await this.client.sendAgentMessageStream(retryPrompt, agentSystemPrompt, {
       onStart: () => {},
+      onUsage: (usage) => {
+        this.trackTokenUsage(usage);
+      },
       onToken: (token) => {
         retryResponse += token;
 
@@ -1271,6 +1298,182 @@ export class ChatView extends ItemView {
       return (num / 1000).toFixed(1) + 'K';
     }
     return String(num);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Phase 5: Token Tracking UI
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Create the token usage footer element
+   */
+  private createTokenFooter(wrapper: HTMLElement): void {
+    this.tokenFooter = wrapper.createDiv({ cls: 'claudian-token-footer' });
+
+    // Token indicator
+    this.tokenIndicator = this.tokenFooter.createDiv({ cls: 'claudian-token-indicator' });
+
+    // Input tokens
+    const inputSpan = this.tokenIndicator.createSpan({ cls: 'token-stat token-input' });
+    inputSpan.createSpan({ cls: 'token-label', text: t('tokens.inputLabel') + ': ' });
+    inputSpan.createSpan({ cls: 'token-value', text: '0' });
+
+    // Separator
+    this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
+
+    // Output tokens
+    const outputSpan = this.tokenIndicator.createSpan({ cls: 'token-stat token-output' });
+    outputSpan.createSpan({ cls: 'token-label', text: t('tokens.outputLabel') + ': ' });
+    outputSpan.createSpan({ cls: 'token-value', text: '0' });
+
+    // Separator
+    this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
+
+    // Calls
+    const callsSpan = this.tokenIndicator.createSpan({ cls: 'token-stat token-calls' });
+    callsSpan.createSpan({ cls: 'token-label', text: t('tokens.callsLabel') + ': ' });
+    callsSpan.createSpan({ cls: 'token-value', text: '0' });
+
+    // Separator
+    this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
+
+    // History link
+    const historyLink = this.tokenIndicator.createSpan({ cls: 'token-history-link' });
+    historyLink.setText(t('tokens.historyLink'));
+    historyLink.onclick = () => this.openTokenHistoryModal();
+
+    // Initial visibility based on settings
+    this.updateTokenFooterVisibility();
+  }
+
+  /**
+   * Setup token tracking subscription
+   */
+  private setupTokenTracking(): void {
+    const tracker = this.plugin.tokenTracker;
+    if (!tracker) return;
+
+    // Subscribe to usage updates
+    this.tokenUsageCleanup = tracker.onUsageUpdate((stats) => {
+      this.updateTokenIndicator(stats);
+    });
+
+    // Show current session stats
+    const currentStats = tracker.getSessionStats();
+    this.updateTokenIndicator(currentStats);
+  }
+
+  /**
+   * Track token usage via the plugin's tracker
+   */
+  private trackTokenUsage(usage: TokenUsage): void {
+    const tracker = this.plugin.tokenTracker;
+    if (tracker) {
+      tracker.trackUsage(usage);
+    }
+  }
+
+  /**
+   * Update the token indicator with new stats
+   */
+  private updateTokenIndicator(stats: SessionTokenStats): void {
+    if (!this.tokenIndicator) return;
+
+    const tracker = this.plugin.tokenTracker;
+
+    // Update input value
+    const inputValue = this.tokenIndicator.querySelector('.token-input .token-value');
+    if (inputValue) {
+      inputValue.setText(tracker ? tracker.formatTokenCount(stats.inputTokens) : String(stats.inputTokens));
+    }
+
+    // Update output value
+    const outputValue = this.tokenIndicator.querySelector('.token-output .token-value');
+    if (outputValue) {
+      outputValue.setText(tracker ? tracker.formatTokenCount(stats.outputTokens) : String(stats.outputTokens));
+    }
+
+    // Update calls value
+    const callsValue = this.tokenIndicator.querySelector('.token-calls .token-value');
+    if (callsValue) {
+      callsValue.setText(String(stats.callCount));
+    }
+
+    // Add pulse animation on update
+    this.tokenIndicator.addClass('pulse');
+    setTimeout(() => {
+      this.tokenIndicator?.removeClass('pulse');
+    }, 500);
+
+    // Update visibility in case settings changed
+    this.updateTokenFooterVisibility();
+  }
+
+  /**
+   * Open the token history modal with animated bar chart
+   */
+  private openTokenHistoryModal(): void {
+    const { TokenHistoryModal } = require('./token-history-modal');
+    new TokenHistoryModal(this.app, this.plugin).open();
+  }
+
+  /**
+   * Update token footer visibility based on settings
+   * Public method to allow settings to trigger updates
+   */
+  public updateTokenFooterVisibility(): void {
+    if (!this.tokenFooter) return;
+
+    if (this.plugin.settings.showTokenIndicator) {
+      this.tokenFooter.removeClass('hidden');
+    } else {
+      this.tokenFooter.addClass('hidden');
+    }
+  }
+
+  /**
+   * Update UI texts when language changes
+   * Public method to allow settings to trigger updates
+   */
+  public updateLanguage(): void {
+    // Update send button
+    if (this.sendButton && !this.isStreaming) {
+      this.sendButton.setText(t('chat.send'));
+    }
+
+    // Update input placeholder
+    if (this.inputEl) {
+      this.inputEl.placeholder = t('chat.placeholder');
+    }
+
+    // Update agent toggle label
+    const agentLabel = this.containerEl.querySelector('.agent-toggle-label');
+    if (agentLabel) {
+      agentLabel.setText(t('chat.agentLabel'));
+    }
+
+    // Update token footer labels
+    if (this.tokenIndicator) {
+      const inputLabel = this.tokenIndicator.querySelector('.token-input .token-label');
+      if (inputLabel) {
+        inputLabel.setText(t('tokens.inputLabel') + ': ');
+      }
+
+      const outputLabel = this.tokenIndicator.querySelector('.token-output .token-label');
+      if (outputLabel) {
+        outputLabel.setText(t('tokens.outputLabel') + ': ');
+      }
+
+      const callsLabel = this.tokenIndicator.querySelector('.token-calls .token-label');
+      if (callsLabel) {
+        callsLabel.setText(t('tokens.callsLabel') + ': ');
+      }
+
+      const historyLink = this.tokenIndicator.querySelector('.token-history-link');
+      if (historyLink) {
+        historyLink.setText(t('tokens.historyLink'));
+      }
+    }
   }
 
   private setupResizeHandle(

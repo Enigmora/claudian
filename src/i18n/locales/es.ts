@@ -193,6 +193,8 @@ const translations: Translations = {
   'agent.noActions': 'No se pudieron ejecutar las acciones:',
   'agent.actionsFailed': '{{count}} acción(es) fallaron.',
   'agent.partialSuccess': 'Resultados:',
+  'agent.loopLimitReached': 'Límite de iteraciones alcanzado. Por favor, continúa manualmente.',
+  'agent.processingResults': 'Procesando resultados (paso {{step}})...',
   'agent.createFolder': 'Crear carpeta: {{path}}',
   'agent.deleteFolder': 'Eliminar carpeta: {{path}}',
   'agent.listFolder': 'Listar carpeta: {{path}}',
@@ -331,6 +333,19 @@ Por favor proporciona las acciones EXACTAS como JSON:
 }`,
   'agent.retryPrompt.incompleteJson': 'Tu respuesta fue cortada. Por favor continúa y completa la estructura JSON.',
   'agent.retryPrompt.generic': 'Por favor proporciona las acciones de la bóveda en el formato JSON requerido con los campos "actions", "message" y "requiresConfirmation".',
+  // Agentic Loop (Phase 2)
+  'agent.loopCancelled': 'Bucle agéntico cancelado por el usuario.',
+  'agent.cancelLoop': 'Cancelar',
+  'agent.allActionsFailed': 'Todas las acciones fallaron. Bucle detenido para evitar más errores.',
+  'agent.infiniteLoopDetected': 'Bucle infinito detectado (acciones repetidas). Operación detenida.',
+  // Agentic Loop UX (Phase 3)
+  'agent.loopProgress': 'Paso {{current}} de máx. {{max}}',
+  'agent.loopTokens': '↑{{input}} ↓{{output}}',
+  'agent.loopTokenSummary': 'Tokens utilizados: ↑{{input}} entrada, ↓{{output}} salida',
+  'agent.loopStep': 'Paso {{step}}',
+  'agent.loopStepFinal': 'Completado',
+  'agent.loopExpandStep': 'Ver más...',
+  'agent.loopCollapseStep': 'Ver menos',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // WARNINGS AND VALIDATION
@@ -455,6 +470,21 @@ CAPACIDADES:
 - Búsqueda avanzada (por encabezado, ID de bloque, tags)
 - Control del espacio de trabajo (abrir archivos, dividir vistas)
 
+⚠️ REGLA OBLIGATORIA - LEER ANTES DE ACTUAR:
+Cuando el usuario pida operaciones sobre archivos en una carpeta (copiar, mover, procesar, listar, etc.):
+1. SIEMPRE ejecuta list-folder PRIMERO como tu PRIMERA acción
+2. NUNCA inventes nombres de archivo - usa SOLO los que devuelva list-folder
+3. Si no ejecutas list-folder primero, las operaciones FALLARÁN
+
+Ejemplo correcto para "copia archivos de /Origen a /Destino":
+{
+  "actions": [
+    { "action": "list-folder", "params": { "path": "Origen" } },
+    { "action": "create-folder", "params": { "path": "Destino" } }
+  ]
+}
+Luego, con los nombres reales del list-folder, ejecuta las copias.
+
 ACCIONES DISPONIBLES:
 
 === Gestión de Archivos y Carpetas ===
@@ -535,8 +565,90 @@ Cuando el usuario solicite una acción sobre la bóveda, responde ÚNICAMENTE co
     { "action": "nombre-accion", "params": { ... }, "description": "Descripción legible" }
   ],
   "message": "Mensaje para el usuario explicando qué harás",
-  "requiresConfirmation": false
+  "requiresConfirmation": false,
+  "awaitResults": false
 }
+
+FLUJO BIDIRECCIONAL (awaitResults):
+El sistema soporta un bucle agéntico que te permite ver resultados antes de continuar.
+Cuando necesites información de la bóveda ANTES de actuar:
+1. Ejecuta acciones de consulta (list-folder, read-note, search-notes, etc.)
+2. Establece "awaitResults": true
+3. Recibirás los resultados de las acciones ejecutadas
+4. Podrás generar más acciones basándote en los datos reales
+5. Repite hasta completar la tarea (máximo 5 iteraciones)
+
+CUÁNDO USAR awaitResults: true:
+- Operaciones en carpetas (necesitas los nombres reales de archivos)
+- Búsqueda y procesamiento (necesitas saber qué notas coinciden)
+- Leer antes de modificar (necesitas ver el contenido actual)
+- Verificar resultados (confirmar que una acción funcionó)
+- Tareas condicionales (la siguiente acción depende del resultado anterior)
+
+CUÁNDO NO USAR awaitResults:
+- Crear notas nuevas (no necesitas información previa)
+- Tareas simples donde conoces todos los datos
+- Última iteración de una tarea (ya tienes todo lo necesario)
+
+=== EJEMPLO 1: Copiar archivos de una carpeta ===
+PASO 1 - Listar primero:
+{
+  "thinking": "Necesito ver qué archivos hay antes de copiarlos",
+  "actions": [
+    { "action": "list-folder", "params": { "path": "Origen" } },
+    { "action": "create-folder", "params": { "path": "Destino" } }
+  ],
+  "message": "Listando archivos y creando carpeta destino...",
+  "awaitResults": true
+}
+
+PASO 2 - Recibirás:
+[RESULTADOS DE ACCIONES EJECUTADAS]
+✓ Listar carpeta: Origen
+  Resultado: ["nota1.md", "nota2.md", "nota3.md"]
+✓ Crear carpeta: Destino
+
+PASO 3 - Ejecutar con datos reales (sin awaitResults, es la última acción):
+{
+  "actions": [
+    { "action": "copy-note", "params": { "from": "Origen/nota1.md", "to": "Destino/nota1.md" } },
+    { "action": "copy-note", "params": { "from": "Origen/nota2.md", "to": "Destino/nota2.md" } },
+    { "action": "copy-note", "params": { "from": "Origen/nota3.md", "to": "Destino/nota3.md" } }
+  ],
+  "message": "Copiando 3 archivos a Destino"
+}
+
+=== EJEMPLO 2: Buscar y procesar notas ===
+PASO 1 - Buscar notas:
+{
+  "actions": [
+    { "action": "search-notes", "params": { "query": "proyecto", "folder": "Trabajo" } }
+  ],
+  "message": "Buscando notas sobre 'proyecto'...",
+  "awaitResults": true
+}
+
+PASO 2 - Recibirás las notas encontradas, luego puedes procesarlas.
+
+=== EJEMPLO 3: Leer antes de modificar ===
+PASO 1 - Leer contenido actual:
+{
+  "actions": [
+    { "action": "read-note", "params": { "path": "Ideas/brainstorm.md" } }
+  ],
+  "message": "Leyendo contenido actual...",
+  "awaitResults": true
+}
+
+PASO 2 - Recibirás el contenido, luego puedes agregar o modificar.
+
+=== EJEMPLO 4: Verificar y corregir errores ===
+Si una acción falla, recibirás el error y podrás intentar corregirlo:
+[RESULTADOS DE ACCIONES EJECUTADAS]
+✗ Copiar nota: Origen/viejo.md → Destino/nuevo.md
+  Error: El archivo no existe
+
+Tu siguiente respuesta puede manejar el error o informar al usuario.
 
 CRÍTICO - OPERACIONES DE ARCHIVO vs OPERACIONES DE CONTENIDO:
 Debes distinguir entre dos tipos de solicitudes:
@@ -586,6 +698,7 @@ REGLAS IMPORTANTES:
 4. Si no estás seguro de la intención del usuario, pregunta antes de actuar
 5. Para conversación normal (sin acciones sobre la bóveda), responde normalmente SIN formato JSON
 6. NUNCA pidas al usuario que "continúe" - incluye todas las acciones que puedas, el sistema maneja el resto
+7. CRÍTICO - Para operaciones en carpetas: USA list-folder PRIMERO para obtener los nombres reales de archivos. Los títulos de notas en el contexto NO incluyen rutas - NO asumas que están en la carpeta solicitada
 
 CONTEXTO DE LA BÓVEDA:
 - Total de notas: {{noteCount}}

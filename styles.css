@@ -245,12 +245,13 @@
   background: var(--background-primary);
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .claudian-input {
   flex: 1;
   min-height: 40px;
-  max-height: none;
+  max-height: 100%;
   padding: 10px 12px;
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
@@ -259,6 +260,7 @@
   font-size: 14px;
   resize: none;
   font-family: inherit;
+  overflow-y: auto;
 }
 
 .claudian-input:focus {
@@ -1985,4 +1987,235 @@
 
 .token-history-close-btn:hover {
   background: var(--interactive-accent-hover);
+}
+
+/* ==================== */
+/* Agentic Loop (Phase 2) */
+/* ==================== */
+
+.agent-loop-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-secondary-alt) 100%);
+  border-radius: 8px;
+  border-left: 3px solid var(--interactive-accent);
+  margin: 8px 0;
+  animation: slideIn 0.2s ease-out;
+}
+
+.agent-loop-indicator .loop-step-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-loop-indicator .loop-step-text::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--interactive-accent);
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+.agent-loop-cancel-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agent-loop-cancel-btn:hover {
+  background: var(--text-error);
+  transform: scale(1.02);
+}
+
+.agent-loop-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--text-warning);
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text-warning);
+}
+
+.agent-loop-warning::before {
+  content: '⚠️';
+  font-size: 16px;
+}
+
+.agent-loop-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--text-error);
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text-error);
+}
+
+.agent-loop-error::before {
+  content: '❌';
+  font-size: 16px;
+}
+
+.agent-loop-cancelled {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--text-muted);
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.agent-loop-cancelled::before {
+  content: '🛑';
+  font-size: 16px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* Loop container and history */
+.agent-loop-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.agent-loop-step {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  border-left: 3px solid var(--text-muted);
+  animation: slideIn 0.2s ease-out;
+}
+
+.agent-loop-step.final {
+  border-left-color: var(--text-success, #4ade80);
+  background: linear-gradient(135deg, var(--background-primary) 0%, rgba(74, 222, 128, 0.05) 100%);
+}
+
+.agent-loop-step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-loop-step-header .step-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.agent-loop-step.final .step-badge {
+  background: var(--text-success, #4ade80);
+}
+
+.agent-loop-step-header .step-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-normal);
+  flex: 1;
+}
+
+.agent-loop-step-header .step-stats {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--background-secondary);
+}
+
+.agent-loop-step-header .step-stats.all-success {
+  color: var(--text-success, #4ade80);
+}
+
+.agent-loop-step-header .step-stats.has-errors {
+  color: var(--text-warning);
+}
+
+.agent-loop-step-content {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-left: 30px;
+}
+
+.step-expand-toggle {
+  font-size: 11px;
+  color: var(--text-accent);
+  cursor: pointer;
+  padding-left: 30px;
+  margin-top: 4px;
+}
+
+.step-expand-toggle:hover {
+  text-decoration: underline;
+}
+
+/* Token counter in loop indicator */
+.loop-token-counter {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  font-family: var(--font-monospace);
+}
+
+/* Token summary at end of loop */
+.agent-loop-token-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
 }

@@ -193,6 +193,8 @@ const translations: Translations = {
   'agent.noActions': 'Could not execute actions:',
   'agent.actionsFailed': '{{count}} action(s) failed.',
   'agent.partialSuccess': 'Results:',
+  'agent.loopLimitReached': 'Loop limit reached. Please continue manually.',
+  'agent.processingResults': 'Processing results (step {{step}})...',
   'agent.createFolder': 'Create folder: {{path}}',
   'agent.deleteFolder': 'Delete folder: {{path}}',
   'agent.listFolder': 'List folder: {{path}}',
@@ -331,6 +333,19 @@ Please provide the EXACT actions as JSON:
 }`,
   'agent.retryPrompt.incompleteJson': 'Your response was cut off. Please continue and complete the JSON structure.',
   'agent.retryPrompt.generic': 'Please provide vault actions in the required JSON format with "actions", "message", and "requiresConfirmation" fields.',
+  // Agentic Loop (Phase 2)
+  'agent.loopCancelled': 'Agentic loop cancelled by user.',
+  'agent.cancelLoop': 'Cancel',
+  'agent.allActionsFailed': 'All actions failed. Loop stopped to prevent further errors.',
+  'agent.infiniteLoopDetected': 'Infinite loop detected (repeated actions). Operation stopped.',
+  // Agentic Loop UX (Phase 3)
+  'agent.loopProgress': 'Step {{current}} of max {{max}}',
+  'agent.loopTokens': '↑{{input}} ↓{{output}}',
+  'agent.loopTokenSummary': 'Tokens used: ↑{{input}} input, ↓{{output}} output',
+  'agent.loopStep': 'Step {{step}}',
+  'agent.loopStepFinal': 'Completed',
+  'agent.loopExpandStep': 'Show more...',
+  'agent.loopCollapseStep': 'Show less',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // WARNINGS AND VALIDATION
@@ -455,6 +470,21 @@ CAPABILITIES:
 - Advanced search (by heading, block ID, tags)
 - Workspace control (open files, split views)
 
+⚠️ MANDATORY RULE - READ BEFORE ACTING:
+When the user asks for operations on files in a folder (copy, move, process, list, etc.):
+1. ALWAYS execute list-folder FIRST as your FIRST action
+2. NEVER invent file names - use ONLY the ones returned by list-folder
+3. If you don't execute list-folder first, operations WILL FAIL
+
+Correct example for "copy files from /Source to /Destination":
+{
+  "actions": [
+    { "action": "list-folder", "params": { "path": "Source" } },
+    { "action": "create-folder", "params": { "path": "Destination" } }
+  ]
+}
+Then, with the actual names from list-folder, execute the copies.
+
 AVAILABLE ACTIONS:
 
 === File & Folder Management ===
@@ -535,8 +565,90 @@ When the user requests an action on the vault, respond ONLY with valid JSON:
     { "action": "action-name", "params": { ... }, "description": "Human-readable description" }
   ],
   "message": "Message to the user explaining what you'll do",
-  "requiresConfirmation": false
+  "requiresConfirmation": false,
+  "awaitResults": false
 }
+
+BIDIRECTIONAL FLOW (awaitResults):
+The system supports an agentic loop that lets you see results before continuing.
+When you need information from the vault BEFORE acting:
+1. Execute query actions (list-folder, read-note, search-notes, etc.)
+2. Set "awaitResults": true
+3. You will receive the results of the executed actions
+4. You can generate more actions based on the real data
+5. Repeat until task is complete (maximum 5 iterations)
+
+WHEN TO USE awaitResults: true:
+- Folder operations (you need the real file names)
+- Search and process (you need to know which notes match)
+- Read before modify (you need to see current content)
+- Verify results (confirm an action worked)
+- Conditional tasks (next action depends on previous result)
+
+WHEN NOT TO USE awaitResults:
+- Creating new notes (no prior information needed)
+- Simple tasks where you know all the data
+- Last iteration of a task (you have everything you need)
+
+=== EXAMPLE 1: Copy files from a folder ===
+STEP 1 - List first:
+{
+  "thinking": "I need to see what files exist before copying them",
+  "actions": [
+    { "action": "list-folder", "params": { "path": "Source" } },
+    { "action": "create-folder", "params": { "path": "Destination" } }
+  ],
+  "message": "Listing files and creating destination folder...",
+  "awaitResults": true
+}
+
+STEP 2 - You will receive:
+[ACTION RESULTS]
+✓ List folder: Source
+  Result: ["note1.md", "note2.md", "note3.md"]
+✓ Create folder: Destination
+
+STEP 3 - Execute with real data (no awaitResults, it's the last action):
+{
+  "actions": [
+    { "action": "copy-note", "params": { "from": "Source/note1.md", "to": "Destination/note1.md" } },
+    { "action": "copy-note", "params": { "from": "Source/note2.md", "to": "Destination/note2.md" } },
+    { "action": "copy-note", "params": { "from": "Source/note3.md", "to": "Destination/note3.md" } }
+  ],
+  "message": "Copying 3 files to Destination"
+}
+
+=== EXAMPLE 2: Search and process notes ===
+STEP 1 - Search notes:
+{
+  "actions": [
+    { "action": "search-notes", "params": { "query": "project", "folder": "Work" } }
+  ],
+  "message": "Searching for notes about 'project'...",
+  "awaitResults": true
+}
+
+STEP 2 - You'll receive the found notes, then you can process them.
+
+=== EXAMPLE 3: Read before modifying ===
+STEP 1 - Read current content:
+{
+  "actions": [
+    { "action": "read-note", "params": { "path": "Ideas/brainstorm.md" } }
+  ],
+  "message": "Reading current content...",
+  "awaitResults": true
+}
+
+STEP 2 - You'll receive the content, then you can append or modify.
+
+=== EXAMPLE 4: Verify and handle errors ===
+If an action fails, you'll receive the error and can try to correct it:
+[ACTION RESULTS]
+✗ Copy note: Source/old.md → Destination/new.md
+  Error: File does not exist
+
+Your next response can handle the error or inform the user.
 
 CRITICAL - FILE OPERATIONS vs CONTENT OPERATIONS:
 You must distinguish between two types of requests:
@@ -586,6 +698,7 @@ IMPORTANT RULES:
 4. If unsure about user intent, ask before acting
 5. For normal conversation (no vault actions), respond normally WITHOUT JSON format
 6. NEVER ask user to "continue" - include all actions you can, system handles the rest
+7. CRITICAL - For folder operations: USE list-folder FIRST to get actual file names. Note titles in context do NOT include paths - DO NOT assume they are in the requested folder
 
 VAULT CONTEXT:
 - Total notes: {{noteCount}}

@@ -114,6 +114,25 @@ t('batch.processing', { current: 5, total: 10, note: 'My Note' })
 - Phase 2 (planned): `zh`, `de`
 - Phase 3 (planned): `fr`, `ja`
 
+**Multilingual regex patterns:**
+
+Some features use regex patterns that match user input in multiple languages. When adding new locales, search for these patterns and add the corresponding translations:
+
+| Location | Variable | Purpose |
+|----------|----------|---------|
+| `src/chat-view.ts` | `continuationPatterns` | Detects continuation commands ("continúa", "continue", etc.) |
+
+Example of adding German patterns:
+```typescript
+// Existing patterns
+/^contin[uú]a?r?$/i,  // Spanish
+/^continue$/i,         // English
+
+// Add German
+/^weiter$/i,           // German: "continue"
+/^fortfahren$/i,       // German: "proceed"
+```
+
 ## Documentation
 
 **CRITICAL: README.md must always be in English.**

@@ -202,6 +202,8 @@ export type Translations = {
   'agent.noActions': string;
   'agent.actionsFailed': string;
   'agent.partialSuccess': string;
+  'agent.loopLimitReached': string;
+  'agent.processingResults': string;
   'agent.createFolder': string;
   'agent.deleteFolder': string;
   'agent.listFolder': string;
@@ -303,6 +305,19 @@ export type Translations = {
   'agent.retryPrompt.missingJson': string;
   'agent.retryPrompt.incompleteJson': string;
   'agent.retryPrompt.generic': string;
+  // Agentic Loop (Phase 2)
+  'agent.loopCancelled': string;
+  'agent.cancelLoop': string;
+  'agent.allActionsFailed': string;
+  'agent.infiniteLoopDetected': string;
+  // Agentic Loop UX (Phase 3)
+  'agent.loopProgress': string;
+  'agent.loopTokens': string;
+  'agent.loopTokenSummary': string;
+  'agent.loopStep': string;
+  'agent.loopStepFinal': string;
+  'agent.loopExpandStep': string;
+  'agent.loopCollapseStep': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // WARNINGS AND VALIDATION

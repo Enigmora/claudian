@@ -3,7 +3,7 @@ import ClaudeCompanionPlugin from './main';
 import { ClaudeClient, Message } from './claude-client';
 import { NoteCreatorModal } from './note-creator';
 import { AgentMode, AgentResponse } from './agent-mode';
-import { VaultActionExecutor, VaultAction, ActionProgress } from './vault-actions';
+import { VaultActionExecutor, VaultAction, ActionProgress, ActionResult } from './vault-actions';
 import { ConfirmationModal } from './confirmation-modal';
 import { t } from './i18n';
 // Phase 2: Enhanced Agent Mode
@@ -40,6 +40,14 @@ export class ChatView extends ItemView {
 
   // Phase 3: Context Management
   private currentPartialId: string | null = null;
+
+  // Phase 2: Agentic Loop State
+  private agentLoopActive: boolean = false;
+  private agentLoopHistory: string[] = [];  // Hash of actions per iteration to detect loops
+  private agentLoopCancelled: boolean = false;
+  // Phase 3: Loop UX enhancements
+  private agentLoopTokens: { input: number; output: number } = { input: 0, output: 0 };
+  private agentLoopContainer: HTMLElement | null = null;  // Container for loop history
 
   // Phase 5: Token Tracking
   private tokenFooter: HTMLElement | null = null;
@@ -145,7 +153,9 @@ export class ChatView extends ItemView {
     // Auto-resize textarea based on content (respecting wrapper limits)
     this.inputEl.addEventListener('input', () => {
       this.inputEl.style.height = 'auto';
-      const maxHeight = inputWrapper.clientHeight - 24; // padding
+      // Calculate available height: input-area height minus padding
+      const inputAreaHeight = inputArea.clientHeight;
+      const maxHeight = inputAreaHeight - 16; // account for padding
       this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, maxHeight) + 'px';
     });
 
@@ -472,17 +482,22 @@ export class ChatView extends ItemView {
   ): Promise<void> {
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
-    let confirmedAsJson = false; // Once confirmed as JSON, stay in indicator mode
-    let confirmedAsText = false; // Once confirmed as text, stay in markdown mode
-    const MIN_CHARS_TO_DECIDE = 50; // Wait for this many chars before showing markdown
 
-    // In agent mode, show streaming indicator by default to avoid flash
+    // In agent mode, ALWAYS show streaming indicator during the entire streaming phase.
+    // This prevents the "JSON flash" where partial JSON content would briefly render
+    // as colored code before being replaced by the proper indicator.
+    // All rendering decisions are deferred to onComplete when we have the full response.
     cursorEl.remove();
     contentEl.empty();
     streamingIndicator = this.createStreamingIndicator(contentEl);
 
-    // Phase 2: Context reinforcement
+    // Detect manual continuation commands and enhance with context
     let enhancedMessage = message;
+    if (this.isContinuationCommand(message)) {
+      enhancedMessage = this.buildContinuationPrompt(message);
+    }
+
+    // Phase 2: Context reinforcement
     let systemPromptAdditions = '';
 
     if (this.plugin.settings.enableContextReinforcement) {
@@ -519,31 +534,12 @@ export class ChatView extends ItemView {
       onToken: (token) => {
         fullResponse += token;
 
-        // Detection logic: once decided, stick with it
-        if (!confirmedAsJson && !confirmedAsText) {
-          if (this.looksLikeAgentJsonResponse(fullResponse)) {
-            confirmedAsJson = true;
-          } else if (fullResponse.length > MIN_CHARS_TO_DECIDE) {
-            // After enough characters, if it doesn't look like JSON, switch to markdown
-            confirmedAsText = true;
-          }
-        }
-
-        if (confirmedAsText) {
-          // Confirmed as regular text - show as markdown
-          if (streamingIndicator) {
-            contentEl.empty();
-            streamingIndicator = null;
-          }
-          contentEl.empty();
-          MarkdownRenderer.render(this.app, fullResponse, contentEl, '', this);
-          const newCursor = contentEl.createSpan({ cls: 'claudian-cursor' });
-          this.scrollToBottom();
-        } else {
-          // Still showing indicator (either confirmed JSON or still deciding)
-          this.updateStreamingIndicator(streamingIndicator, fullResponse);
-          this.scrollToBottom();
-        }
+        // In agent mode, ALWAYS keep the streaming indicator visible during streaming.
+        // We never render partial content to avoid the "JSON flash" problem where
+        // incomplete JSON would briefly appear as syntax-highlighted code.
+        // All content rendering is deferred to onComplete.
+        this.updateStreamingIndicator(streamingIndicator, fullResponse);
+        this.scrollToBottom();
       },
       onComplete: async (response) => {
         cursorEl.remove();
@@ -564,8 +560,10 @@ export class ChatView extends ItemView {
 
           this.autoContinueCount++;
 
-          // Show partial response while continuing
-          MarkdownRenderer.render(this.app, response, contentEl, '', this);
+          // Show continuation indicator instead of partial JSON response
+          // This prevents the "JSON flash" when response is truncated agent JSON
+          const continueIndicator = this.createStreamingIndicator(contentEl);
+          this.updateStreamingIndicator(continueIndicator, response);
 
           await this.handleTruncatedResponse(
             response,
@@ -676,13 +674,10 @@ export class ChatView extends ItemView {
     let continuationResponse = '';
     const agentSystemPrompt = this.agentMode.getSystemPrompt();
 
-    // JSON detection state for continuation
+    // Streaming indicator - kept visible throughout streaming to prevent JSON flash
     let streamingIndicator: HTMLElement | null = null;
-    let confirmedAsJson = false;
-    let confirmedAsText = false;
-    const MIN_CHARS_TO_DECIDE = 50;
 
-    // Show indicator by default
+    // Show indicator for entire streaming duration
     cursorEl.remove();
     contentEl.empty();
     streamingIndicator = this.createStreamingIndicator(contentEl);
@@ -695,27 +690,8 @@ export class ChatView extends ItemView {
       onToken: (token) => {
         continuationResponse += token;
 
-        // Detection logic
-        if (!confirmedAsJson && !confirmedAsText) {
-          if (this.looksLikeAgentJsonResponse(continuationResponse)) {
-            confirmedAsJson = true;
-          } else if (continuationResponse.length > MIN_CHARS_TO_DECIDE) {
-            confirmedAsText = true;
-          }
-        }
-
-        if (confirmedAsText) {
-          if (streamingIndicator) {
-            contentEl.empty();
-            streamingIndicator = null;
-          }
-          const combined = TruncationDetector.mergeResponses(partialResponse, continuationResponse);
-          contentEl.empty();
-          MarkdownRenderer.render(this.app, combined, contentEl, '', this);
-          contentEl.createSpan({ cls: 'claudian-cursor' });
-        } else {
-          this.updateStreamingIndicator(streamingIndicator, continuationResponse);
-        }
+        // Keep indicator visible during streaming - no early rendering
+        this.updateStreamingIndicator(streamingIndicator, continuationResponse);
         this.scrollToBottom();
       },
       onComplete: async (response) => {
@@ -809,13 +785,10 @@ export class ChatView extends ItemView {
     const agentSystemPrompt = this.agentMode.getSystemPrompt() +
       '\n\n' + t('agent.reinforcement.reminder');
 
-    // JSON detection state for retry
+    // Streaming indicator - kept visible throughout streaming to prevent JSON flash
     let streamingIndicator: HTMLElement | null = null;
-    let confirmedAsJson = false;
-    let confirmedAsText = false;
-    const MIN_CHARS_TO_DECIDE = 50;
 
-    // Show indicator by default
+    // Show indicator for entire streaming duration
     cursorEl.remove();
     contentEl.empty();
     streamingIndicator = this.createStreamingIndicator(contentEl);
@@ -828,26 +801,8 @@ export class ChatView extends ItemView {
       onToken: (token) => {
         retryResponse += token;
 
-        // Detection logic
-        if (!confirmedAsJson && !confirmedAsText) {
-          if (this.looksLikeAgentJsonResponse(retryResponse)) {
-            confirmedAsJson = true;
-          } else if (retryResponse.length > MIN_CHARS_TO_DECIDE) {
-            confirmedAsText = true;
-          }
-        }
-
-        if (confirmedAsText) {
-          if (streamingIndicator) {
-            contentEl.empty();
-            streamingIndicator = null;
-          }
-          contentEl.empty();
-          MarkdownRenderer.render(this.app, retryResponse, contentEl, '', this);
-          contentEl.createSpan({ cls: 'claudian-cursor' });
-        } else {
-          this.updateStreamingIndicator(streamingIndicator, retryResponse);
-        }
+        // Keep indicator visible during streaming - no early rendering
+        this.updateStreamingIndicator(streamingIndicator, retryResponse);
         this.scrollToBottom();
       },
       onComplete: async (response) => {
@@ -893,7 +848,8 @@ export class ChatView extends ItemView {
   private async handleAgentResponse(
     response: string,
     responseEl: HTMLElement,
-    contentEl: HTMLElement
+    contentEl: HTMLElement,
+    loopCount: number = 0
   ): Promise<void> {
     const agentResponse = this.agentMode.parseAgentResponse(response);
 
@@ -919,23 +875,340 @@ export class ChatView extends ItemView {
     // Combine actions that need confirmation
     const actionsNeedingConfirmation = [...destructiveActions, ...overwriteActions];
 
+    let actionResults: ActionResult[] = [];
+
+    // Phase 2/3: Start the agentic loop BEFORE executing actions if awaitResults is true
+    // This ensures agentLoopActive is set before executeAgentActionsWithResults checks it
+    const willContinueLoop = agentResponse.awaitResults === true;
+    if (willContinueLoop && loopCount === 0) {
+      this.startAgenticLoop();
+      // Phase 3: Create loop container for visual history
+      this.agentLoopContainer = contentEl.createDiv({ cls: 'agent-loop-container' });
+    }
+
     if (actionsNeedingConfirmation.length > 0 && this.plugin.settings.confirmDestructiveActions) {
       // Show message before confirmation modal
       MarkdownRenderer.render(this.app, agentResponse.message, contentEl, '', this);
       // Show confirmation modal (including overwrite warnings)
-      await this.showConfirmationAndExecute(agentResponse, responseEl, contentEl, overwriteActions.length > 0);
+      actionResults = await this.showConfirmationAndExecuteWithResults(agentResponse, responseEl, contentEl, overwriteActions.length > 0);
     } else {
-      // Execute directly - executeAgentActions will render the message
-      await this.executeAgentActions(agentResponse.actions, responseEl, contentEl, agentResponse.message);
+      // Execute directly and get results
+      actionResults = await this.executeAgentActionsWithResults(agentResponse.actions, responseEl, contentEl, agentResponse.message);
+    }
+
+    // Phase 2/3: Continue the agentic loop if awaitResults is true
+    if (willContinueLoop && actionResults.length > 0) {
+      // Phase 3: Add this step to the visual history
+      if (this.agentLoopContainer) {
+        this.addLoopStepToHistory(loopCount + 1, agentResponse.message, actionResults);
+      }
+
+      // Send results back to Claude and continue the loop
+      await this.continueAgenticLoop(actionResults, responseEl, contentEl, loopCount);
+    } else {
+      // No more iterations needed, end the loop if active
+      if (this.agentLoopActive) {
+        // Phase 3: Show final step in history if we have a container
+        if (this.agentLoopContainer && agentResponse.message) {
+          this.addLoopStepToHistory(loopCount + 1, agentResponse.message, actionResults, true);
+        }
+        this.endAgenticLoop();
+        // Add action buttons now that the loop has ended
+        this.addMessageActions(responseEl, agentResponse.message);
+      }
     }
   }
 
-  private async showConfirmationAndExecute(
+  /**
+   * Continue the agentic loop by sending action results back to Claude
+   * This allows Claude to make informed decisions based on actual data
+   *
+   * Phase 2: Full implementation with loop detection, error handling, and cancellation
+   */
+  private async continueAgenticLoop(
+    results: ActionResult[],
+    responseEl: HTMLElement,
+    contentEl: HTMLElement,
+    loopCount: number
+  ): Promise<void> {
+    const MAX_LOOP_COUNT = 5;
+
+    // Check if loop was cancelled
+    if (this.agentLoopCancelled) {
+      this.endAgenticLoop();
+      const cancelledEl = contentEl.createDiv({ cls: 'agent-loop-cancelled' });
+      cancelledEl.setText(t('agent.loopCancelled'));
+      this.resetButtonToSend();
+      return;
+    }
+
+    // Check iteration limit
+    if (loopCount >= MAX_LOOP_COUNT) {
+      console.warn('[Claudian] Agentic loop limit reached:', loopCount);
+      this.endAgenticLoop();
+      const warningEl = contentEl.createDiv({ cls: 'agent-loop-warning' });
+      warningEl.setText(t('agent.loopLimitReached'));
+      this.resetButtonToSend();
+      return;
+    }
+
+    // Check if all actions failed - stop the loop to prevent wasted API calls
+    const successCount = results.filter(r => r.success).length;
+    const failCount = results.filter(r => !r.success).length;
+
+    if (successCount === 0 && failCount > 0) {
+      console.warn('[Claudian] All actions failed, stopping agentic loop');
+      this.endAgenticLoop();
+      const errorEl = contentEl.createDiv({ cls: 'agent-loop-error' });
+      errorEl.setText(t('agent.allActionsFailed'));
+      this.resetButtonToSend();
+      return;
+    }
+
+    // Detect infinite loops by hashing current actions
+    const actionsHash = this.hashActions(results.map(r => r.action));
+    if (this.agentLoopHistory.includes(actionsHash)) {
+      console.warn('[Claudian] Infinite loop detected - same actions repeated');
+      this.endAgenticLoop();
+      const warningEl = contentEl.createDiv({ cls: 'agent-loop-warning' });
+      warningEl.setText(t('agent.infiniteLoopDetected'));
+      this.resetButtonToSend();
+      return;
+    }
+    this.agentLoopHistory.push(actionsHash);
+
+    // Mark loop as active
+    this.agentLoopActive = true;
+
+    // Format results for Claude
+    const resultsMessage = this.formatResultsForAgent(results);
+    console.log('[Claudian] Agentic loop - sending results back to Claude:', resultsMessage);
+
+    // Phase 3: Use loop container if available, otherwise use contentEl
+    const indicatorContainer = this.agentLoopContainer || contentEl;
+
+    // Show indicator that we're continuing with cancel button
+    const loopIndicator = indicatorContainer.createDiv({ cls: 'agent-loop-indicator' });
+
+    // Phase 3: Show step X of max Y
+    const stepText = loopIndicator.createSpan({ cls: 'loop-step-text' });
+    stepText.setText(t('agent.loopProgress', {
+      current: String(loopCount + 2),
+      max: String(MAX_LOOP_COUNT)
+    }));
+
+    // Phase 3: Token counter for this loop
+    const tokenCounter = loopIndicator.createSpan({ cls: 'loop-token-counter' });
+    tokenCounter.setText(t('agent.loopTokens', {
+      input: this.formatTokenCount(this.agentLoopTokens.input),
+      output: this.formatTokenCount(this.agentLoopTokens.output)
+    }));
+
+    // Add cancel button
+    const cancelBtn = loopIndicator.createEl('button', {
+      cls: 'agent-loop-cancel-btn',
+      text: t('agent.cancelLoop')
+    });
+    cancelBtn.onclick = () => {
+      this.agentLoopCancelled = true;
+      this.client.abortStream();
+    };
+
+    // Create new streaming indicator
+    const streamingIndicator = this.createStreamingIndicator(indicatorContainer);
+
+    // Get system prompt
+    const agentSystemPrompt = this.agentMode.getSystemPrompt();
+
+    let fullResponse = '';
+
+    // Send results back to Claude
+    await this.client.sendAgentMessageStream(resultsMessage, agentSystemPrompt, {
+      onStart: () => {},
+      onUsage: (usage) => {
+        this.trackTokenUsage(usage);
+        // Phase 3: Track tokens for this loop session
+        this.agentLoopTokens.input += usage.inputTokens;
+        this.agentLoopTokens.output += usage.outputTokens;
+        // Update the token counter display
+        tokenCounter.setText(t('agent.loopTokens', {
+          input: this.formatTokenCount(this.agentLoopTokens.input),
+          output: this.formatTokenCount(this.agentLoopTokens.output)
+        }));
+      },
+      onToken: (token) => {
+        fullResponse += token;
+        this.updateStreamingIndicator(streamingIndicator, fullResponse);
+        this.scrollToBottom();
+      },
+      onComplete: async (response) => {
+        // Remove streaming elements
+        loopIndicator.remove();
+        streamingIndicator.remove();
+
+        // Check if cancelled during streaming
+        if (this.agentLoopCancelled) {
+          this.endAgenticLoop();
+          const cancelledEl = (this.agentLoopContainer || contentEl).createDiv({ cls: 'agent-loop-cancelled' });
+          cancelledEl.setText(t('agent.loopCancelled'));
+          this.resetButtonToSend();
+          return;
+        }
+
+        // Process the new response (may have more actions or be final)
+        if (this.agentMode.isAgentResponse(response)) {
+          await this.handleAgentResponse(response, responseEl, contentEl, loopCount + 1);
+        } else {
+          // Final response without actions - end the loop
+          this.endAgenticLoop();
+          // Render final response in the main content area
+          contentEl.empty();
+          MarkdownRenderer.render(this.app, response, contentEl, '', this);
+          this.addMessageActions(responseEl, response);
+        }
+
+        this.resetButtonToSend();
+        this.scrollToBottom();
+      },
+      onError: (error) => {
+        loopIndicator.remove();
+        streamingIndicator.remove();
+        this.endAgenticLoop();
+
+        // Check if it was a cancellation
+        const errorContainer = this.agentLoopContainer || contentEl;
+        if (this.agentLoopCancelled) {
+          const cancelledEl = errorContainer.createDiv({ cls: 'agent-loop-cancelled' });
+          cancelledEl.setText(t('agent.loopCancelled'));
+        } else {
+          errorContainer.createEl('span', {
+            text: t('chat.error', { message: error.message }),
+            cls: 'claudian-error'
+          });
+        }
+        this.resetButtonToSend();
+      }
+    });
+  }
+
+  /**
+   * Generate a hash of actions to detect repeated loops
+   */
+  private hashActions(actions: VaultAction[]): string {
+    return actions.map(a => `${a.action}:${JSON.stringify(a.params)}`).sort().join('|');
+  }
+
+  /**
+   * End the agentic loop and reset state
+   */
+  private endAgenticLoop(): void {
+    this.agentLoopActive = false;
+    this.agentLoopHistory = [];
+    this.agentLoopCancelled = false;
+    // Phase 3: Show final token count if we tracked any
+    if (this.agentLoopContainer && (this.agentLoopTokens.input > 0 || this.agentLoopTokens.output > 0)) {
+      const tokenSummary = this.agentLoopContainer.createDiv({ cls: 'agent-loop-token-summary' });
+      tokenSummary.setText(t('agent.loopTokenSummary', {
+        input: this.formatTokenCount(this.agentLoopTokens.input),
+        output: this.formatTokenCount(this.agentLoopTokens.output)
+      }));
+    }
+    this.agentLoopTokens = { input: 0, output: 0 };
+    this.agentLoopContainer = null;
+  }
+
+  /**
+   * Start a new agentic loop session
+   */
+  private startAgenticLoop(): void {
+    this.agentLoopActive = true;
+    this.agentLoopHistory = [];
+    this.agentLoopCancelled = false;
+    this.agentLoopTokens = { input: 0, output: 0 };
+    this.agentLoopContainer = null;
+  }
+
+  /**
+   * Phase 3: Add a step to the visual loop history
+   */
+  private addLoopStepToHistory(
+    stepNumber: number,
+    message: string,
+    results: ActionResult[],
+    isFinal: boolean = false
+  ): void {
+    if (!this.agentLoopContainer) return;
+
+    const stepEl = this.agentLoopContainer.createDiv({
+      cls: `agent-loop-step ${isFinal ? 'final' : ''}`
+    });
+
+    // Step header with number and status
+    const headerEl = stepEl.createDiv({ cls: 'agent-loop-step-header' });
+    const stepBadge = headerEl.createSpan({ cls: 'step-badge' });
+    stepBadge.setText(isFinal ? '✓' : String(stepNumber));
+
+    const stepTitle = headerEl.createSpan({ cls: 'step-title' });
+    stepTitle.setText(isFinal ? t('agent.loopStepFinal') : t('agent.loopStep', { step: String(stepNumber) }));
+
+    // Action summary
+    const successCount = results.filter(r => r.success).length;
+    const failCount = results.filter(r => !r.success).length;
+
+    if (results.length > 0) {
+      const statsEl = headerEl.createSpan({ cls: 'step-stats' });
+      if (failCount === 0) {
+        statsEl.addClass('all-success');
+        statsEl.setText(`${successCount} ✓`);
+      } else {
+        statsEl.addClass('has-errors');
+        statsEl.setText(`${successCount} ✓ / ${failCount} ✗`);
+      }
+    }
+
+    // Message content (collapsible for intermediate steps)
+    const contentEl = stepEl.createDiv({ cls: 'agent-loop-step-content' });
+
+    // Show a truncated version of the message
+    const truncatedMessage = message.length > 150
+      ? message.substring(0, 150) + '...'
+      : message;
+    contentEl.setText(truncatedMessage);
+
+    // If message is long, add expand toggle
+    if (message.length > 150) {
+      const expandToggle = stepEl.createDiv({ cls: 'step-expand-toggle' });
+      expandToggle.setText(t('agent.loopExpandStep'));
+      let expanded = false;
+      expandToggle.onclick = () => {
+        expanded = !expanded;
+        contentEl.setText(expanded ? message : truncatedMessage);
+        expandToggle.setText(expanded ? t('agent.loopCollapseStep') : t('agent.loopExpandStep'));
+      };
+    }
+
+    this.scrollToBottom();
+  }
+
+  /**
+   * Format token count for display
+   */
+  private formatTokenCount(count: number): string {
+    if (count >= 1000000) {
+      return (count / 1000000).toFixed(1) + 'M';
+    }
+    if (count >= 1000) {
+      return (count / 1000).toFixed(1) + 'K';
+    }
+    return String(count);
+  }
+
+  private async showConfirmationAndExecuteWithResults(
     agentResponse: AgentResponse,
     responseEl: HTMLElement,
     contentEl: HTMLElement,
     hasOverwrites: boolean = false
-  ): Promise<void> {
+  ): Promise<ActionResult[]> {
     const destructiveActions = this.agentMode.getDestructiveActions(agentResponse.actions);
     const overwriteActions = this.executor.getOverwriteActions(agentResponse.actions);
 
@@ -952,30 +1225,30 @@ export class ChatView extends ItemView {
           if (hasOverwrites) {
             actionsToExecute = this.executor.markForOverwrite(agentResponse.actions);
           }
-          await this.executeAgentActions(
+          const results = await this.executeAgentActionsWithResults(
             actionsToExecute,
             responseEl,
             contentEl,
             agentResponse.message
           );
-          resolve();
+          resolve(results);
         },
         () => {
           // Cancelled: show message
           const cancelMsg = contentEl.createDiv({ cls: 'agent-action-cancelled' });
           cancelMsg.setText(t('chat.actionsCancelled'));
-          resolve();
+          resolve([]);
         }
       ).open();
     });
   }
 
-  private async executeAgentActions(
+  private async executeAgentActionsWithResults(
     actions: VaultAction[],
     responseEl: HTMLElement,
     contentEl: HTMLElement,
     originalMessage: string
-  ): Promise<void> {
+  ): Promise<ActionResult[]> {
     // Clear any previous content (e.g., from confirmation modal flow)
     contentEl.empty();
 
@@ -1063,13 +1336,59 @@ export class ChatView extends ItemView {
         progressBarContainer.addClass('has-errors');
       }
 
+      // Only add action buttons if we're not in an active agentic loop
+      // (buttons will be added once at the end of the complete loop)
+      if (!this.agentLoopActive) {
+        this.addMessageActions(responseEl, originalMessage);
+      }
+      return results;
+
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : t('chat.errorUnknown');
       progressBarContainer.addClass('error');
       progressText.setText(t('chat.error', { message: errorMsg }));
+      // Only add action buttons if we're not in an active agentic loop
+      if (!this.agentLoopActive) {
+        this.addMessageActions(responseEl, originalMessage);
+      }
+      return [];
     }
+  }
 
-    this.addMessageActions(responseEl, originalMessage);
+  /**
+   * Format action results for sending back to Claude in the agentic loop
+   * This allows Claude to see what happened and continue with informed decisions
+   */
+  private formatResultsForAgent(results: ActionResult[]): string {
+    const formattedResults = results.map(r => {
+      const actionDesc = this.getActionDescription(r.action);
+      if (r.success) {
+        // Format the result data appropriately
+        let resultStr = '';
+        if (r.result !== undefined && r.result !== null) {
+          if (Array.isArray(r.result)) {
+            // For list-folder and similar actions that return arrays
+            resultStr = `\n  Resultado: ${JSON.stringify(r.result, null, 2)}`;
+          } else if (typeof r.result === 'object') {
+            resultStr = `\n  Resultado: ${JSON.stringify(r.result, null, 2)}`;
+          } else if (typeof r.result === 'string' && r.result.length > 200) {
+            // Truncate long content (like read-note)
+            resultStr = `\n  Resultado: "${r.result.substring(0, 200)}..." (${r.result.length} caracteres)`;
+          } else if (r.result !== true) {
+            resultStr = `\n  Resultado: ${r.result}`;
+          }
+        }
+        return `✓ ${actionDesc}${resultStr}`;
+      } else {
+        return `✗ ${actionDesc}\n  Error: ${r.error}`;
+      }
+    }).join('\n\n');
+
+    return `[RESULTADOS DE ACCIONES EJECUTADAS]
+
+${formattedResults}
+
+Basándote en estos resultados, genera las siguientes acciones necesarias o proporciona un mensaje final si la tarea está completa. Si necesitas más información, puedes solicitar más acciones con "awaitResults": true.`;
   }
 
   /**
@@ -1172,44 +1491,6 @@ export class ChatView extends ItemView {
   }
 
   /**
-   * Detect if the response looks like an agent JSON response
-   * This helps us show a nice indicator instead of raw JSON during streaming
-   */
-  private looksLikeAgentJsonResponse(response: string): boolean {
-    const trimmed = response.trim();
-
-    // Case 1: Response starts directly with JSON object
-    if (trimmed.startsWith('{')) {
-      // Wait for at least a few characters
-      if (trimmed.length < 5) {
-        return false;
-      }
-      // If we have { followed by quote (with optional whitespace), it's JSON
-      if (/^\{\s*"/.test(trimmed)) {
-        return true;
-      }
-    }
-
-    // Case 2: JSON inside markdown code block (```json or ```)
-    if (trimmed.includes('```')) {
-      // Check if it looks like a JSON code block with agent patterns
-      const codeBlockMatch = /```(?:json)?\s*\{[\s\S]*?"(?:actions|thinking|message)"/.test(trimmed);
-      if (codeBlockMatch) {
-        return true;
-      }
-    }
-
-    // Case 3: JSON appears somewhere in the response (after text explanation)
-    // Look for the characteristic agent JSON structure anywhere in the text
-    const hasAgentJsonStructure = /\{\s*"(?:thinking|actions|message)"\s*:/.test(trimmed);
-    if (hasAgentJsonStructure) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
    * Create a streaming indicator for agent responses
    */
   private createStreamingIndicator(container: HTMLElement): HTMLElement {
@@ -1298,6 +1579,106 @@ export class ChatView extends ItemView {
       return (num / 1000).toFixed(1) + 'K';
     }
     return String(num);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Manual Continuation Handling
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Detect if the user message is a continuation command
+   * These are short messages like "continúa", "sigue", "continue", etc.
+   */
+  private isContinuationCommand(message: string): boolean {
+    const normalized = message.toLowerCase().trim();
+
+    // Must be a short message (continuation commands are typically brief)
+    if (normalized.length > 50) {
+      return false;
+    }
+
+    // Common continuation patterns in Spanish and English
+    const continuationPatterns = [
+      /^contin[uú]a?r?$/i,
+      /^sigue$/i,
+      /^sigue adelante$/i,
+      /^continua$/i,
+      /^continue$/i,
+      /^go on$/i,
+      /^proceed$/i,
+      /^keep going$/i,
+      /^next$/i,
+      /^más$/i,
+      /^y\?$/i,
+      /^dale$/i,
+      /^ok,?\s*contin[uú]a$/i,
+      /^termina$/i,
+      /^completa$/i,
+    ];
+
+    return continuationPatterns.some(pattern => pattern.test(normalized));
+  }
+
+  /**
+   * Build an enhanced continuation prompt that provides clear context
+   * to avoid the model getting confused with partial history
+   */
+  private buildContinuationPrompt(originalMessage: string): string {
+    const history = this.client.getHistory();
+
+    if (history.length < 2) {
+      return originalMessage;
+    }
+
+    // Find the last assistant response and the original user request
+    let lastAssistantResponse = '';
+    let originalRequest = '';
+
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].role === 'assistant' && !lastAssistantResponse) {
+        lastAssistantResponse = history[i].content;
+      }
+      if (history[i].role === 'user' && lastAssistantResponse && !originalRequest) {
+        // Skip if this is also a continuation command
+        if (!this.isContinuationCommand(history[i].content)) {
+          originalRequest = history[i].content;
+          break;
+        }
+      }
+    }
+
+    if (!originalRequest || !lastAssistantResponse) {
+      return originalMessage;
+    }
+
+    // Try to extract what was completed from the last response
+    const parsedResponse = this.agentMode.parseAgentResponse(lastAssistantResponse);
+
+    let completedActions = '';
+    if (parsedResponse && parsedResponse.actions.length > 0) {
+      const actionDescriptions = parsedResponse.actions.map(a =>
+        a.description || `${a.action}: ${JSON.stringify(a.params)}`
+      );
+      completedActions = actionDescriptions.join(', ');
+    }
+
+    // Build a structured continuation prompt
+    const continuationPrompt = `CONTINUACIÓN DE TAREA PENDIENTE
+
+SOLICITUD ORIGINAL DEL USUARIO:
+"${originalRequest}"
+
+${completedActions ? `ACCIONES YA COMPLETADAS:
+${completedActions}
+
+` : ''}INSTRUCCIONES CRÍTICAS:
+1. PRIMERO usa list-folder para obtener los nombres REALES de archivos en la carpeta de origen
+2. NO asumas que los archivos del contexto de la bóveda están en esa carpeta
+3. Usa SOLO los nombres que devuelva list-folder para las operaciones de copia/movimiento
+4. NO repitas acciones ya ejecutadas
+5. Genera el JSON con TODAS las acciones restantes`;
+
+    return continuationPrompt;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

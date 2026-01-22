@@ -9,6 +9,7 @@ export interface AgentResponse {
   actions: VaultAction[];
   message: string;
   requiresConfirmation?: boolean;
+  awaitResults?: boolean;  // When true, Claude wants to see action results before continuing
 }
 
 export interface AgentExecutionResult {
@@ -58,7 +59,8 @@ export class AgentMode {
         thinking: jsonObj.thinking,
         actions: Array.isArray(jsonObj.actions) ? jsonObj.actions : [],
         message: jsonObj.message || t('agent.actionsExecuted'),
-        requiresConfirmation: jsonObj.requiresConfirmation || false
+        requiresConfirmation: jsonObj.requiresConfirmation || false,
+        awaitResults: jsonObj.awaitResults || false
       };
     } catch (error) {
       console.error('Error parsing agent response:', error);
@@ -325,6 +327,9 @@ export class AgentMode {
     const folderList = Array.from(folders).slice(0, 30).join(', ') || '(none)';
 
     // Build complete agent prompt: base identity + agent mode + custom instructions
+    // NOTE: noteTitles removed from context to prevent confusion - titles don't include paths,
+    // so the model would incorrectly assume files are in requested folders.
+    // The agent should use list-folder to discover actual file locations.
     const parts = [
       t('prompt.baseIdentity'),
       t('prompt.agentMode', {
@@ -332,7 +337,7 @@ export class AgentMode {
         noteCount: String(vaultContext.noteCount),
         folders: folderList,
         tags: vaultContext.allTags.slice(0, 20).map(tag => '#' + tag).join(', ') || '(none)',
-        noteTitles: vaultContext.noteTitles.slice(0, 15).join(', ')
+        noteTitles: '(usa list-folder para ver contenido de carpetas)'
       })
     ];
 

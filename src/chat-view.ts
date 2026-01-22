@@ -255,6 +255,12 @@ export class ChatView extends ItemView {
       cls: 'claudian-welcome-title'
     });
 
+    // Developed by
+    this.welcomeScreen.createEl('p', {
+      text: t('welcome.developedBy'),
+      cls: 'claudian-welcome-developed-by'
+    });
+
     // Greeting
     this.welcomeScreen.createEl('p', {
       text: t('welcome.greeting'),

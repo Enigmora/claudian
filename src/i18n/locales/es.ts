@@ -733,6 +733,7 @@ CONTEXTO DE LA BÓVEDA:
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': 'Claudian',
+  'welcome.developedBy': 'Desarrollado por Enigmora',
   'welcome.greeting': '¿Cómo puedo ayudarte hoy?',
   'welcome.examplesHeader': 'Ejemplos de lo que puedo hacer:',
   'welcome.example1': '"Organiza mis notas sobre productividad en carpetas por tema y crea un índice enlazado"',

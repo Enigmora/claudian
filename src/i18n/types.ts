@@ -397,6 +397,7 @@ export type Translations = {
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': string;
+  'welcome.developedBy': string;
   'welcome.greeting': string;
   'welcome.examplesHeader': string;
   'welcome.example1': string;

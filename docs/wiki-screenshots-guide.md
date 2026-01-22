@@ -9,6 +9,7 @@ This document provides guidelines for capturing and maintaining screenshots for 
 | Screenshot | Filename | Description | How to Capture |
 |------------|----------|-------------|----------------|
 | Chat Interface | `chat-interface.png` | Full chat panel with messages | Open chat, send a test message, capture panel |
+| Welcome Screen | `welcome-screen.png` | Welcome screen with examples | Open chat with no history (or clear chat), capture panel |
 | Settings Panel | `settings-panel.png` | Full settings page | Open Settings > Claudian, capture full view |
 | Settings Header | `settings-header.png` | Logo + title + description | Crop from settings page header |
 | Note Creator | `note-creator-modal.png` | Note creation dialog | Click "Create note" on any Claude response |
@@ -71,6 +72,7 @@ All screenshots are stored in `/wiki/images/` and shared across all language ver
 wiki/
 └── images/
     ├── chat-interface.png
+    ├── welcome-screen.png
     ├── settings-panel.png
     ├── settings-header.png
     ├── agent-mode-toggle.png
@@ -137,6 +139,7 @@ Use this checklist to track screenshot progress:
 
 ### Core Interface
 - [ ] `chat-interface.png` - Full chat panel with messages
+- [ ] `welcome-screen.png` - Welcome screen with clickable examples
 - [ ] `settings-panel.png` - Full settings page
 - [ ] `settings-header.png` - Logo + title + description
 - [ ] `note-creator-modal.png` - Note creation dialog
@@ -163,26 +166,34 @@ Use this checklist to track screenshot progress:
 
 ### Quick Capture Steps
 
-1. **Stop Button** (`stop-button.png`)
+1. **Welcome Screen** (`welcome-screen.png`)
+   - Open chat with no message history (or click trash icon to clear)
+   - Capture the full chat panel showing:
+     - Claudian logo and title
+     - "How can I help you today?" greeting
+     - 5 clickable example prompts
+     - Agent Mode hint at bottom
+
+2. **Stop Button** (`stop-button.png`)
    - Open chat, send any message
    - While streaming, capture the red Stop button
 
-2. **Agent Progress** (`agent-progress.png`)
+3. **Agent Progress** (`agent-progress.png`)
    - Enable Agent Mode
    - Request multiple actions: *"Create 3 folders: A, B, C"*
    - Capture the progress indicator showing items
 
-3. **Overwrite Confirmation** (`overwrite-confirmation.png`)
+4. **Overwrite Confirmation** (`overwrite-confirmation.png`)
    - Enable Agent Mode
    - Create a note that already exists
    - Capture the confirmation modal
 
-4. **Token Indicator** (`token-indicator.png`)
+5. **Token Indicator** (`token-indicator.png`)
    - Send any message in chat
    - Look at the footer showing "↑X ↓Y tokens"
    - Capture the token indicator area
 
-5. **Token History Modal** (`token-history-modal.png`)
+6. **Token History Modal** (`token-history-modal.png`)
    - Click on the token indicator in the footer
    - Modal opens showing usage history
    - Capture the full modal

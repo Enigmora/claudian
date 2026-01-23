@@ -126,12 +126,12 @@ export class ClaudeClient {
     }
 
     // Minimal prompt for fast, cheap classification
-    const classificationPrompt = `Classify task complexity. Reply ONLY: {"c":"simple|moderate|complex|deep","k":"keyword"}
+    const classificationPrompt = `Classify task. Reply ONLY JSON: {"c":"simple|moderate|complex|deep","k":"max 2 words"}
 
-simple=file ops, list, copy, move, delete, placeholder content
-moderate=write content, summarize, translate, explain
-complex=multi-file ops, batch, refactor
-deep=analysis, planning, synthesis, concept maps
+simple=file ops,list,copy,move,delete,placeholder
+moderate=write,summarize,translate,explain
+complex=multi-file,batch,refactor
+deep=analysis,planning,synthesis
 
 Task: ${message}`;
 

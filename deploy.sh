@@ -1,14 +1,16 @@
 #!/bin/bash
 
 # deploy.sh - Compila y despliega el plugin de Obsidian
-# Uso: ./deploy.sh [origen] [destino]
+# Uso: ./deploy.sh [origen] [destino] [--dev]
 #
 # Parámetros:
 #   origen  - Ruta del proyecto (por defecto: directorio actual)
 #   destino - Ruta de la carpeta del plugin en la bóveda de Obsidian
+#   --dev   - Compilar en modo desarrollo (muestra todos los logs en consola)
 #
 # Ejemplos:
 #   ./deploy.sh . /home/user/MiBoveda/.obsidian/plugins/claudian
+#   ./deploy.sh . /home/user/MiBoveda/.obsidian/plugins/claudian --dev
 #   ./deploy.sh /ruta/al/proyecto /ruta/a/boveda/.obsidian/plugins/claudian
 
 set -e
@@ -18,11 +20,23 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Parámetros
-SOURCE_DIR="${1:-.}"
-DEST_DIR="${2:-}"
+# Detectar flag --dev en cualquier posición
+DEV_MODE=false
+ARGS=()
+for arg in "$@"; do
+    if [ "$arg" = "--dev" ] || [ "$arg" = "-d" ]; then
+        DEV_MODE=true
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+# Parámetros (sin el flag --dev)
+SOURCE_DIR="${ARGS[0]:-.}"
+DEST_DIR="${ARGS[1]:-}"
 
 # Validar directorio origen
 if [ ! -d "$SOURCE_DIR" ]; then
@@ -45,8 +59,14 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # Paso 1: Compilar
-echo -e "${YELLOW}[1/3]${NC} Compilando plugin..."
-npm run build
+if [ "$DEV_MODE" = true ]; then
+    echo -e "${YELLOW}[1/3]${NC} Compilando plugin ${CYAN}(DESARROLLO)${NC}..."
+    echo -e "  ${CYAN}→ Logs de debug habilitados${NC}"
+    npm run dev
+else
+    echo -e "${YELLOW}[1/3]${NC} Compilando plugin ${GREEN}(PRODUCCIÓN)${NC}..."
+    npm run build
+fi
 
 if [ ! -d "dist" ] || [ ! -f "dist/main.js" ]; then
     echo -e "${RED}Error: La compilación falló. No se encontró dist/main.js${NC}"
@@ -83,7 +103,13 @@ if [ -n "$DEST_DIR" ]; then
     echo -e "${GREEN}  ✓ Archivos copiados exitosamente${NC}"
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${GREEN}  Deploy completado. Recarga Obsidian (Ctrl+R)${NC}"
+    if [ "$DEV_MODE" = true ]; then
+        echo -e "${GREEN}  Deploy completado ${CYAN}(DESARROLLO)${NC}"
+        echo -e "${CYAN}  Logs de debug visibles en consola (F12)${NC}"
+    else
+        echo -e "${GREEN}  Deploy completado ${GREEN}(PRODUCCIÓN)${NC}"
+    fi
+    echo -e "${GREEN}  Recarga Obsidian (Ctrl+R)${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 else
     echo -e "${YELLOW}[3/3]${NC} Sin destino especificado. Archivos listos en dist/"

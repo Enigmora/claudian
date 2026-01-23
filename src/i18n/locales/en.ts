@@ -572,6 +572,7 @@ VAULT CONTEXT:
   // ═══════════════════════════════════════════════════════════════════════════
   'tokens.sessionCount': '{{count}} tokens',
   'tokens.tooltip': 'Input: {{input}} | Output: {{output}} | Calls: {{calls}}',
+  'tokens.modelLabel': 'Model',
   'tokens.inputLabel': 'Input',
   'tokens.outputLabel': 'Output',
   'tokens.callsLabel': 'Calls',

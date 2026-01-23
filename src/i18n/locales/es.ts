@@ -572,6 +572,7 @@ CONTEXTO DE LA BÓVEDA:
   // ═══════════════════════════════════════════════════════════════════════════
   'tokens.sessionCount': '{{count}} tokens',
   'tokens.tooltip': 'Entrada: {{input}} | Salida: {{output}} | Llamadas: {{calls}}',
+  'tokens.modelLabel': 'Modelo',
   'tokens.inputLabel': 'Entrada',
   'tokens.outputLabel': 'Salida',
   'tokens.callsLabel': 'Llamadas',

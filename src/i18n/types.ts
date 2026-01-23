@@ -386,6 +386,7 @@ export type Translations = {
   // ═══════════════════════════════════════════════════════════════════════════
   'tokens.sessionCount': string;
   'tokens.tooltip': string;
+  'tokens.modelLabel': string;
   'tokens.inputLabel': string;
   'tokens.outputLabel': string;
   'tokens.callsLabel': string;

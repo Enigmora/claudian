@@ -57,6 +57,7 @@ export class ChatView extends ItemView {
   private tokenFooter: HTMLElement | null = null;
   private tokenIndicator: HTMLElement | null = null;
   private tokenUsageCleanup: (() => void) | null = null;
+  private modelIndicator: HTMLElement | null = null;
 
   // Welcome Screen
   private welcomeScreen: HTMLElement | null = null;
@@ -523,6 +524,7 @@ export class ChatView extends ItemView {
     // Route request through orchestrator
     this.lastRouteResult = this.orchestrator.routeRequest(message, false);
     const selectedModel = this.lastRouteResult.model;
+    this.updateModelIndicator(selectedModel);
 
     let fullResponse = '';
 
@@ -599,6 +601,7 @@ export class ChatView extends ItemView {
     // Route request through orchestrator
     this.lastRouteResult = this.orchestrator.routeRequest(message, true);
     const selectedModel = this.lastRouteResult.model;
+    this.updateModelIndicator(selectedModel);
 
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
@@ -1985,6 +1988,14 @@ ${completedActions}
     // Separator
     this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
 
+    // Model indicator
+    this.modelIndicator = this.tokenIndicator.createSpan({ cls: 'token-stat token-model' });
+    this.modelIndicator.createSpan({ cls: 'token-label', text: t('tokens.modelLabel') + ': ' });
+    this.modelIndicator.createSpan({ cls: 'token-value', text: '-' });
+
+    // Separator
+    this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
+
     // History link
     const historyLink = this.tokenIndicator.createSpan({ cls: 'token-history-link' });
     historyLink.setText(t('tokens.historyLink'));
@@ -2088,6 +2099,23 @@ ${completedActions}
   }
 
   /**
+   * Update the model indicator in the token footer
+   */
+  private updateModelIndicator(modelId?: ModelId): void {
+    if (!this.modelIndicator) return;
+
+    const modelValue = this.modelIndicator.querySelector('.token-model .token-value');
+    if (modelValue) {
+      if (modelId) {
+        const displayName = this.orchestrator.getSelector().getModelDisplayName(modelId);
+        modelValue.setText(displayName);
+      } else {
+        modelValue.setText('-');
+      }
+    }
+  }
+
+  /**
    * Update UI texts when language changes
    * Public method to allow settings to trigger updates
    */
@@ -2128,6 +2156,11 @@ ${completedActions}
       const historyLink = this.tokenIndicator.querySelector('.token-history-link');
       if (historyLink) {
         historyLink.setText(t('tokens.historyLink'));
+      }
+
+      const modelLabel = this.tokenIndicator.querySelector('.token-model .token-label');
+      if (modelLabel) {
+        modelLabel.setText(t('tokens.modelLabel') + ': ');
       }
     }
 

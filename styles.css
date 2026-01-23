@@ -1844,6 +1844,38 @@
   }
 }
 
+/* Processing status indicator */
+.claudian-token-indicator .token-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
+.claudian-token-indicator .token-status.hidden {
+  display: none;
+}
+
+.claudian-token-indicator .token-status .status-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--background-modifier-border);
+  border-top-color: var(--text-accent);
+  border-radius: 50%;
+  animation: statusSpin 0.8s linear infinite;
+}
+
+.claudian-token-indicator .token-status .status-text {
+  color: var(--text-accent);
+}
+
+@keyframes statusSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ==================== */
 /* Token History Modal  */
 /* ==================== */

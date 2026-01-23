@@ -66,6 +66,9 @@ export class ChatView extends ItemView {
   private orchestrator: ModelOrchestrator;
   private lastRouteResult: RouteResult | null = null;
 
+  // Processing status indicator
+  private statusIndicator: HTMLElement | null = null;
+
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
     this.plugin = plugin;
@@ -229,6 +232,9 @@ export class ChatView extends ItemView {
       this.sendButton.disabled = false;
       return;
     }
+
+    // Hide processing status when fully done
+    this.hideProcessingStatus();
 
     this.sendButton.setText(t('chat.send'));
     this.sendButton.removeClass('is-stop');
@@ -614,9 +620,19 @@ export class ChatView extends ItemView {
     await this.checkAndPerformSummarization();
 
     // Route request through orchestrator
-    this.lastRouteResult = this.orchestrator.routeRequest(message, true);
+    // For continuation commands, keep using the same model to avoid re-classification
+    const isContinuation = this.isContinuationCommand(message);
+    if (isContinuation && this.lastRouteResult) {
+      // Keep the same model for continuations
+      console.log('[Claudian] Continuation detected, keeping model:',
+        this.orchestrator.getSelector().getModelDisplayName(this.lastRouteResult.model));
+    } else {
+      // New request, classify and route
+      this.lastRouteResult = this.orchestrator.routeRequest(message, true);
+    }
     const selectedModel = this.lastRouteResult.model;
     this.updateModelIndicator(selectedModel);
+    this.showProcessingStatus('status.waitingResponse');
 
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
@@ -1168,6 +1184,9 @@ export class ChatView extends ItemView {
     // Create new streaming indicator
     const streamingIndicator = this.createStreamingIndicator(indicatorContainer);
 
+    // Update status indicator
+    this.showProcessingStatus('status.waitingResponse');
+
     // Get system prompt with model-specific optimizations
     const selectedModel = this.lastRouteResult?.model;
     const agentSystemPrompt = this.agentMode.getSystemPrompt(selectedModel);
@@ -1401,6 +1420,9 @@ export class ChatView extends ItemView {
     contentEl: HTMLElement,
     originalMessage: string
   ): Promise<ActionResult[]> {
+    // Update status indicator
+    this.showProcessingStatus('status.executingActions');
+
     // Clear any previous content (e.g., from confirmation modal flow)
     contentEl.empty();
 
@@ -2008,6 +2030,11 @@ ${completedActions}
     this.modelIndicator.createSpan({ cls: 'token-label', text: t('tokens.modelLabel') + ': ' });
     this.modelIndicator.createSpan({ cls: 'token-value', text: '-' });
 
+    // Status indicator (processing spinner)
+    this.statusIndicator = this.tokenIndicator.createSpan({ cls: 'token-status hidden' });
+    this.statusIndicator.createSpan({ cls: 'status-spinner' });
+    this.statusIndicator.createSpan({ cls: 'status-text', text: '' });
+
     // Separator
     this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
 
@@ -2128,6 +2155,27 @@ ${completedActions}
         modelValue.setText('-');
       }
     }
+  }
+
+  /**
+   * Show processing status indicator
+   */
+  private showProcessingStatus(statusKey: string, params?: Record<string, string>): void {
+    if (!this.statusIndicator) return;
+
+    const statusText = this.statusIndicator.querySelector('.status-text');
+    if (statusText) {
+      statusText.setText(t(statusKey as any, params));
+    }
+    this.statusIndicator.removeClass('hidden');
+  }
+
+  /**
+   * Hide processing status indicator
+   */
+  private hideProcessingStatus(): void {
+    if (!this.statusIndicator) return;
+    this.statusIndicator.addClass('hidden');
   }
 
   /**

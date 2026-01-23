@@ -401,6 +401,9 @@ export type Translations = {
   'tokens.closeButton': string;
   'tokens.byModelTitle': string;
   'tokens.noModelData': string;
+  'status.processing': string;
+  'status.executingActions': string;
+  'status.waitingResponse': string;
   'settings.showTokens.name': string;
   'settings.showTokens.desc': string;
   'settings.section.tokenTracking': string;

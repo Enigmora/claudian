@@ -57,7 +57,6 @@ export class ChatView extends ItemView {
   private tokenFooter: HTMLElement | null = null;
   private tokenIndicator: HTMLElement | null = null;
   private tokenUsageCleanup: (() => void) | null = null;
-  private modelIndicator: HTMLElement | null = null;
 
   // Welcome Screen
   private welcomeScreen: HTMLElement | null = null;
@@ -66,8 +65,8 @@ export class ChatView extends ItemView {
   private orchestrator: ModelOrchestrator;
   private lastRouteResult: RouteResult | null = null;
 
-  // Processing status indicator
-  private statusIndicator: HTMLElement | null = null;
+  // Processing status overlay (replaces input during processing)
+  private processingOverlay: HTMLElement | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
@@ -160,6 +159,11 @@ export class ChatView extends ItemView {
       attr: { placeholder: t('chat.placeholder') }
     });
 
+    // Processing overlay (shown during active operations)
+    this.processingOverlay = inputArea.createDiv({ cls: 'claudian-processing-overlay hidden' });
+    this.processingOverlay.createSpan({ cls: 'processing-spinner' });
+    this.processingOverlay.createSpan({ cls: 'processing-text' });
+
     // Enter to send, Shift+Enter for new line
     this.inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -183,8 +187,8 @@ export class ChatView extends ItemView {
     });
     this.sendButton.onclick = () => this.handleButtonClick();
 
-    // Phase 5: Token usage footer
-    this.createTokenFooter(inputWrapper);
+    // Phase 5: Token usage footer (independent element, not inside inputWrapper)
+    this.createTokenFooter(container as HTMLElement);
     this.setupTokenTracking();
 
     // Phase 6: Initialize context session
@@ -545,7 +549,6 @@ export class ChatView extends ItemView {
     // Route request through orchestrator
     this.lastRouteResult = this.orchestrator.routeRequest(message, false);
     const selectedModel = this.lastRouteResult.model;
-    this.updateModelIndicator(selectedModel);
 
     let fullResponse = '';
 
@@ -631,7 +634,6 @@ export class ChatView extends ItemView {
       this.lastRouteResult = this.orchestrator.routeRequest(message, true);
     }
     const selectedModel = this.lastRouteResult.model;
-    this.updateModelIndicator(selectedModel);
     this.showProcessingStatus('status.waitingResponse');
 
     let fullResponse = '';
@@ -2025,16 +2027,6 @@ ${completedActions}
     // Separator
     this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
 
-    // Model indicator
-    this.modelIndicator = this.tokenIndicator.createSpan({ cls: 'token-stat token-model' });
-    this.modelIndicator.createSpan({ cls: 'token-label', text: t('tokens.modelLabel') + ': ' });
-    this.modelIndicator.createSpan({ cls: 'token-value', text: '-' });
-
-    // Status indicator (processing spinner)
-    this.statusIndicator = this.tokenIndicator.createSpan({ cls: 'token-status hidden' });
-    this.statusIndicator.createSpan({ cls: 'status-spinner' });
-    this.statusIndicator.createSpan({ cls: 'status-text', text: '' });
-
     // Separator
     this.tokenIndicator.createSpan({ cls: 'token-separator', text: '|' });
 
@@ -2141,41 +2133,39 @@ ${completedActions}
   }
 
   /**
-   * Update the model indicator in the token footer
+   * Show processing overlay in place of input
+   * Combines status message with model name for clarity
    */
-  private updateModelIndicator(modelId?: ModelId): void {
-    if (!this.modelIndicator) return;
+  private showProcessingStatus(statusKey: string): void {
+    if (!this.processingOverlay) return;
 
-    const modelValue = this.modelIndicator.querySelector('.token-model .token-value');
-    if (modelValue) {
-      if (modelId) {
-        const displayName = this.orchestrator.getSelector().getModelDisplayName(modelId);
-        modelValue.setText(displayName);
-      } else {
-        modelValue.setText('-');
-      }
-    }
-  }
+    // Get current model name
+    const modelName = this.lastRouteResult
+      ? this.orchestrator.getSelector().getModelDisplayName(this.lastRouteResult.model)
+      : '';
 
-  /**
-   * Show processing status indicator
-   */
-  private showProcessingStatus(statusKey: string, params?: Record<string, string>): void {
-    if (!this.statusIndicator) return;
-
-    const statusText = this.statusIndicator.querySelector('.status-text');
+    // Build combined message: "Waiting for response from Haiku 4.5..."
+    const statusText = this.processingOverlay.querySelector('.processing-text');
     if (statusText) {
-      statusText.setText(t(statusKey as any, params));
+      const baseStatus = t(statusKey as any);
+      const fullStatus = modelName
+        ? `${baseStatus.replace('...', '')} (${modelName})...`
+        : baseStatus;
+      statusText.setText(fullStatus);
     }
-    this.statusIndicator.removeClass('hidden');
+
+    // Show overlay and hide input
+    this.processingOverlay.removeClass('hidden');
+    this.inputEl.addClass('hidden');
   }
 
   /**
-   * Hide processing status indicator
+   * Hide processing overlay and restore input
    */
   private hideProcessingStatus(): void {
-    if (!this.statusIndicator) return;
-    this.statusIndicator.addClass('hidden');
+    if (!this.processingOverlay) return;
+    this.processingOverlay.addClass('hidden');
+    this.inputEl.removeClass('hidden');
   }
 
   /**
@@ -2219,11 +2209,6 @@ ${completedActions}
       const historyLink = this.tokenIndicator.querySelector('.token-history-link');
       if (historyLink) {
         historyLink.setText(t('tokens.historyLink'));
-      }
-
-      const modelLabel = this.tokenIndicator.querySelector('.token-model .token-label');
-      if (modelLabel) {
-        modelLabel.setText(t('tokens.modelLabel') + ': ');
       }
     }
 

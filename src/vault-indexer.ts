@@ -48,9 +48,12 @@ export class VaultIndexer {
 
     if (cache?.tags) {
       cache.tags.forEach(tagCache => {
-        const tag = tagCache.tag.replace(/^#/, '');
-        tags.push(tag);
-        this.allTags.add(tag);
+        // Guard against null/undefined tags (can happen during file creation)
+        if (tagCache?.tag) {
+          const tag = tagCache.tag.replace(/^#/, '');
+          tags.push(tag);
+          this.allTags.add(tag);
+        }
       });
     }
 
@@ -58,12 +61,15 @@ export class VaultIndexer {
       const fmTags = Array.isArray(cache.frontmatter.tags)
         ? cache.frontmatter.tags
         : [cache.frontmatter.tags];
-      fmTags.forEach((tag: string) => {
-        const cleanTag = tag.replace(/^#/, '');
-        if (!tags.includes(cleanTag)) {
-          tags.push(cleanTag);
+      fmTags.forEach((tag: unknown) => {
+        // Guard against null/undefined/non-string tags
+        if (typeof tag === 'string') {
+          const cleanTag = tag.replace(/^#/, '');
+          if (!tags.includes(cleanTag)) {
+            tags.push(cleanTag);
+          }
+          this.allTags.add(cleanTag);
         }
-        this.allTags.add(cleanTag);
       });
     }
 

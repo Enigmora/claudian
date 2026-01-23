@@ -272,6 +272,10 @@
   color: var(--text-muted);
 }
 
+.claudian-input.hidden {
+  display: none;
+}
+
 .claudian-send-btn {
   padding: 8px 16px;
   background: var(--interactive-accent);
@@ -301,6 +305,45 @@
 
 .claudian-send-btn.is-stop:hover {
   filter: brightness(1.1);
+}
+
+/* Processing overlay - replaces input during operations */
+.claudian-processing-overlay {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.claudian-processing-overlay.hidden {
+  display: none;
+}
+
+.claudian-processing-overlay .processing-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--background-modifier-border);
+  border-top-color: var(--interactive-accent);
+  border-radius: 50%;
+  animation: processingSpinner 0.8s linear infinite;
+}
+
+@keyframes processingSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.claudian-processing-overlay .processing-text {
+  color: var(--text-muted);
 }
 
 /* Modal de crear nota */

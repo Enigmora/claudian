@@ -54,6 +54,14 @@ This document provides guidelines for capturing and maintaining screenshots for 
 
 **Note:** The Context Management section can also be included as part of `settings-panel.png` (full settings view).
 
+### Model Orchestrator
+
+| Screenshot | Filename | Description | How to Capture |
+|------------|----------|-------------|----------------|
+| Execution Mode | `settings-execution-mode.png` | Execution mode dropdown selector | Open Settings > Claudian, capture the "Execution Mode" dropdown showing Automatic/Economic/Maximum Quality options |
+
+**Note:** This is a key setting that should be prominently featured in `settings-panel.png`.
+
 ## Technical Specifications
 
 ### Dimensions
@@ -83,6 +91,7 @@ wiki/
     ├── welcome-screen.png
     ├── settings-panel.png
     ├── settings-header.png
+    ├── settings-execution-mode.png      (NEW - Model Orchestrator)
     ├── settings-context-management.png  (optional)
     ├── agent-mode-toggle.png
     ├── confirmation-modal.png
@@ -174,7 +183,10 @@ Use this checklist to track screenshot progress:
 - [ ] `token-history-modal.png` - Token usage history modal
 
 ### Context Management
-- [ ] `settings-context-management.png` - Context management settings section *(NEW - optional, can be part of settings-panel.png)*
+- [ ] `settings-context-management.png` - Context management settings section *(optional, can be part of settings-panel.png)*
+
+### Model Orchestrator
+- [ ] `settings-execution-mode.png` - Execution mode dropdown selector *(NEW - shows Automatic/Economic/Maximum Quality)*
 
 ### Quick Capture Steps
 
@@ -222,6 +234,10 @@ Use this checklist to track screenshot progress:
 ### Settings Panel Notes
 
 The `settings-panel.png` screenshot should show:
+- **Execution Mode** dropdown (replaced "Model" selector):
+  - Automatic (default) - intelligent routing via Haiku classification
+  - Economic - all tasks use Haiku
+  - Maximum Quality - all tasks use Opus
 - **Custom Instructions** field (replaced "System Prompt")
 - **Token Tracking** section with "Show token indicator" toggle
 - **Context Management** section with:
@@ -232,4 +248,4 @@ The `settings-panel.png` screenshot should show:
 
 ---
 
-*Last updated: 2026-01-22 (Added Context Management section)*
+*Last updated: 2026-01-23 (Added Model Orchestrator / Execution Mode)*

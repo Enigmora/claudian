@@ -141,6 +141,7 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
         .onChange(async (value) => {
           this.plugin.settings.apiKey = value;
           await this.plugin.saveSettings();
+          // ClaudeClient (shared with orchestrator) will be updated via updateSettings
         })
         .inputEl.type = 'password'
       );

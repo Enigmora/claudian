@@ -84,8 +84,8 @@ export class ChatView extends ItemView {
       enableAutoPlan: plugin.settings.enableAutoPlan
     });
 
-    // Model Orchestrator
-    this.orchestrator = new ModelOrchestrator(plugin.settings.executionMode);
+    // Model Orchestrator (shares ClaudeClient for Haiku classification)
+    this.orchestrator = new ModelOrchestrator(this.client, plugin.settings.executionMode);
   }
 
   getViewType(): string {
@@ -546,8 +546,8 @@ export class ChatView extends ItemView {
     // Phase 6: Check for summarization before sending
     await this.checkAndPerformSummarization();
 
-    // Route request through orchestrator
-    this.lastRouteResult = this.orchestrator.routeRequest(message, false);
+    // Route request through orchestrator (async Haiku classification)
+    this.lastRouteResult = await this.orchestrator.routeRequest(message, false);
     const selectedModel = this.lastRouteResult.model;
 
     let fullResponse = '';
@@ -622,7 +622,7 @@ export class ChatView extends ItemView {
     // Phase 6: Check for summarization before sending
     await this.checkAndPerformSummarization();
 
-    // Route request through orchestrator
+    // Route request through orchestrator (async Haiku classification)
     // For continuation commands, keep using the same model to avoid re-classification
     const isContinuation = this.isContinuationCommand(message);
     if (isContinuation && this.lastRouteResult) {
@@ -630,8 +630,9 @@ export class ChatView extends ItemView {
       console.log('[Claudian] Continuation detected, keeping model:',
         this.orchestrator.getSelector().getModelDisplayName(this.lastRouteResult.model));
     } else {
-      // New request, classify and route
-      this.lastRouteResult = this.orchestrator.routeRequest(message, true);
+      // New request, classify and route (shows "classifying..." status)
+      this.showProcessingStatus('status.classifying');
+      this.lastRouteResult = await this.orchestrator.routeRequest(message, true);
     }
     const selectedModel = this.lastRouteResult.model;
     this.showProcessingStatus('status.waitingResponse');

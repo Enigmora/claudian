@@ -461,7 +461,7 @@ IMPORTANT: Respond ONLY with valid JSON according to the requested format.`,
 ⚠️ CRITICAL: For folder operations, ALWAYS use list-folder FIRST to get real file names.
 
 ACTIONS ({{maxActions}} max per message):
-Files: create-note{path,content?,frontmatter?}, read-note{path}, delete-note{path}, rename-note{from,to}, move-note{from,to}, copy-note{from,to}
+Files: create-note{path,content,frontmatter?}, read-note{path}, delete-note{path}, rename-note{from,to}, move-note{from,to}, copy-note{from,to}
 Folders: create-folder{path}, delete-folder{path}, list-folder{path,recursive?}
 Content: append-content{path,content}, prepend-content{path,content}, replace-content{path,content}, update-frontmatter{path,fields}
 Search: search-notes{query,field?,folder?}, get-note-info{path}, find-links{target}, search-by-heading{heading,folder?}, search-by-block{blockId}, get-all-tags{}, open-search{query}
@@ -472,13 +472,18 @@ Bookmarks: add-bookmark{path}, remove-bookmark{path}, list-bookmarks{}
 Canvas: canvas-create-text-node{text,x?,y?}, canvas-create-file-node{file,x?,y?}, canvas-create-link-node{url,x?,y?}, canvas-create-group{label?}, canvas-add-edge{fromNode,toNode}, canvas-select-all{}, canvas-zoom-to-fit{}
 Workspace: open-file{path,mode?}, reveal-in-explorer{path}, get-active-file{}, close-active-leaf{}, split-leaf{direction}
 
+⚠️ CONTENT RULE: When creating notes, ALWAYS include full content in the "content" param. Never describe content in "message" - put actual text in params.
+
 RESPONSE FORMAT (compact, no extra fields):
 {"actions":[{"action":"name","params":{...}}],"message":"Brief desc"}
 
 awaitResults=true: Use when you need results before continuing (list-folder, read-note, search). You'll receive results, then generate next actions.
 requiresConfirmation=true: Use for destructive actions (delete, replace-content).
 
-EXAMPLE - Copy files (2 steps only):
+EXAMPLE - Create note with content:
+{"actions":[{"action":"create-note","params":{"path":"Notes/topic.md","content":"# Topic\\n\\nFirst paragraph here.\\n\\nSecond paragraph."}}],"message":"Created note"}
+
+EXAMPLE - Copy files (2 steps):
 1: {"actions":[{"action":"list-folder","params":{"path":"Src"}},{"action":"create-folder","params":{"path":"Dst"}}],"message":"Listing","awaitResults":true}
 2: {"actions":[{"action":"copy-note","params":{"from":"Src/a.md","to":"Dst/a.md"}},{"action":"copy-note","params":{"from":"Src/b.md","to":"Dst/b.md"}}],"message":"Done"}
 
@@ -499,7 +504,8 @@ CRITICAL RULE: For any folder operations, you MUST use list-folder FIRST to see 
 AVAILABLE ACTIONS (maximum {{maxActions}} per message):
 
 FILE OPERATIONS:
-- create-note: Create a new note. Parameters: {path: "folder/name.md", content?: "text", frontmatter?: {key: value}}
+- create-note: Create a new note. Parameters: {path: "folder/name.md", content: "full text content", frontmatter?: {key: value}}
+  IMPORTANT: Always include complete content in the "content" parameter. Never describe content in "message".
 - read-note: Read note content. Parameters: {path: "folder/name.md"}
 - delete-note: Delete a note. Parameters: {path: "folder/name.md"}
 - rename-note: Rename a note. Parameters: {from: "old/path.md", to: "new/path.md"}
@@ -534,6 +540,14 @@ Always respond with a JSON object like this:
 SPECIAL FLAGS:
 - Add "awaitResults": true when you need to see action results before continuing (e.g., after list-folder)
 - Add "requiresConfirmation": true for destructive actions (delete, replace-content)
+
+EXAMPLE - Create a note with content:
+{
+  "actions": [
+    {"action": "create-note", "params": {"path": "Notes/my-note.md", "content": "# My Note\\n\\nThis is the first paragraph with actual content.\\n\\nThis is another paragraph.", "frontmatter": {"tags": ["example"]}}}
+  ],
+  "message": "Created note with content"
+}
 
 EXAMPLE - Copy all files from Source to Dest folder:
 Step 1: First list the source folder and create destination
@@ -588,6 +602,7 @@ VAULT CONTEXT:
   'tokens.byModelTitle': 'Usage by Model',
   'tokens.noModelData': 'No model data recorded yet',
   'status.processing': 'Processing...',
+  'status.classifying': 'Classifying task...',
   'status.executingActions': 'Executing actions...',
   'status.waitingResponse': 'Waiting for response...',
   'settings.showTokens.name': 'Show token indicator',

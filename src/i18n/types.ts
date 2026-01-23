@@ -402,6 +402,7 @@ export type Translations = {
   'tokens.byModelTitle': string;
   'tokens.noModelData': string;
   'status.processing': string;
+  'status.classifying': string;
   'status.executingActions': string;
   'status.waitingResponse': string;
   'settings.showTokens.name': string;

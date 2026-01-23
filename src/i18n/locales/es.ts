@@ -461,7 +461,7 @@ IMPORTANTE: Responde ÚNICAMENTE con JSON válido según el formato solicitado.`
 ⚠️ CRÍTICO: Para operaciones en carpetas, SIEMPRE usa list-folder PRIMERO para obtener nombres reales.
 
 ACCIONES ({{maxActions}} máx por mensaje):
-Archivos: create-note{path,content?,frontmatter?}, read-note{path}, delete-note{path}, rename-note{from,to}, move-note{from,to}, copy-note{from,to}
+Archivos: create-note{path,content,frontmatter?}, read-note{path}, delete-note{path}, rename-note{from,to}, move-note{from,to}, copy-note{from,to}
 Carpetas: create-folder{path}, delete-folder{path}, list-folder{path,recursive?}
 Contenido: append-content{path,content}, prepend-content{path,content}, replace-content{path,content}, update-frontmatter{path,fields}
 Búsqueda: search-notes{query,field?,folder?}, get-note-info{path}, find-links{target}, search-by-heading{heading,folder?}, search-by-block{blockId}, get-all-tags{}, open-search{query}
@@ -472,13 +472,18 @@ Marcadores: add-bookmark{path}, remove-bookmark{path}, list-bookmarks{}
 Canvas: canvas-create-text-node{text,x?,y?}, canvas-create-file-node{file,x?,y?}, canvas-create-link-node{url,x?,y?}, canvas-create-group{label?}, canvas-add-edge{fromNode,toNode}, canvas-select-all{}, canvas-zoom-to-fit{}
 Workspace: open-file{path,mode?}, reveal-in-explorer{path}, get-active-file{}, close-active-leaf{}, split-leaf{direction}
 
+⚠️ REGLA DE CONTENIDO: Al crear notas, SIEMPRE incluye el contenido completo en el parámetro "content". Nunca describas el contenido en "message" - pon el texto real en params.
+
 FORMATO DE RESPUESTA (compacto, sin campos extra):
 {"actions":[{"action":"nombre","params":{...}}],"message":"Desc breve"}
 
 awaitResults=true: Usar cuando necesitas resultados antes de continuar (list-folder, read-note, search). Recibirás resultados, luego generas siguientes acciones.
 requiresConfirmation=true: Usar para acciones destructivas (delete, replace-content).
 
-EJEMPLO - Copiar archivos (solo 2 pasos):
+EJEMPLO - Crear nota con contenido:
+{"actions":[{"action":"create-note","params":{"path":"Notas/tema.md","content":"# Tema\\n\\nPrimer párrafo aquí.\\n\\nSegundo párrafo."}}],"message":"Nota creada"}
+
+EJEMPLO - Copiar archivos (2 pasos):
 1: {"actions":[{"action":"list-folder","params":{"path":"Src"}},{"action":"create-folder","params":{"path":"Dst"}}],"message":"Listando","awaitResults":true}
 2: {"actions":[{"action":"copy-note","params":{"from":"Src/a.md","to":"Dst/a.md"}},{"action":"copy-note","params":{"from":"Src/b.md","to":"Dst/b.md"}}],"message":"Listo"}
 
@@ -499,7 +504,8 @@ REGLA CRÍTICA: Para cualquier operación en carpetas, DEBES usar list-folder PR
 ACCIONES DISPONIBLES (máximo {{maxActions}} por mensaje):
 
 OPERACIONES DE ARCHIVO:
-- create-note: Crear una nota. Parámetros: {path: "carpeta/nombre.md", content?: "texto", frontmatter?: {clave: valor}}
+- create-note: Crear una nota. Parámetros: {path: "carpeta/nombre.md", content: "contenido completo", frontmatter?: {clave: valor}}
+  IMPORTANTE: Siempre incluye el contenido completo en el parámetro "content". Nunca describas el contenido en "message".
 - read-note: Leer contenido de nota. Parámetros: {path: "carpeta/nombre.md"}
 - delete-note: Eliminar una nota. Parámetros: {path: "carpeta/nombre.md"}
 - rename-note: Renombrar una nota. Parámetros: {from: "ruta/vieja.md", to: "ruta/nueva.md"}
@@ -534,6 +540,14 @@ Siempre responde con un objeto JSON como este:
 FLAGS ESPECIALES:
 - Agrega "awaitResults": true cuando necesites ver los resultados antes de continuar (ej: después de list-folder)
 - Agrega "requiresConfirmation": true para acciones destructivas (delete, replace-content)
+
+EJEMPLO - Crear una nota con contenido:
+{
+  "actions": [
+    {"action": "create-note", "params": {"path": "Notas/mi-nota.md", "content": "# Mi Nota\\n\\nEste es el primer párrafo con contenido real.\\n\\nEste es otro párrafo.", "frontmatter": {"tags": ["ejemplo"]}}}
+  ],
+  "message": "Nota creada con contenido"
+}
 
 EJEMPLO - Copiar todos los archivos de Origen a Destino:
 Paso 1: Primero listar la carpeta origen y crear destino
@@ -588,6 +602,7 @@ CONTEXTO DE LA BÓVEDA:
   'tokens.byModelTitle': 'Uso por Modelo',
   'tokens.noModelData': 'Aún no hay datos de modelos',
   'status.processing': 'Procesando...',
+  'status.classifying': 'Clasificando tarea...',
   'status.executingActions': 'Ejecutando acciones...',
   'status.waitingResponse': 'Esperando respuesta...',
   'settings.showTokens.name': 'Mostrar indicador de tokens',

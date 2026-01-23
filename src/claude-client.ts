@@ -117,6 +117,54 @@ export class ClaudeClient {
   }
 
   /**
+   * Classify a task using Haiku for intelligent routing
+   * Used by ModelOrchestrator to determine which model should handle a request
+   */
+  async classifyTask(message: string): Promise<{ complexity: string; reasoning: string } | null> {
+    if (!this.client) {
+      return null;
+    }
+
+    const classificationPrompt = `You are a task complexity classifier for an Obsidian vault assistant.
+
+Analyze the user's request and classify its complexity level. Respond with ONLY a JSON object, no other text.
+
+Classification levels:
+- "simple": Basic file operations (list, copy, move, delete, rename files/folders), creating empty files or files with placeholder content
+- "moderate": Content creation requiring thinking (write articles, summarize, translate, explain concepts), research tasks, organizing content
+- "complex": Multi-step operations affecting many files, batch processing, refactoring, merging/consolidating content
+- "deep": Comprehensive analysis, strategic planning, knowledge synthesis, concept maps, thorough evaluation
+
+Response format (JSON only):
+{"complexity":"simple|moderate|complex|deep","reasoning":"brief explanation"}
+
+User request: ${message}`;
+
+    try {
+      const response = await this.client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 150,
+        messages: [{ role: 'user', content: classificationPrompt }],
+      });
+
+      const textContent = response.content.find(block => block.type === 'text');
+      if (!textContent || textContent.type !== 'text') {
+        return null;
+      }
+
+      const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return null;
+      }
+
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.warn('[ClaudeClient] Task classification failed:', error);
+      return null;
+    }
+  }
+
+  /**
    * Build the complete system prompt for chat mode.
    * Combines: base identity + chat mode instructions + custom instructions
    */

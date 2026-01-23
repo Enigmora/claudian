@@ -2,12 +2,12 @@
  * Model Orchestrator System for Claudian
  *
  * Routes tasks to the optimal Claude model based on complexity:
- * - Automatic: Smart routing (Haiku for simple, Sonnet for complex, Opus for deep analysis)
+ * - Automatic: Haiku classifies task, then routes to appropriate model
  * - Economic: Everything to Haiku
  * - Maximum Quality: Everything to Opus
  */
 
-import { t } from './i18n';
+import type { ClaudeClient } from './claude-client';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -39,7 +39,7 @@ export interface TaskClassification {
   suggestedModel: ModelId;
   confidence: number;
   reasoning: string;
-  patterns: string[];
+  source: 'haiku' | 'fallback';
 }
 
 /**
@@ -86,187 +86,6 @@ const MODEL_MATRIX: Record<ExecutionMode, Record<ComplexityLevel, ModelId>> = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Task Classifier
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Heuristic-based task classifier
- * Analyzes user messages to determine task complexity
- */
-export class TaskClassifier {
-  // Simple file operations (Haiku-appropriate)
-  private readonly simplePatterns: RegExp[] = [
-    // List operations
-    /^(?:list|lista|listar|show|mostrar|ver|muestra)\s+(?:files?|archivos?|notes?|notas?|folders?|carpetas?)/i,
-    /(?:what|qué|cuáles?)\s+(?:files?|archivos?|notes?|notas?)\s+(?:are|hay|tengo)/i,
-
-    // Copy/move file operations (flexible patterns)
-    /^copia\s+(?:todos?\s+)?(?:los?\s+)?(?:archivos?|notas?|ficheros?)/i,
-    /^copy\s+(?:all\s+)?(?:the\s+)?(?:files?|notes?)/i,
-    /^(?:mueve|mover|move)\s+(?:todos?\s+)?(?:los?\s+)?(?:archivos?|notas?|ficheros?)/i,
-    /(?:copy|copiar|copia)\s+(?:archivos?|files?|notas?|notes?)\s+(?:de|from|to|a|en)/i,
-    /(?:move|mover|mueve)\s+(?:archivos?|files?|notas?|notes?)\s+(?:de|from|to|a|en)/i,
-
-    // Simple single file operations
-    /^(?:copy|copiar|move|mover|rename|renombrar|delete|eliminar|borrar)\s+(?:the\s+)?(?:file|archivo|note|nota)\b/i,
-    /^(?:create|crear|crea)\s+(?:una?\s+)?(?:folder|carpeta)/i,
-
-    // Simple read operations
-    /^(?:read|leer|lee|open|abrir|abre)\s+(?:the\s+|la\s+|el\s+)?(?:file|archivo|note|nota)/i,
-
-    // Status/info queries
-    /(?:how\s+many|cuántas?|cuántos?)\s+(?:files?|archivos?|notes?|notas?)/i,
-
-    // Folder content operations
-    /(?:archivos?|files?|notas?|notes?)\s+(?:en|in|de|from|contenidos?\s+en)\s+(?:la\s+)?(?:carpeta|folder)/i,
-  ];
-
-  // Content creation (Sonnet-appropriate)
-  private readonly moderatePatterns: RegExp[] = [
-    // Create with content
-    /(?:create|crear|write|escribir|generate|generar)\s+(?:a\s+)?(?:note|nota|summary|resumen|document|documento)/i,
-    /(?:summarize|resumir|summarise)\s+/i,
-    /(?:translate|traducir)\s+/i,
-
-    // Organize/restructure
-    /(?:organize|organizar|reorganize|reorganizar|structure|estructurar)/i,
-    /(?:categorize|categorizar|classify|clasificar)/i,
-
-    // Simple analysis
-    /(?:find|encontrar|buscar)\s+(?:all|todos?|todas?)\s+(?:notes?|notas?)\s+(?:with|con|about|sobre)/i,
-    /(?:search|buscar)\s+(?:for|por)?\s+/i,
-  ];
-
-  // Complex multi-step operations (Sonnet with careful routing)
-  private readonly complexPatterns: RegExp[] = [
-    // Batch operations
-    /(?:all|todos?|todas?|every|cada)\s+(?:files?|archivos?|notes?|notas?)\s+(?:in|en)/i,
-    /(?:batch|lote|bulk|masivo)/i,
-
-    // Cross-reference operations
-    /(?:link|enlazar|connect|conectar|relate|relacionar)\s+(?:all|todos?)/i,
-    /(?:find\s+)?(?:connections?|conexiones?|relationships?|relaciones)/i,
-
-    // Complex transformations
-    /(?:refactor|refactorizar|restructure|reestructurar)/i,
-    /(?:merge|fusionar|combine|combinar|consolidate|consolidar)/i,
-  ];
-
-  // Deep analysis tasks (Opus-appropriate)
-  private readonly deepPatterns: RegExp[] = [
-    // Explicit deep analysis requests
-    /(?:analyze|analizar|analyse)\s+(?:deeply|profundamente|thoroughly|exhaustivamente|in\s+depth|en\s+profundidad)/i,
-    /(?:comprehensive|completo|exhaustive|exhaustivo)\s+(?:analysis|análisis|review|revisión)/i,
-
-    // Complex reasoning requests
-    /(?:explain|explicar)\s+(?:in\s+detail|en\s+detalle|thoroughly|detalladamente)/i,
-    /(?:evaluate|evaluar|assess|valorar)\s+(?:all|todos?|the\s+entire|todo\s+el)/i,
-
-    // Knowledge synthesis
-    /(?:synthesize|sintetizar|integrate|integrar)\s+(?:knowledge|conocimiento|information|información)/i,
-    /(?:concept\s+map|mapa\s+conceptual|knowledge\s+graph|grafo\s+de\s+conocimiento)/i,
-
-    // Strategic/planning requests
-    /(?:plan|planificar|strategy|estrategia|roadmap|hoja\s+de\s+ruta)/i,
-  ];
-
-  /**
-   * Classify a user message based on heuristic patterns
-   */
-  classify(message: string, isAgentMode: boolean): TaskClassification {
-    const matchedPatterns: string[] = [];
-    let complexity: ComplexityLevel = 'moderate';
-    let confidence = 0.5;
-    let reasoning = '';
-
-    // Check patterns in order of complexity (highest first)
-    const deepMatches = this.matchPatterns(message, this.deepPatterns);
-    if (deepMatches.length > 0) {
-      complexity = 'deep';
-      confidence = 0.8 + (deepMatches.length * 0.05);
-      matchedPatterns.push(...deepMatches);
-      reasoning = 'Deep analysis indicators detected';
-    } else {
-      const complexMatches = this.matchPatterns(message, this.complexPatterns);
-      if (complexMatches.length > 0) {
-        complexity = 'complex';
-        confidence = 0.7 + (complexMatches.length * 0.05);
-        matchedPatterns.push(...complexMatches);
-        reasoning = 'Complex multi-step operation detected';
-      } else {
-        const moderateMatches = this.matchPatterns(message, this.moderatePatterns);
-        const simpleMatches = this.matchPatterns(message, this.simplePatterns);
-
-        if (simpleMatches.length > 0 && simpleMatches.length >= moderateMatches.length) {
-          complexity = 'simple';
-          confidence = 0.75 + (simpleMatches.length * 0.05);
-          matchedPatterns.push(...simpleMatches);
-          reasoning = 'Simple file operation detected';
-        } else if (moderateMatches.length > 0) {
-          complexity = 'moderate';
-          confidence = 0.65 + (moderateMatches.length * 0.05);
-          matchedPatterns.push(...moderateMatches);
-          reasoning = 'Content creation or moderate complexity detected';
-        }
-      }
-    }
-
-    // Adjust for message length (longer messages tend to be more complex)
-    if (message.length > 500 && complexity === 'simple') {
-      complexity = 'moderate';
-      reasoning += '; adjusted for message length';
-    }
-    if (message.length > 1000 && complexity === 'moderate') {
-      complexity = 'complex';
-      reasoning += '; adjusted for message length';
-    }
-
-    // Agent mode adjustments
-    if (isAgentMode) {
-      // In agent mode, give slightly more weight to simple operations
-      // since the JSON format makes them more structured
-      if (complexity === 'moderate' && matchedPatterns.some(p =>
-        p.includes('list') || p.includes('copy') || p.includes('move')
-      )) {
-        complexity = 'simple';
-        reasoning += '; agent mode adjustment for structured operation';
-      }
-    }
-
-    // Default reasoning if none matched
-    if (!reasoning) {
-      reasoning = 'Default classification based on conversational context';
-    }
-
-    // Cap confidence at 0.95
-    confidence = Math.min(confidence, 0.95);
-
-    const suggestedModel = MODEL_MATRIX.automatic[complexity];
-
-    return {
-      complexity,
-      suggestedModel,
-      confidence,
-      reasoning,
-      patterns: matchedPatterns,
-    };
-  }
-
-  /**
-   * Match message against a set of patterns and return matched pattern descriptions
-   */
-  private matchPatterns(message: string, patterns: RegExp[]): string[] {
-    const matches: string[] = [];
-    for (const pattern of patterns) {
-      if (pattern.test(message)) {
-        matches.push(pattern.source.slice(0, 30) + '...');
-      }
-    }
-    return matches;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
 // Model Selector
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -277,8 +96,8 @@ export class ModelSelector {
   /**
    * Select model based on complexity and execution mode
    */
-  select(classification: TaskClassification, mode: ExecutionMode): ModelId {
-    return MODEL_MATRIX[mode][classification.complexity];
+  select(complexity: ComplexityLevel, mode: ExecutionMode): ModelId {
+    return MODEL_MATRIX[mode][complexity];
   }
 
   /**
@@ -304,15 +123,15 @@ export class ModelSelector {
 
 /**
  * Main orchestration class
- * Coordinates task classification and model selection
+ * Coordinates task classification (via ClaudeClient) and model selection
  */
 export class ModelOrchestrator {
-  private classifier: TaskClassifier;
+  private client: ClaudeClient;
   private selector: ModelSelector;
   private mode: ExecutionMode;
 
-  constructor(mode: ExecutionMode = 'automatic') {
-    this.classifier = new TaskClassifier();
+  constructor(client: ClaudeClient, mode: ExecutionMode = 'automatic') {
+    this.client = client;
     this.selector = new ModelSelector();
     this.mode = mode;
   }
@@ -333,51 +152,93 @@ export class ModelOrchestrator {
 
   /**
    * Route a request to the appropriate model
+   * Uses Haiku (via ClaudeClient) to classify in automatic mode
    */
-  routeRequest(message: string, isAgentMode: boolean = false): RouteResult {
-    // In non-automatic modes, skip classification
+  async routeRequest(message: string, isAgentMode: boolean = false): Promise<RouteResult> {
+    // In non-automatic modes, skip classification (no API call needed)
     if (this.mode === 'economic') {
-      return {
-        model: MODELS.HAIKU,
-        classification: {
-          complexity: 'simple',
-          suggestedModel: MODELS.HAIKU,
-          confidence: 1.0,
-          reasoning: 'Economic mode: all requests routed to Haiku',
-          patterns: [],
-        },
-        mode: this.mode,
-      };
+      return this.createResult('simple', 'Economic mode: all requests routed to Haiku', 'fallback');
     }
 
     if (this.mode === 'maximum_quality') {
-      return {
-        model: MODELS.OPUS,
-        classification: {
-          complexity: 'deep',
-          suggestedModel: MODELS.OPUS,
-          confidence: 1.0,
-          reasoning: 'Maximum quality mode: all requests routed to Opus',
-          patterns: [],
-        },
-        mode: this.mode,
-      };
+      return this.createResult('deep', 'Maximum quality mode: all requests routed to Opus', 'fallback');
     }
 
-    // Automatic mode: classify and route
-    const classification = this.classifier.classify(message, isAgentMode);
-    const model = this.selector.select(classification, this.mode);
+    // Automatic mode: use Haiku to classify via ClaudeClient
+    const result = await this.client.classifyTask(message);
 
+    if (result) {
+      const complexity = this.validateComplexity(result.complexity);
+      const routeResult = this.createResult(complexity, result.reasoning, 'haiku');
+
+      console.log(`[Orchestrator] Haiku classified: ${complexity} → ${this.selector.getModelDisplayName(routeResult.model)} | ${result.reasoning}`);
+
+      return routeResult;
+    }
+
+    // Fallback if Haiku classification fails
+    const fallbackResult = this.classifyWithFallback(message);
+    console.log(`[Orchestrator] Fallback classified: ${fallbackResult.classification.complexity} → ${this.selector.getModelDisplayName(fallbackResult.model)}`);
+
+    return fallbackResult;
+  }
+
+  /**
+   * Create a route result from complexity level
+   */
+  private createResult(complexity: ComplexityLevel, reasoning: string, source: 'haiku' | 'fallback'): RouteResult {
+    const model = this.selector.select(complexity, this.mode);
     return {
       model,
-      classification,
+      classification: {
+        complexity,
+        suggestedModel: model,
+        confidence: source === 'haiku' ? 0.85 : 0.5,
+        reasoning,
+        source,
+      },
       mode: this.mode,
     };
   }
 
   /**
-   * Check if a model is appropriate for agent mode
-   * Haiku requires a more verbose prompt
+   * Validate complexity level
+   */
+  private validateComplexity(value: string): ComplexityLevel {
+    const valid: ComplexityLevel[] = ['simple', 'moderate', 'complex', 'deep'];
+    return valid.includes(value as ComplexityLevel)
+      ? (value as ComplexityLevel)
+      : 'moderate';
+  }
+
+  /**
+   * Fallback classification using simple heuristics
+   * Used when Haiku classification fails
+   */
+  private classifyWithFallback(message: string): RouteResult {
+    const lower = message.toLowerCase();
+
+    // Simple patterns
+    if (/^(list|lista|copy|copia|move|mueve|delete|elimina|rename|renombra)/.test(lower)) {
+      return this.createResult('simple', 'Fallback: file operation keyword', 'fallback');
+    }
+
+    // Deep patterns
+    if (/(analy[sz]e deeply|analizar profundamente|comprehensive|exhaustive)/.test(lower)) {
+      return this.createResult('deep', 'Fallback: deep analysis keyword', 'fallback');
+    }
+
+    // Complex patterns
+    if (/(batch|lote|all files|todos los archivos|refactor|merge|fusionar)/.test(lower)) {
+      return this.createResult('complex', 'Fallback: complex operation keyword', 'fallback');
+    }
+
+    // Default to moderate
+    return this.createResult('moderate', 'Fallback: default classification', 'fallback');
+  }
+
+  /**
+   * Check if a model requires verbose prompt (Haiku needs more explicit instructions)
    */
   requiresVerbosePrompt(modelId: ModelId): boolean {
     return modelId === MODELS.HAIKU;

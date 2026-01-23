@@ -6,7 +6,7 @@ import { AgentMode, AgentResponse } from './agent-mode';
 import { VaultActionExecutor, VaultAction, ActionProgress, ActionResult } from './vault-actions';
 import { ConfirmationModal } from './confirmation-modal';
 import { t } from './i18n';
-import { logger } from './logger';
+import { logger, isDev } from './logger';
 // Phase 2: Enhanced Agent Mode
 import { TruncationDetector, TruncationDetectionResult } from './truncation-detector';
 import { ContextReinforcer, ConversationAnalysis } from './context-reinforcer';
@@ -121,6 +121,11 @@ export class ChatView extends ItemView {
             fill="#E95D3C"/>
     </svg>`;
     headerTitle.createEl('h4', { text: 'Claudian' });
+
+    // Dev mode indicator
+    if (isDev()) {
+      headerTitle.createSpan({ cls: 'claudian-dev-badge', text: 'DEV' });
+    }
 
     // Header controls
     const headerControls = header.createDiv({ cls: 'claudian-header-controls' });

@@ -43,6 +43,17 @@
   color: var(--text-normal);
 }
 
+.claudian-dev-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background-color: #E95D3C;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .claudian-clear-btn {
   background: transparent;
   border: none;

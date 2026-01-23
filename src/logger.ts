@@ -16,7 +16,7 @@ type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 /**
  * Check if we're in development mode
  */
-function isDev(): boolean {
+export function isDev(): boolean {
   try {
     return __DEV__;
   } catch {

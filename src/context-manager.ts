@@ -63,17 +63,46 @@ export interface ContextWindow {
   partialResponse?: string;
 }
 
+export interface ContextManagerOptions {
+  maxMessagesInContext?: number;
+  summarizeThreshold?: number;
+}
+
 export class ContextManager {
   private storage: ContextStorage;
   private currentSession: SessionData | null = null;
 
-  // Thresholds for context management
-  private static readonly MAX_MESSAGES_IN_CONTEXT = 10;
-  private static readonly SUMMARIZE_THRESHOLD = 8;
+  // Thresholds for context management (now configurable)
+  private maxMessagesInContext: number;
+  private summarizeThreshold: number;
   private static readonly ESTIMATED_TOKENS_PER_CHAR = 0.25; // ~4 chars per token
 
-  constructor(storage: ContextStorage) {
+  constructor(storage: ContextStorage, options?: ContextManagerOptions) {
     this.storage = storage;
+    this.maxMessagesInContext = options?.maxMessagesInContext ?? 50;
+    this.summarizeThreshold = options?.summarizeThreshold ?? 20;
+  }
+
+  /**
+   * Update thresholds at runtime (called from settings)
+   */
+  updateThresholds(options: ContextManagerOptions): void {
+    if (options.maxMessagesInContext !== undefined) {
+      this.maxMessagesInContext = options.maxMessagesInContext;
+    }
+    if (options.summarizeThreshold !== undefined) {
+      this.summarizeThreshold = options.summarizeThreshold;
+    }
+  }
+
+  /**
+   * Get the current thresholds
+   */
+  getThresholds(): { maxMessagesInContext: number; summarizeThreshold: number } {
+    return {
+      maxMessagesInContext: this.maxMessagesInContext,
+      summarizeThreshold: this.summarizeThreshold
+    };
   }
 
   /**
@@ -180,7 +209,7 @@ export class ContextManager {
    */
   shouldSummarize(): boolean {
     if (!this.currentSession) return false;
-    return this.currentSession.messages.length >= ContextManager.SUMMARIZE_THRESHOLD;
+    return this.currentSession.messages.length >= this.summarizeThreshold;
   }
 
   /**
@@ -197,8 +226,8 @@ export class ContextManager {
     const messages = this.currentSession.messages;
 
     // Keep last N messages in active context
-    const recentMessages = messages.slice(-ContextManager.MAX_MESSAGES_IN_CONTEXT);
-    const oldMessages = messages.slice(0, -ContextManager.MAX_MESSAGES_IN_CONTEXT);
+    const recentMessages = messages.slice(-this.maxMessagesInContext);
+    const oldMessages = messages.slice(0, -this.maxMessagesInContext);
 
     if (oldMessages.length === 0) {
       return null;
@@ -540,5 +569,54 @@ export class ContextManager {
       this.currentSession.metadata.summarizedMessages = 0;
       await this.saveCurrentSession();
     }
+  }
+
+  /**
+   * Get active messages for sending to the API
+   * Includes summary context if available
+   */
+  getActiveMessages(): Message[] {
+    if (!this.currentSession) {
+      return [];
+    }
+    return [...this.currentSession.messages];
+  }
+
+  /**
+   * Sync from an existing message history (migration helper)
+   * Useful when integrating with existing ClaudeClient history
+   */
+  async syncFromHistory(messages: Message[]): Promise<void> {
+    if (!this.currentSession) {
+      await this.startSession();
+    }
+
+    // Replace current messages with the provided history
+    this.currentSession!.messages = [...messages];
+    this.currentSession!.metadata.totalMessages = messages.length;
+    this.currentSession!.metadata.lastActivity = Date.now();
+
+    await this.saveCurrentSession();
+  }
+
+  /**
+   * Get the summary context string to prepend to system prompt
+   */
+  getSummaryContext(): string | null {
+    if (!this.currentSession?.summaries.length) {
+      return null;
+    }
+
+    const allSummaries = this.currentSession.summaries;
+    const recentSummary = allSummaries[allSummaries.length - 1];
+
+    return this.buildSummaryContext(recentSummary);
+  }
+
+  /**
+   * Check if context management is ready (session active)
+   */
+  isReady(): boolean {
+    return this.currentSession !== null;
   }
 }

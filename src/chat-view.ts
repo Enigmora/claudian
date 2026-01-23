@@ -13,6 +13,8 @@ import { ResponseValidator, ValidationResult } from './response-validator';
 import { TaskPlanner, TaskPlan, TaskAnalysis } from './task-planner';
 // Phase 5: Token Tracking
 import type { TokenUsage, SessionTokenStats } from './token-tracker';
+// Phase 6: Context Management
+import type { ContextManager } from './context-manager';
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -128,7 +130,7 @@ export class ChatView extends ItemView {
     this.messagesContainer = container.createDiv({ cls: 'claudian-messages' });
 
     // Restore history if exists
-    this.restoreHistory();
+    await this.restoreHistory();
 
     // Input wrapper container (for resize)
     const inputWrapper = container.createDiv({ cls: 'claudian-input-wrapper' });
@@ -171,6 +173,9 @@ export class ChatView extends ItemView {
     // Phase 5: Token usage footer
     this.createTokenFooter(inputWrapper);
     this.setupTokenTracking();
+
+    // Phase 6: Initialize context session
+    await this.initializeContextSession();
   }
 
   /**
@@ -212,9 +217,12 @@ export class ChatView extends ItemView {
       this.tokenUsageCleanup();
       this.tokenUsageCleanup = null;
     }
+
+    // Phase 6: End context session
+    await this.endContextSession();
   }
 
-  private restoreHistory(): void {
+  private async restoreHistory(): Promise<void> {
     const history = this.client.getHistory();
     if (history.length === 0) {
       this.showWelcomeScreen();
@@ -225,8 +233,8 @@ export class ChatView extends ItemView {
     }
   }
 
-  private clearChat(): void {
-    this.client.clearHistory();
+  private async clearChat(): Promise<void> {
+    await this.client.clearHistory();
     this.messagesContainer.empty();
     this.showWelcomeScreen();
     new Notice(t('chat.cleared'));
@@ -500,6 +508,9 @@ export class ChatView extends ItemView {
     contentEl: HTMLElement,
     cursorEl: HTMLElement
   ): Promise<void> {
+    // Phase 6: Check for summarization before sending
+    await this.checkAndPerformSummarization();
+
     let fullResponse = '';
 
     await this.client.sendMessageStream(message, {
@@ -569,6 +580,9 @@ export class ChatView extends ItemView {
     contentEl: HTMLElement,
     cursorEl: HTMLElement
   ): Promise<void> {
+    // Phase 6: Check for summarization before sending
+    await this.checkAndPerformSummarization();
+
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
 
@@ -1675,6 +1689,143 @@ Basándote en estos resultados, genera las siguientes acciones necesarias o prop
       return (num / 1000).toFixed(1) + 'K';
     }
     return String(num);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Phase 6: Context Management
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Initialize context session when chat view opens
+   */
+  private async initializeContextSession(): Promise<void> {
+    const contextManager = this.plugin.contextManager;
+    const settings = this.plugin.settings;
+
+    if (!settings.autoContextManagement || !contextManager) {
+      return;
+    }
+
+    try {
+      // Update thresholds from settings
+      contextManager.updateThresholds({
+        summarizeThreshold: settings.messageSummarizeThreshold,
+        maxMessagesInContext: settings.maxActiveContextMessages
+      });
+
+      // Connect context manager to client
+      this.client.setContextManager(contextManager, true);
+
+      // Start or resume session
+      const existingSessionId = contextManager.getCurrentSessionId();
+      if (existingSessionId) {
+        await contextManager.resumeSession(existingSessionId);
+      } else {
+        await contextManager.startSession();
+      }
+
+      // Sync existing client history to context manager if needed
+      const clientHistory = this.client.getHistory();
+      if (clientHistory.length > 0 && !contextManager.isReady()) {
+        await contextManager.syncFromHistory(clientHistory);
+      }
+
+      console.log('[Claudian] Context session initialized');
+    } catch (error) {
+      console.error('[Claudian] Failed to initialize context session:', error);
+      // Disable context management on error to allow chat to work
+      this.client.setContextManager(null, false);
+    }
+  }
+
+  /**
+   * End context session when chat view closes
+   */
+  private async endContextSession(): Promise<void> {
+    const contextManager = this.plugin.contextManager;
+
+    if (!contextManager) {
+      return;
+    }
+
+    try {
+      // Disconnect from client
+      this.client.setContextManager(null, false);
+
+      // Note: We don't end the session here to preserve history across view reopens
+      // Session is only ended explicitly by clearing the chat
+      console.log('[Claudian] Context session paused');
+    } catch (error) {
+      console.error('[Claudian] Error ending context session:', error);
+    }
+  }
+
+  /**
+   * Check if summarization is needed and perform it
+   * Called before sending messages to the API
+   */
+  private async checkAndPerformSummarization(): Promise<boolean> {
+    const settings = this.plugin.settings;
+
+    if (!settings.autoContextManagement) {
+      return false;
+    }
+
+    try {
+      const summarized = await this.client.checkAndSummarize(
+        (messages) => this.generateSummary(messages)
+      );
+
+      if (summarized) {
+        console.log('[Claudian] Conversation history summarized');
+      }
+
+      return summarized;
+    } catch (error) {
+      console.error('[Claudian] Error during summarization:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate a summary of messages using Claude
+   */
+  private async generateSummary(messages: Message[]): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Format conversation for summarization
+      const conversation = messages.map(m =>
+        `${m.role.toUpperCase()}: ${m.content}`
+      ).join('\n\n');
+
+      const prompt = t('context.summaryPrompt', { conversation });
+
+      // Use a direct API call for summarization (without affecting history)
+      const client = this.plugin.claudeClient;
+
+      // Create a temporary client for summarization
+      const tempSettings = { ...this.plugin.settings, maxTokens: 1024 };
+      const summaryClient = new (require('./claude-client').ClaudeClient)(tempSettings);
+
+      let summary = '';
+
+      summaryClient.sendMessageStream(prompt, {
+        onToken: (token: string) => {
+          summary += token;
+        },
+        onComplete: () => {
+          resolve(summary);
+        },
+        onError: (error: Error) => {
+          // Fallback to simple summary on error
+          const fallback = JSON.stringify({
+            keyTopics: [],
+            lastActions: [],
+            summary: `Previous conversation with ${messages.length} messages.`
+          });
+          resolve(fallback);
+        }
+      });
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

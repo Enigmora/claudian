@@ -24,13 +24,17 @@ export interface ClaudeCompanionSettings {
   enableContextReinforcement: boolean;
   // Phase 5: Token Tracking
   showTokenIndicator: boolean;
+  // Phase 6: Context Management
+  autoContextManagement: boolean;
+  messageSummarizeThreshold: number;
+  maxActiveContextMessages: number;
 }
 
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   language: 'auto',
   apiKey: '',
   model: 'claude-sonnet-4-20250514',
-  notesFolder: 'Claude Notes',
+  notesFolder: 'Claudian',
   maxTokens: 4096,
   customInstructions: '',
   maxNotesInContext: 100,
@@ -45,7 +49,11 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   enableAutoPlan: true,
   enableContextReinforcement: true,
   // Phase 5: Token Tracking
-  showTokenIndicator: true
+  showTokenIndicator: true,
+  // Phase 6: Context Management
+  autoContextManagement: true,
+  messageSummarizeThreshold: 20,
+  maxActiveContextMessages: 50
 };
 
 export interface ModelOption {
@@ -363,6 +371,71 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
             if (view instanceof ChatView) {
               view.updateTokenFooterVisibility();
             }
+          }
+        })
+      );
+
+    // Context Management Section (Phase 6)
+    containerEl.createEl('hr');
+    containerEl.createEl('h3', { text: t('settings.section.contextManagement') });
+
+    // Auto context management
+    new Setting(containerEl)
+      .setName(t('settings.autoContextManagement.name'))
+      .setDesc(t('settings.autoContextManagement.desc'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.autoContextManagement)
+        .onChange(async (value) => {
+          this.plugin.settings.autoContextManagement = value;
+          await this.plugin.saveSettings();
+          // Notify context manager of settings change
+          if (this.plugin.contextManager) {
+            this.plugin.contextManager.updateThresholds({
+              summarizeThreshold: this.plugin.settings.messageSummarizeThreshold,
+              maxMessagesInContext: this.plugin.settings.maxActiveContextMessages
+            });
+          }
+        })
+      );
+
+    // Message summarize threshold
+    new Setting(containerEl)
+      .setName(t('settings.messageSummarizeThreshold.name'))
+      .setDesc(t('settings.messageSummarizeThreshold.desc'))
+      .addSlider(slider => slider
+        .setLimits(10, 50, 5)
+        .setValue(this.plugin.settings.messageSummarizeThreshold)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.messageSummarizeThreshold = value;
+          await this.plugin.saveSettings();
+          // Update context manager thresholds
+          if (this.plugin.contextManager) {
+            this.plugin.contextManager.updateThresholds({
+              summarizeThreshold: value,
+              maxMessagesInContext: this.plugin.settings.maxActiveContextMessages
+            });
+          }
+        })
+      );
+
+    // Max active context messages
+    new Setting(containerEl)
+      .setName(t('settings.maxActiveContextMessages.name'))
+      .setDesc(t('settings.maxActiveContextMessages.desc'))
+      .addSlider(slider => slider
+        .setLimits(20, 100, 10)
+        .setValue(this.plugin.settings.maxActiveContextMessages)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.maxActiveContextMessages = value;
+          await this.plugin.saveSettings();
+          // Update context manager thresholds
+          if (this.plugin.contextManager) {
+            this.plugin.contextManager.updateThresholds({
+              summarizeThreshold: this.plugin.settings.messageSummarizeThreshold,
+              maxMessagesInContext: value
+            });
           }
         })
       );

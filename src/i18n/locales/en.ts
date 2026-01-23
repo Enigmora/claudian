@@ -10,7 +10,7 @@ const translations: Translations = {
   'settings.language.desc': 'Plugin interface language. "Auto" detects from Obsidian settings.',
   'settings.language.auto': 'Auto (detect from Obsidian)',
   'settings.apiKey.name': 'API Key',
-  'settings.apiKey.descPart1': 'Your Anthropic API key. Get your API key at ',
+  'settings.apiKey.descPart1': 'Get your Anthropic API Key at ',
   'settings.apiKey.descPart2': '. Stored locally in your vault.',
   'settings.apiKey.placeholder': 'sk-ant-...',
   'settings.model.name': 'Model',
@@ -21,7 +21,7 @@ const translations: Translations = {
   'settings.model.haiku35': 'Claude 3.5 Haiku (Fast)',
   'settings.folder.name': 'Notes folder',
   'settings.folder.desc': 'Folder where notes generated from chat will be saved.',
-  'settings.folder.placeholder': 'Claude Notes',
+  'settings.folder.placeholder': 'Claudian',
   'settings.maxTokens.name': 'Max tokens',
   'settings.maxTokens.desc': 'Maximum number of tokens in responses (1000-8192).',
   'settings.customInstructions.name': 'Custom instructions',
@@ -730,17 +730,47 @@ VAULT CONTEXT:
   'error.billingIssue': 'Billing issue detected. Check your account at console.anthropic.com.',
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // CONTEXT MANAGEMENT (Phase 6)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'settings.section.contextManagement': 'Context Management',
+  'settings.autoContextManagement.name': 'Automatic context management',
+  'settings.autoContextManagement.desc': 'Automatically summarize conversation history when it gets long to reduce token usage.',
+  'settings.messageSummarizeThreshold.name': 'Summarize after messages',
+  'settings.messageSummarizeThreshold.desc': 'Number of messages before triggering automatic summarization (10-50).',
+  'settings.maxActiveContextMessages.name': 'Max active messages',
+  'settings.maxActiveContextMessages.desc': 'Maximum messages to keep in active context after summarization (20-100).',
+  'context.summarizing': 'Summarizing conversation history...',
+  'context.summarized': 'Conversation history summarized',
+  'context.sessionStarted': 'Context session started',
+  'context.sessionEnded': 'Context session ended',
+  'context.summaryPrompt': `Summarize the following conversation between a user and an AI assistant. Focus on:
+1. Key topics discussed
+2. Important decisions or conclusions
+3. Any pending tasks or follow-ups
+4. Context that would be important for continuing the conversation
+
+Respond in JSON format:
+{
+  "keyTopics": ["topic1", "topic2"],
+  "lastActions": ["action1", "action2"],
+  "summary": "Brief summary of the conversation"
+}
+
+CONVERSATION:
+{{conversation}}`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': 'Claudian',
   'welcome.developedBy': 'Developed by Enigmora',
   'welcome.greeting': 'How can I help you today?',
   'welcome.examplesHeader': 'Examples of what I can do:',
-  'welcome.example1': '"Organize my productivity notes into folders by topic and create a linked index"',
-  'welcome.example2': '"Find all notes with the #project tag and generate a concept map with their connections"',
+  'welcome.example1': '"What notes do I have about artificial intelligence?"',
+  'welcome.example2': '"Create a note with a summary of this week\'s meetings"',
   'welcome.example3': '"Read my Ideas.md note and suggest wikilinks to related notes"',
-  'welcome.example4': '"Create a note with a summary of this week\'s meetings"',
-  'welcome.example5': '"What notes do I have about artificial intelligence?"',
+  'welcome.example4': '"Find all notes with the #project tag and generate a concept map with their connections"',
+  'welcome.example5': '"Organize my productivity notes into folders by topic and create a linked index"',
   'welcome.agentModeHint': 'Enable Agent Mode to create, modify and organize notes automatically.'
 };
 

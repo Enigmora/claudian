@@ -87,10 +87,13 @@ export default class ClaudeCompanionPlugin extends Plugin {
     // Initialize concept map generator
     this.conceptMapGenerator = new ConceptMapGenerator(this, this.claudeClient, this.indexer);
 
-    // Phase 3: Initialize context management
+    // Phase 3/6: Initialize context management with settings
     this.contextStorage = new ContextStorage(this);
     await this.contextStorage.initialize();
-    this.contextManager = new ContextManager(this.contextStorage);
+    this.contextManager = new ContextManager(this.contextStorage, {
+      summarizeThreshold: this.settings.messageSummarizeThreshold,
+      maxMessagesInContext: this.settings.maxActiveContextMessages
+    });
 
     // Schedule periodic purge of temp files (every 30 minutes)
     this.purgeIntervalId = window.setInterval(

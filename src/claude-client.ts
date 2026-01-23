@@ -4,6 +4,7 @@ import { VaultContext } from './vault-indexer';
 import { ExtractionTemplate } from './extraction-templates';
 import { t } from './i18n';
 import type { TokenUsage, UsageMethod } from './token-tracker';
+import type { ContextManager } from './context-manager';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -44,9 +45,35 @@ export class ClaudeClient {
   private currentStream: ReturnType<Anthropic['messages']['stream']> | null = null;
   private abortController: AbortController | null = null;
 
+  // Phase 6: Context Management integration
+  private contextManager: ContextManager | null = null;
+  private contextManagementEnabled: boolean = false;
+
   constructor(settings: ClaudeCompanionSettings) {
     this.settings = settings;
     this.initClient();
+  }
+
+  /**
+   * Phase 6: Set the context manager for automatic summarization
+   */
+  setContextManager(manager: ContextManager | null, enabled: boolean = true): void {
+    this.contextManager = manager;
+    this.contextManagementEnabled = enabled;
+  }
+
+  /**
+   * Phase 6: Check if context management is enabled and active
+   */
+  isContextManagementActive(): boolean {
+    return this.contextManagementEnabled && this.contextManager !== null;
+  }
+
+  /**
+   * Phase 6: Get the context manager reference
+   */
+  getContextManager(): ContextManager | null {
+    return this.contextManager;
   }
 
   /**
@@ -105,12 +132,74 @@ export class ClaudeClient {
     return parts.join('\n\n');
   }
 
-  clearHistory(): void {
+  /**
+   * Clear conversation history
+   * Now async to support context manager cleanup
+   */
+  async clearHistory(): Promise<void> {
     this.conversationHistory = [];
+
+    // Phase 6: Also clear context manager if active
+    if (this.contextManagementEnabled && this.contextManager) {
+      await this.contextManager.clearMessages();
+    }
   }
 
+  /**
+   * Get conversation history
+   * Returns from context manager if active, otherwise from local history
+   */
   getHistory(): Message[] {
+    // Phase 6: Use context manager if active
+    if (this.contextManagementEnabled && this.contextManager?.isReady()) {
+      return this.contextManager.getActiveMessages();
+    }
     return [...this.conversationHistory];
+  }
+
+  /**
+   * Phase 6: Add message to history and sync with context manager
+   */
+  private async addMessageToHistory(message: Message): Promise<void> {
+    this.conversationHistory.push(message);
+
+    // Sync with context manager if active
+    if (this.contextManagementEnabled && this.contextManager) {
+      await this.contextManager.addMessage(message);
+    }
+  }
+
+  /**
+   * Phase 6: Check if summarization is needed and perform it
+   * Returns true if summarization was performed
+   */
+  async checkAndSummarize(
+    generateSummary: (messages: Message[]) => Promise<string>
+  ): Promise<boolean> {
+    if (!this.contextManagementEnabled || !this.contextManager) {
+      return false;
+    }
+
+    if (this.contextManager.shouldSummarize()) {
+      const summary = await this.contextManager.summarizeAndOffload(generateSummary);
+      if (summary) {
+        // Update local history to match context manager's active messages
+        this.conversationHistory = this.contextManager.getActiveMessages();
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Phase 6: Get summary context to include in system prompt
+   */
+  getSummaryContext(): string | null {
+    if (!this.contextManagementEnabled || !this.contextManager) {
+      return null;
+    }
+    return this.contextManager.getSummaryContext();
   }
 
   async sendMessageStream(
@@ -123,7 +212,7 @@ export class ClaudeClient {
     }
 
     // Add user message to history
-    this.conversationHistory.push({
+    await this.addMessageToHistory({
       role: 'user',
       content: userMessage
     });
@@ -135,11 +224,21 @@ export class ClaudeClient {
     try {
       this.abortController = new AbortController();
 
+      // Phase 6: Build system prompt with summary context if available
+      let systemPrompt = this.buildChatSystemPrompt();
+      const summaryContext = this.getSummaryContext();
+      if (summaryContext) {
+        systemPrompt = `${summaryContext}\n\n${systemPrompt}`;
+      }
+
+      // Phase 6: Get messages from the appropriate source
+      const messages = this.getHistory();
+
       const stream = this.client.messages.stream({
         model: this.settings.model,
         max_tokens: this.settings.maxTokens,
-        system: this.buildChatSystemPrompt(),
-        messages: this.conversationHistory.map(msg => ({
+        system: systemPrompt,
+        messages: messages.map(msg => ({
           role: msg.role,
           content: msg.content
         }))
@@ -168,7 +267,7 @@ export class ClaudeClient {
       }
 
       // Add response to history
-      this.conversationHistory.push({
+      await this.addMessageToHistory({
         role: 'assistant',
         content: fullResponse
       });
@@ -182,7 +281,7 @@ export class ClaudeClient {
       // Check if aborted by user
       if (error instanceof Error && error.message.includes('aborted')) {
         if (fullResponse) {
-          this.conversationHistory.push({
+          await this.addMessageToHistory({
             role: 'assistant',
             content: fullResponse + '\n\n[Response stopped by user]'
           });
@@ -191,7 +290,7 @@ export class ClaudeClient {
         return;
       }
 
-      // Remove user message if error
+      // Remove user message if error (from local history)
       this.conversationHistory.pop();
 
       if (error instanceof Error) {
@@ -407,7 +506,7 @@ ${noteContent}`;
     }
 
     // Add user message to history
-    this.conversationHistory.push({
+    await this.addMessageToHistory({
       role: 'user',
       content: userMessage
     });
@@ -419,11 +518,21 @@ ${noteContent}`;
     try {
       this.abortController = new AbortController();
 
+      // Phase 6: Include summary context in agent system prompt if available
+      let systemPrompt = agentSystemPrompt;
+      const summaryContext = this.getSummaryContext();
+      if (summaryContext) {
+        systemPrompt = `${summaryContext}\n\n${systemPrompt}`;
+      }
+
+      // Phase 6: Get messages from the appropriate source
+      const messages = this.getHistory();
+
       const stream = this.client.messages.stream({
         model: this.settings.model,
         max_tokens: this.settings.maxTokens,
-        system: agentSystemPrompt,
-        messages: this.conversationHistory.map(msg => ({
+        system: systemPrompt,
+        messages: messages.map(msg => ({
           role: msg.role,
           content: msg.content
         }))
@@ -452,7 +561,7 @@ ${noteContent}`;
       }
 
       // Add response to history
-      this.conversationHistory.push({
+      await this.addMessageToHistory({
         role: 'assistant',
         content: fullResponse
       });
@@ -467,7 +576,7 @@ ${noteContent}`;
       if (error instanceof Error && error.message.includes('aborted')) {
         // Stream was aborted by user, keep partial response
         if (fullResponse) {
-          this.conversationHistory.push({
+          await this.addMessageToHistory({
             role: 'assistant',
             content: fullResponse + '\n\n[Response stopped by user]'
           });

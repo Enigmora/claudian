@@ -394,6 +394,22 @@ export type Translations = {
   'error.billingIssue': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // CONTEXT MANAGEMENT (Phase 6)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'settings.section.contextManagement': string;
+  'settings.autoContextManagement.name': string;
+  'settings.autoContextManagement.desc': string;
+  'settings.messageSummarizeThreshold.name': string;
+  'settings.messageSummarizeThreshold.desc': string;
+  'settings.maxActiveContextMessages.name': string;
+  'settings.maxActiveContextMessages.desc': string;
+  'context.summarizing': string;
+  'context.summarized': string;
+  'context.sessionStarted': string;
+  'context.sessionEnded': string;
+  'context.summaryPrompt': string;
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': string;

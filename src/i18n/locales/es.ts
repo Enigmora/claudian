@@ -10,7 +10,7 @@ const translations: Translations = {
   'settings.language.desc': 'Idioma de la interfaz del plugin. "Auto" detecta el idioma de Obsidian.',
   'settings.language.auto': 'Auto (detectar de Obsidian)',
   'settings.apiKey.name': 'API Key',
-  'settings.apiKey.descPart1': 'Tu clave de API de Anthropic. Obtén tu API key en ',
+  'settings.apiKey.descPart1': 'Obtén tu API Key de Anthropic en ',
   'settings.apiKey.descPart2': '. Se almacena localmente en tu bóveda.',
   'settings.apiKey.placeholder': 'sk-ant-...',
   'settings.model.name': 'Modelo',
@@ -21,7 +21,7 @@ const translations: Translations = {
   'settings.model.haiku35': 'Claude 3.5 Haiku (Rápido)',
   'settings.folder.name': 'Carpeta de notas',
   'settings.folder.desc': 'Carpeta donde se guardarán las notas generadas desde el chat.',
-  'settings.folder.placeholder': 'Claude Notes',
+  'settings.folder.placeholder': 'Claudian',
   'settings.maxTokens.name': 'Máximo de tokens',
   'settings.maxTokens.desc': 'Número máximo de tokens en las respuestas (1000-8192).',
   'settings.customInstructions.name': 'Instrucciones personalizadas',
@@ -730,17 +730,47 @@ CONTEXTO DE LA BÓVEDA:
   'error.billingIssue': 'Problema de facturación detectado. Revisa tu cuenta en console.anthropic.com.',
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // CONTEXT MANAGEMENT (Phase 6)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'settings.section.contextManagement': 'Gestión de Contexto',
+  'settings.autoContextManagement.name': 'Gestión automática de contexto',
+  'settings.autoContextManagement.desc': 'Resumir automáticamente el historial de conversación cuando se hace largo para reducir el uso de tokens.',
+  'settings.messageSummarizeThreshold.name': 'Resumir después de mensajes',
+  'settings.messageSummarizeThreshold.desc': 'Número de mensajes antes de activar el resumen automático (10-50).',
+  'settings.maxActiveContextMessages.name': 'Máx. mensajes activos',
+  'settings.maxActiveContextMessages.desc': 'Máximo de mensajes a mantener en contexto activo después del resumen (20-100).',
+  'context.summarizing': 'Resumiendo historial de conversación...',
+  'context.summarized': 'Historial de conversación resumido',
+  'context.sessionStarted': 'Sesión de contexto iniciada',
+  'context.sessionEnded': 'Sesión de contexto finalizada',
+  'context.summaryPrompt': `Resume la siguiente conversación entre un usuario y un asistente de IA. Enfócate en:
+1. Temas clave discutidos
+2. Decisiones o conclusiones importantes
+3. Tareas pendientes o seguimientos
+4. Contexto importante para continuar la conversación
+
+Responde en formato JSON:
+{
+  "keyTopics": ["tema1", "tema2"],
+  "lastActions": ["acción1", "acción2"],
+  "summary": "Resumen breve de la conversación"
+}
+
+CONVERSACIÓN:
+{{conversation}}`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': 'Claudian',
   'welcome.developedBy': 'Desarrollado por Enigmora',
   'welcome.greeting': '¿Cómo puedo ayudarte hoy?',
   'welcome.examplesHeader': 'Ejemplos de lo que puedo hacer:',
-  'welcome.example1': '"Organiza mis notas sobre productividad en carpetas por tema y crea un índice enlazado"',
-  'welcome.example2': '"Busca todas las notas con el tag #proyecto y genera un mapa conceptual con sus conexiones"',
+  'welcome.example1': '"¿Qué notas tengo sobre inteligencia artificial?"',
+  'welcome.example2': '"Crea una nota con un resumen de las reuniones de esta semana"',
   'welcome.example3': '"Lee mi nota de Ideas.md y sugiere wikilinks a otras notas relacionadas"',
-  'welcome.example4': '"Crea una nota con un resumen de las reuniones de esta semana"',
-  'welcome.example5': '"¿Qué notas tengo sobre inteligencia artificial?"',
+  'welcome.example4': '"Busca todas las notas con el tag #proyecto y genera un mapa conceptual con sus conexiones"',
+  'welcome.example5': '"Organiza mis notas sobre productividad en carpetas por tema y crea un índice enlazado"',
   'welcome.agentModeHint': 'Activa el Modo Agente para crear, modificar y organizar notas automáticamente.'
 };
 

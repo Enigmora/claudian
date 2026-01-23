@@ -1001,6 +1001,7 @@ export class ChatView extends ItemView {
       },
       onError: (error) => {
         cursorEl.remove();
+        contentEl.empty();
         contentEl.createEl('span', {
           text: t('chat.error', { message: error.message }),
           cls: 'claudian-error'

@@ -1,6 +1,7 @@
 import { TFile, TFolder, TAbstractFile, Notice, MarkdownView, Editor, ItemView } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { t } from './i18n';
+import { logger } from './logger';
 
 export type ActionType =
   // === Existing (16 actions) ===
@@ -106,7 +107,7 @@ export class VaultActionExecutor {
 
       // Si una acción falla, continuar pero registrar
       if (!result.success) {
-        console.warn(`Acción fallida: ${action.action}`, result.error);
+        logger.warn(`Action failed: ${action.action}`, result.error);
       }
     }
 

@@ -6,6 +6,7 @@ import { AgentMode, AgentResponse } from './agent-mode';
 import { VaultActionExecutor, VaultAction, ActionProgress, ActionResult } from './vault-actions';
 import { ConfirmationModal } from './confirmation-modal';
 import { t } from './i18n';
+import { logger } from './logger';
 // Phase 2: Enhanced Agent Mode
 import { TruncationDetector, TruncationDetectionResult } from './truncation-detector';
 import { ContextReinforcer, ConversationAnalysis } from './context-reinforcer';
@@ -627,7 +628,7 @@ export class ChatView extends ItemView {
     const isContinuation = this.isContinuationCommand(message);
     if (isContinuation && this.lastRouteResult) {
       // Keep the same model for continuations
-      console.log('[Claudian] Continuation detected, keeping model:',
+      logger.debug(' Continuation detected, keeping model:',
         this.orchestrator.getSelector().getModelDisplayName(this.lastRouteResult.model));
     } else {
       // New request, classify and route (shows "classifying..." status)
@@ -1115,7 +1116,7 @@ export class ChatView extends ItemView {
 
     // Check iteration limit
     if (loopCount >= MAX_LOOP_COUNT) {
-      console.warn('[Claudian] Agentic loop limit reached:', loopCount);
+      logger.warn(' Agentic loop limit reached:', loopCount);
       this.endAgenticLoop();
       const warningEl = contentEl.createDiv({ cls: 'agent-loop-warning' });
       warningEl.setText(t('agent.loopLimitReached'));
@@ -1128,7 +1129,7 @@ export class ChatView extends ItemView {
     const failCount = results.filter(r => !r.success).length;
 
     if (successCount === 0 && failCount > 0) {
-      console.warn('[Claudian] All actions failed, stopping agentic loop');
+      logger.warn(' All actions failed, stopping agentic loop');
       this.endAgenticLoop();
       const errorEl = contentEl.createDiv({ cls: 'agent-loop-error' });
       errorEl.setText(t('agent.allActionsFailed'));
@@ -1139,7 +1140,7 @@ export class ChatView extends ItemView {
     // Detect infinite loops by hashing current actions
     const actionsHash = this.hashActions(results.map(r => r.action));
     if (this.agentLoopHistory.includes(actionsHash)) {
-      console.warn('[Claudian] Infinite loop detected - same actions repeated');
+      logger.warn(' Infinite loop detected - same actions repeated');
       this.endAgenticLoop();
       const warningEl = contentEl.createDiv({ cls: 'agent-loop-warning' });
       warningEl.setText(t('agent.infiniteLoopDetected'));
@@ -1153,7 +1154,7 @@ export class ChatView extends ItemView {
 
     // Format results for Claude
     const resultsMessage = this.formatResultsForAgent(results);
-    console.log('[Claudian] Agentic loop - sending results back to Claude:', resultsMessage);
+    logger.debug(' Agentic loop - sending results back to Claude:', resultsMessage);
 
     // Phase 3: Use loop container if available, otherwise use contentEl
     const indicatorContainer = this.agentLoopContainer || contentEl;
@@ -1794,9 +1795,9 @@ export class ChatView extends ItemView {
         await contextManager.syncFromHistory(clientHistory);
       }
 
-      console.log('[Claudian] Context session initialized');
+      logger.debug(' Context session initialized');
     } catch (error) {
-      console.error('[Claudian] Failed to initialize context session:', error);
+      logger.error(' Failed to initialize context session:', error);
       // Disable context management on error to allow chat to work
       this.client.setContextManager(null, false);
     }
@@ -1818,9 +1819,9 @@ export class ChatView extends ItemView {
 
       // Note: We don't end the session here to preserve history across view reopens
       // Session is only ended explicitly by clearing the chat
-      console.log('[Claudian] Context session paused');
+      logger.debug(' Context session paused');
     } catch (error) {
-      console.error('[Claudian] Error ending context session:', error);
+      logger.error(' Error ending context session:', error);
     }
   }
 
@@ -1841,12 +1842,12 @@ export class ChatView extends ItemView {
       );
 
       if (summarized) {
-        console.log('[Claudian] Conversation history summarized');
+        logger.debug(' Conversation history summarized');
       }
 
       return summarized;
     } catch (error) {
-      console.error('[Claudian] Error during summarization:', error);
+      logger.error(' Error during summarization:', error);
       return false;
     }
   }

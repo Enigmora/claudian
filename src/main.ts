@@ -20,6 +20,7 @@ import { BatchProcessor } from './batch-processor';
 import { ConceptMapGenerator } from './concept-map-generator';
 import { BatchModal } from './batch-modal';
 import { t, setLocale, resolveLocale, initSync } from './i18n';
+import { logger } from './logger';
 // Phase 3: Context Management
 import { ContextStorage } from './context-storage';
 import { ContextManager } from './context-manager';
@@ -71,7 +72,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
     if (this.settings.executionMode === undefined) {
       this.settings.executionMode = 'automatic';
       await this.saveSettings();
-      console.log('[Claudian] Migrated to execution mode: automatic');
+      logger.info('Migrated to execution mode: automatic');
     }
 
     // Phase 5: Initialize token tracker
@@ -213,12 +214,10 @@ export default class ClaudeCompanionPlugin extends Plugin {
       const result = await purgeManager.runPurge();
 
       if (result.purgedFiles > 0) {
-        console.log(
-          `Claudian: Purged ${result.purgedFiles} temp files, freed ${Math.round(result.freedSpace / 1024)}KB`
-        );
+        logger.info(`Purged ${result.purgedFiles} temp files, freed ${Math.round(result.freedSpace / 1024)}KB`);
       }
     } catch (error) {
-      console.error('Claudian: Error during scheduled purge:', error);
+      logger.error('Error during scheduled purge:', error);
     }
   }
 
@@ -240,7 +239,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
         return data.tokenUsageHistory;
       }
     } catch (e) {
-      console.error('Error loading token history:', e);
+      logger.error('Error loading token history:', e);
     }
     return createEmptyHistory();
   }
@@ -254,7 +253,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
       data.tokenUsageHistory = history;
       await this.saveData(data);
     } catch (e) {
-      console.error('Error saving token history:', e);
+      logger.error('Error saving token history:', e);
     }
   }
 

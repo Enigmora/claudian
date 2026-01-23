@@ -3,6 +3,8 @@
  * Phase 5: Tracks API token consumption per session and historically
  */
 
+import { logger } from './logger';
+
 export type UsageMethod = 'chat' | 'agent' | 'process' | 'template' | 'conceptMap';
 
 /**
@@ -357,7 +359,7 @@ export class TokenUsageTracker {
       try {
         callback(stats);
       } catch (e) {
-        console.error('Error in usage update callback:', e);
+        logger.error('Error in usage update callback:', e);
       }
     }
   }

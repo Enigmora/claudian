@@ -7,6 +7,7 @@
 import { Message } from './claude-client';
 import { ContextStorage } from './context-storage';
 import { TaskPlan, Subtask } from './task-planner';
+import { logger } from './logger';
 
 export interface SessionData {
   id: string;
@@ -239,7 +240,7 @@ export class ContextManager {
     const recentMessages = messages.slice(-keepCount);
     const oldMessages = messages.slice(0, messages.length - keepCount);
 
-    console.log(`[Claudian] Summarizing ${oldMessages.length} messages, keeping ${recentMessages.length} in context`);
+    logger.debug(` Summarizing ${oldMessages.length} messages, keeping ${recentMessages.length} in context`);
 
     // Generate summary using the provided function (calls the LLM)
     const summaryText = await generateSummary(oldMessages);

@@ -23,6 +23,9 @@ await esbuild.build({
   treeShaking: true,
   outfile: path.join(outdir, "main.js"),
   minify: prod,
+  define: {
+    __DEV__: prod ? "false" : "true",
+  },
 }).catch(() => process.exit(1));
 
 // Copiar archivos estáticos a dist

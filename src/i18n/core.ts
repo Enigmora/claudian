@@ -1,4 +1,5 @@
 import type { Locale, Translations, TranslationKey } from './types';
+import { logger } from '../logger';
 
 // Lazy-loaded translations
 let translations: Translations | null = null;
@@ -103,14 +104,14 @@ export function getSupportedLocales(): Array<{ code: Locale; name: string }> {
 export function t(key: TranslationKey, params?: Record<string, string | number>): string {
   if (!translations) {
     // Fallback: return key if translations not loaded
-    console.warn(`[i18n] Translations not loaded. Key: ${key}`);
+    logger.warn(`[i18n] Translations not loaded. Key: ${key}`);
     return key;
   }
 
   let text = translations[key];
 
   if (text === undefined) {
-    console.warn(`[i18n] Missing translation for key: ${key}`);
+    logger.warn(`[i18n] Missing translation for key: ${key}`);
     return key;
   }
 

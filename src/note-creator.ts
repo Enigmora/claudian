@@ -2,6 +2,7 @@ import { App, Modal, Setting, Notice, TFolder } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { generateNoteContent, extractSuggestedTags, suggestTitle } from './templates/default';
 import { t } from './i18n';
+import { logger } from './logger';
 
 export class NoteCreatorModal extends Modal {
   plugin: ClaudeCompanionPlugin;
@@ -131,7 +132,7 @@ export class NoteCreatorModal extends Modal {
       this.close();
 
     } catch (error) {
-      console.error('Error creating note:', error);
+      logger.error('Error creating note:', error);
       new Notice(t('noteCreator.error', { message: error instanceof Error ? error.message : t('chat.errorUnknown') }));
     }
   }

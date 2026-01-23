@@ -5,6 +5,7 @@
  */
 
 import { Plugin } from 'obsidian';
+import { logger } from './logger';
 
 export interface TempFileMetadata {
   id: string;
@@ -100,7 +101,7 @@ export class ContextStorage {
         this.index = JSON.parse(content);
       }
     } catch (error) {
-      console.warn('Claudian: Could not load temp index, creating new one');
+      logger.warn(' Could not load temp index, creating new one');
       this.index = { version: 1, files: [], lastPurge: Date.now() };
     }
   }
@@ -115,7 +116,7 @@ export class ContextStorage {
     try {
       await adapter.write(indexPath, JSON.stringify(this.index, null, 2));
     } catch (error) {
-      console.error('Claudian: Could not save temp index:', error);
+      logger.error(' Could not save temp index:', error);
     }
   }
 
@@ -185,7 +186,7 @@ export class ContextStorage {
 
       return id;
     } catch (error) {
-      console.error(`Claudian: Could not save temp file ${id}:`, error);
+      logger.error(` Could not save temp file ${id}:`, error);
       throw error;
     }
   }
@@ -215,7 +216,7 @@ export class ContextStorage {
         return JSON.parse(content) as T;
       }
     } catch (error) {
-      console.error(`Claudian: Could not load temp file ${id}:`, error);
+      logger.error(` Could not load temp file ${id}:`, error);
     }
 
     return null;
@@ -252,7 +253,7 @@ export class ContextStorage {
         return true;
       }
     } catch (error) {
-      console.error(`Claudian: Could not update temp file ${id}:`, error);
+      logger.error(` Could not update temp file ${id}:`, error);
     }
 
     return false;
@@ -270,7 +271,7 @@ export class ContextStorage {
         await this.plugin.app.vault.adapter.remove(filePath);
       }
     } catch (error) {
-      console.error(`Claudian: Could not delete temp file ${id}:`, error);
+      logger.error(` Could not delete temp file ${id}:`, error);
       return false;
     }
 
@@ -296,7 +297,7 @@ export class ContextStorage {
     await this.saveIndex();
 
     if (expiredFiles.length > 0) {
-      console.log(`Claudian: Purged ${expiredFiles.length} expired temp files`);
+      logger.debug(` Purged ${expiredFiles.length} expired temp files`);
     }
 
     return expiredFiles.length;

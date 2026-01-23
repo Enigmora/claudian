@@ -5,6 +5,7 @@
  */
 
 import { t } from './i18n';
+import { logger } from './logger';
 
 export interface TaskAnalysis {
   isComplex: boolean;
@@ -384,7 +385,7 @@ export class TaskPlanner {
         status: 'planning'
       };
     } catch (error) {
-      console.error('Error parsing planning response:', error);
+      logger.error('Error parsing planning response:', error);
       return null;
     }
   }

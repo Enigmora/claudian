@@ -8,6 +8,7 @@
  */
 
 import type { ClaudeClient } from './claude-client';
+import { logger } from './logger';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -172,14 +173,14 @@ export class ModelOrchestrator {
       const routeResult = this.createResult(complexity, result.reasoning, 'haiku');
       const keyword = result.reasoning ? ` (${result.reasoning})` : '';
 
-      console.log(`[Orchestrator] ${complexity}${keyword} → ${this.selector.getModelDisplayName(routeResult.model)}`);
+      logger.debug(`[Orchestrator] ${complexity}${keyword} → ${this.selector.getModelDisplayName(routeResult.model)}`);
 
       return routeResult;
     }
 
     // Fallback if Haiku classification fails
     const fallbackResult = this.classifyWithFallback(message);
-    console.log(`[Orchestrator] ${fallbackResult.classification.complexity} (fallback) → ${this.selector.getModelDisplayName(fallbackResult.model)}`);
+    logger.debug(`[Orchestrator] ${fallbackResult.classification.complexity} (fallback) → ${this.selector.getModelDisplayName(fallbackResult.model)}`);
 
     return fallbackResult;
   }

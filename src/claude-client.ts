@@ -3,6 +3,7 @@ import { ClaudeCompanionSettings } from './settings';
 import { VaultContext } from './vault-indexer';
 import { ExtractionTemplate } from './extraction-templates';
 import { t } from './i18n';
+import { logger } from './logger';
 import type { TokenUsage, UsageMethod } from './token-tracker';
 import type { ContextManager } from './context-manager';
 import type { ModelId } from './model-orchestrator';
@@ -159,7 +160,7 @@ Task: ${message}`;
         reasoning: parsed.k || parsed.reasoning || ''
       };
     } catch (error) {
-      console.warn('[ClaudeClient] Task classification failed:', error);
+      logger.warn('Task classification failed:', error);
       return null;
     }
   }
@@ -678,7 +679,7 @@ ${noteContent}`;
    */
   private handleErrorWithQuota(error: unknown, callbacks: StreamCallbacks): void {
     // Log original error for debugging
-    console.error('[ClaudeClient] API Error:', error);
+    logger.error('API Error:', error);
 
     if (error instanceof Error) {
       // Try to extract structured error from Anthropic API JSON response

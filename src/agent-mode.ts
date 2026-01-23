@@ -3,6 +3,7 @@ import ClaudeCompanionPlugin from './main';
 import { VaultActionExecutor, VaultAction, ActionResult, ProgressCallback } from './vault-actions';
 import { VaultIndexer } from './vault-indexer';
 import { t } from './i18n';
+import { logger } from './logger';
 import type { ModelId } from './model-orchestrator';
 import { MODELS } from './model-orchestrator';
 
@@ -65,7 +66,7 @@ export class AgentMode {
         awaitResults: jsonObj.awaitResults || false
       };
     } catch (error) {
-      console.error('Error parsing agent response:', error);
+      logger.error('Error parsing agent response:', error);
       return null;
     }
   }
@@ -97,7 +98,7 @@ export class AgentMode {
       const secondJsonStart = match.index + 1;
       const secondJson = this.extractJsonFromPosition(content, secondJsonStart);
       if (secondJson && secondJson.actions && Array.isArray(secondJson.actions)) {
-        console.log('Detected concatenated JSONs - using the second (complete) one');
+        logger.debug('Detected concatenated JSONs - using the second (complete) one');
         return secondJson;
       }
     }
@@ -246,7 +247,7 @@ export class AgentMode {
         const thinkingMatch = truncated.match(/"thinking"\s*:\s*"([^"]*)"/);
         const thinking = thinkingMatch ? thinkingMatch[1] : '';
 
-        console.log(`Recovered ${completeActions.length} complete actions from truncated JSON`);
+        logger.debug(`Recovered ${completeActions.length} complete actions from truncated JSON`);
 
         return {
           thinking,
@@ -257,7 +258,7 @@ export class AgentMode {
         };
       }
     } catch (e) {
-      console.error('Failed to recover from truncated JSON:', e);
+      logger.error('Failed to recover from truncated JSON:', e);
     }
 
     return null;

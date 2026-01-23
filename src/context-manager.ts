@@ -225,13 +225,21 @@ export class ContextManager {
 
     const messages = this.currentSession.messages;
 
-    // Keep last N messages in active context
-    const recentMessages = messages.slice(-this.maxMessagesInContext);
-    const oldMessages = messages.slice(0, -this.maxMessagesInContext);
+    // Calculate how many messages to keep after summarization
+    // Use the smaller of the two thresholds to ensure summarization triggers correctly
+    // This fixes the bug where summarizeThreshold had no effect when < maxMessagesInContext
+    const keepCount = Math.min(this.summarizeThreshold, this.maxMessagesInContext);
 
-    if (oldMessages.length === 0) {
+    // Only summarize if we have more messages than we want to keep
+    if (messages.length <= keepCount) {
       return null;
     }
+
+    // Keep last N messages in active context, summarize the rest
+    const recentMessages = messages.slice(-keepCount);
+    const oldMessages = messages.slice(0, messages.length - keepCount);
+
+    console.log(`[Claudian] Summarizing ${oldMessages.length} messages, keeping ${recentMessages.length} in context`);
 
     // Generate summary using the provided function (calls the LLM)
     const summaryText = await generateSummary(oldMessages);

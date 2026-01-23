@@ -1494,11 +1494,7 @@ export class ChatView extends ItemView {
       }
     }).join('\n\n');
 
-    return `[RESULTADOS DE ACCIONES EJECUTADAS]
-
-${formattedResults}
-
-Basándote en estos resultados, genera las siguientes acciones necesarias o proporciona un mensaje final si la tarea está completa. Si necesitas más información, puedes solicitar más acciones con "awaitResults": true.`;
+    return `[RESULTADOS]\n${formattedResults}\n\nContinúa o finaliza.`;
   }
 
   /**

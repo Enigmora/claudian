@@ -610,6 +610,7 @@ CONTEXTO DE LA BÓVEDA:
   'settings.section.tokenTracking': 'Seguimiento de Tokens',
   'error.quotaExhausted': 'Cuota de API agotada. Revisa tus límites en console.anthropic.com.',
   'error.billingIssue': 'Problema de facturación detectado. Revisa tu cuenta en console.anthropic.com.',
+  'error.contentFiltered': 'Respuesta bloqueada por filtro de contenido. Intenta reformular tu solicitud o dividirla en tareas más pequeñas.',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CONTEXT MANAGEMENT (Phase 6)

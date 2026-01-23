@@ -674,7 +674,7 @@ ${noteContent}`;
   }
 
   /**
-   * Enhanced error handling with quota and billing detection
+   * Enhanced error handling with quota, billing, and content filtering detection
    */
   private handleErrorWithQuota(error: unknown, callbacks: StreamCallbacks): void {
     if (error instanceof Error) {
@@ -692,6 +692,9 @@ ${noteContent}`;
       } else if (error.message.includes('400') &&
                  (errorMsg.includes('billing') || errorMsg.includes('payment') || errorMsg.includes('credit'))) {
         callbacks.onError?.(new Error(t('error.billingIssue')));
+      } else if (errorMsg.includes('content filter') || errorMsg.includes('blocked')) {
+        // Content filtering error - suggest rephrasing
+        callbacks.onError?.(new Error(t('error.contentFiltered')));
       } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
         callbacks.onError?.(new Error(t('error.connection')));
       } else {

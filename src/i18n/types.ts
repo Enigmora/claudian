@@ -410,6 +410,7 @@ export type Translations = {
   'settings.section.tokenTracking': string;
   'error.quotaExhausted': string;
   'error.billingIssue': string;
+  'error.contentFiltered': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CONTEXT MANAGEMENT (Phase 6)

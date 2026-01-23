@@ -610,6 +610,7 @@ VAULT CONTEXT:
   'settings.section.tokenTracking': 'Token Tracking',
   'error.quotaExhausted': 'API quota exhausted. Check your usage limits at console.anthropic.com.',
   'error.billingIssue': 'Billing issue detected. Check your account at console.anthropic.com.',
+  'error.contentFiltered': 'Response blocked by content filter. Try rephrasing your request or breaking it into smaller tasks.',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CONTEXT MANAGEMENT (Phase 6)

@@ -32,23 +32,35 @@ Obtén tu clave API en [console.anthropic.com](https://console.anthropic.com). L
 
 ---
 
-### Modelo
+### Modo de Ejecución
 
 | Ajuste | Descripción |
 |--------|-------------|
-| **Nombre** | Modelo |
-| **Descripción** | Modelo de Claude a usar para las respuestas |
-| **Por defecto** | Claude Sonnet 4 |
-| **Opciones** | Claude Sonnet 4, Claude Opus 4, Claude 3.5 Sonnet, Claude 3.5 Haiku |
+| **Nombre** | Modo de Ejecución |
+| **Descripción** | Cómo Claudian selecciona el modelo óptimo para cada tarea |
+| **Por defecto** | Automático |
+| **Opciones** | Automático, Económico, Máxima Calidad |
 
-**Comparación de Modelos:**
+**Comparación de Modos:**
 
-| Modelo | Mejor Para | Velocidad | Costo |
-|--------|------------|-----------|-------|
-| Claude Sonnet 4 | Uso general, rendimiento equilibrado | Rápido | Medio |
-| Claude Opus 4 | Razonamiento complejo, documentos largos | Más lento | Mayor |
-| Claude 3.5 Sonnet | Generación anterior, confiable | Rápido | Medio |
-| Claude 3.5 Haiku | Tareas rápidas, consultas simples | Más rápido | Menor |
+| Modo | Descripción | Mejor Para |
+|------|-------------|------------|
+| **Automático** | Haiku analiza cada tarea y la enruta al modelo óptimo | La mayoría de usuarios - equilibra costo y calidad |
+| **Económico** | Todas las tareas usan Haiku | Usuarios conscientes del presupuesto, tareas simples |
+| **Máxima Calidad** | Todas las tareas usan Opus | Razonamiento complejo, trabajo crítico |
+
+**Cómo Funciona el Modo Automático:**
+
+El Orquestador de Modelos usa Haiku (rápido y económico) para clasificar la complejidad de cada tarea:
+
+| Complejidad | Modelo Usado | Tareas de Ejemplo |
+|-------------|--------------|-------------------|
+| Simple | Haiku 4.5 | Listar archivos, copiar, mover, eliminar, contenido placeholder |
+| Moderada | Sonnet 4 | Escribir contenido, resumir, traducir, explicar |
+| Compleja | Sonnet 4 | Operaciones multi-archivo, procesamiento batch, refactorización |
+| Profunda | Opus 4 | Análisis, planificación estratégica, síntesis de conocimiento |
+
+Este enrutamiento inteligente optimiza costos mientras asegura calidad donde importa.
 
 ---
 
@@ -308,15 +320,19 @@ Este archivo contiene tu configuración incluyendo la clave API. **No compartas 
 ## Configuración Recomendada
 
 ### Para Uso General
-- Modelo: Claude Sonnet 4
+- Modo de Ejecución: Automático
 - Tokens máximos: 4096
 - Confirmar acciones destructivas: Activado
 
 ### Para Bóvedas Grandes (1000+ notas)
+- Modo de Ejecución: Automático
 - Notas en contexto: 200-300
 - Tags en contexto: 100
-- Considera usar Claude Opus 4 para consultas complejas
 
-### Para Tareas Rápidas
-- Modelo: Claude 3.5 Haiku
+### Para Usuarios Conscientes del Presupuesto
+- Modo de Ejecución: Económico
 - Tokens máximos: 2048
+
+### Para Trabajo Crítico
+- Modo de Ejecución: Máxima Calidad
+- Tokens máximos: 8192

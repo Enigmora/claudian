@@ -29,9 +29,11 @@ npm run build            # Build producción (minificado)
 ```
 src/
 ├── main.ts                  # Entry point, registra comandos y vistas
-├── settings.ts              # PluginSettingTab con config (API key, modelo, etc.)
+├── settings.ts              # PluginSettingTab con config (API key, modo, etc.)
 ├── claude-client.ts         # Wrapper Anthropic SDK con streaming
 ├── chat-view.ts             # ItemView para panel lateral de chat
+├── model-orchestrator.ts    # Enrutador inteligente de modelos
+├── logger.ts                # Sistema de logging centralizado
 ├── note-creator.ts          # Modal para crear notas desde chat
 ├── note-processor.ts        # Procesamiento de notas existentes
 ├── vault-indexer.ts         # Indexación de bóveda
@@ -43,6 +45,8 @@ src/
 ├── vault-actions.ts         # Ejecutor de acciones sobre bóveda
 ├── agent-mode.ts            # Gestión del modo agente
 ├── confirmation-modal.ts    # Modal de confirmación de acciones
+├── context-manager.ts       # Gestión de contexto de conversación
+├── context-storage.ts       # Almacenamiento temporal de contexto
 ├── i18n/                    # Internationalization system
 │   ├── index.ts             # Public API (t, setLocale, etc.)
 │   ├── types.ts             # TypeScript types and translation keys
@@ -132,6 +136,45 @@ Example of adding German patterns:
 /^weiter$/i,           // German: "continue"
 /^fortfahren$/i,       // German: "proceed"
 ```
+
+## Logging
+
+**CRITICAL: Never use `console.log`, `console.warn`, or `console.error` directly.**
+
+All debug and error messages must use the centralized logger from `src/logger.ts`. This ensures:
+- Production builds only show warnings and errors (for user bug reports)
+- Development builds show all log levels for debugging
+- Consistent `[Claudian]` prefix across all messages
+
+```typescript
+// ✅ Correct
+import { logger } from './logger';
+logger.debug('Orchestrator classified task as simple');
+logger.info('Context session initialized');
+logger.warn('Task classification failed, using fallback');
+logger.error('API Error:', error);
+
+// ❌ Wrong - direct console usage
+console.log('[Claudian] Something happened');
+console.error('Error:', error);
+```
+
+**Log levels:**
+
+| Level | Production | Development | Use For |
+|-------|------------|-------------|---------|
+| `debug` | Hidden | Visible | Detailed flow, variable values, orchestrator decisions |
+| `info` | Hidden | Visible | Lifecycle events, successful operations, state changes |
+| `warn` | Visible | Visible | Recoverable errors, fallbacks, deprecated usage |
+| `error` | Visible | Visible | Failures, exceptions, critical issues |
+
+**Guidelines:**
+- Use `debug` for information only developers need during development
+- Use `info` for notable events (migrations, session start/end)
+- Use `warn` for issues that don't break functionality but should be noted
+- Use `error` for failures that users might need to report
+
+The `__DEV__` constant is injected at build time by esbuild to determine the environment.
 
 ## Documentation
 

@@ -66,6 +66,12 @@ Procesa múltiples notas a la vez con plantillas de extracción:
 ### 🗺️ Mapas de Conceptos
 Genera mapas de conceptos visuales a partir de notas seleccionadas, renderizados en formato Mermaid.
 
+### 🧠 Selección Inteligente de Modelo
+Orquestación automática de modelos que enruta cada tarea al modelo óptimo de Claude:
+- Tareas simples → Haiku (rápido y económico)
+- Creación de contenido → Sonnet (equilibrado)
+- Análisis profundo → Opus (máxima calidad)
+
 ### 🌍 Multilingüe
 Soporte completo para **Inglés** y **Español**. Más idiomas próximamente.
 

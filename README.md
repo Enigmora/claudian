@@ -66,6 +66,12 @@ Process multiple notes at once with extraction templates:
 ### 🗺️ Concept Maps
 Generate visual concept maps from selected notes, rendered in Mermaid format.
 
+### 🧠 Intelligent Model Selection
+Automatic model orchestration routes each task to the optimal Claude model:
+- Simple tasks → Haiku (fast & economical)
+- Content creation → Sonnet (balanced)
+- Deep analysis → Opus (maximum quality)
+
 ### 🌍 Multilingual
 Full support for **English** and **Spanish**. More languages coming soon.
 

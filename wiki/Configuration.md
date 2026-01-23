@@ -32,23 +32,35 @@ Get your API key from [console.anthropic.com](https://console.anthropic.com). Th
 
 ---
 
-### Model
+### Execution Mode
 
 | Setting | Description |
 |---------|-------------|
-| **Name** | Model |
-| **Description** | Claude model to use for responses |
-| **Default** | Claude Sonnet 4 |
-| **Options** | Claude Sonnet 4, Claude Opus 4, Claude 3.5 Sonnet, Claude 3.5 Haiku |
+| **Name** | Execution Mode |
+| **Description** | How Claudian selects the optimal model for each task |
+| **Default** | Automatic |
+| **Options** | Automatic, Economic, Maximum Quality |
 
-**Model Comparison:**
+**Mode Comparison:**
 
-| Model | Best For | Speed | Cost |
-|-------|----------|-------|------|
-| Claude Sonnet 4 | General use, balanced performance | Fast | Medium |
-| Claude Opus 4 | Complex reasoning, long documents | Slower | Higher |
-| Claude 3.5 Sonnet | Previous generation, reliable | Fast | Medium |
-| Claude 3.5 Haiku | Quick tasks, simple queries | Fastest | Lower |
+| Mode | Description | Best For |
+|------|-------------|----------|
+| **Automatic** | Haiku analyzes each task and routes to the optimal model | Most users - balances cost and quality |
+| **Economic** | All tasks use Haiku | Budget-conscious users, simple tasks |
+| **Maximum Quality** | All tasks use Opus | Complex reasoning, critical work |
+
+**How Automatic Mode Works:**
+
+The Model Orchestrator uses Haiku (fast and cheap) to classify each task's complexity:
+
+| Complexity | Model Used | Example Tasks |
+|------------|------------|---------------|
+| Simple | Haiku 4.5 | List files, copy, move, delete, placeholder content |
+| Moderate | Sonnet 4 | Write content, summarize, translate, explain |
+| Complex | Sonnet 4 | Multi-file operations, batch processing, refactoring |
+| Deep | Opus 4 | Analysis, strategic planning, knowledge synthesis |
+
+This intelligent routing optimizes costs while ensuring quality where it matters.
 
 ---
 
@@ -308,15 +320,19 @@ This file contains your configuration including the API key. **Do not share this
 ## Recommended Configuration
 
 ### For General Use
-- Model: Claude Sonnet 4
+- Execution Mode: Automatic
 - Max tokens: 4096
 - Confirm destructive actions: On
 
 ### For Large Vaults (1000+ notes)
+- Execution Mode: Automatic
 - Notes in context: 200-300
 - Tags in context: 100
-- Consider using Claude Opus 4 for complex queries
 
-### For Quick Tasks
-- Model: Claude 3.5 Haiku
+### For Budget-Conscious Users
+- Execution Mode: Economic
 - Max tokens: 2048
+
+### For Critical Work
+- Execution Mode: Maximum Quality
+- Max tokens: 8192

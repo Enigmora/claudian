@@ -674,16 +674,28 @@ ${noteContent}`;
   }
 
   /**
-   * Enhanced error handling with quota, billing, and content filtering detection
+   * Enhanced error handling with structured JSON parsing from Anthropic API
    */
   private handleErrorWithQuota(error: unknown, callbacks: StreamCallbacks): void {
+    // Log original error for debugging
+    console.error('[ClaudeClient] API Error:', error);
+
     if (error instanceof Error) {
+      // Try to extract structured error from Anthropic API JSON response
+      const apiError = this.parseAnthropicError(error.message);
+
+      if (apiError) {
+        // Use the structured error message from Anthropic
+        callbacks.onError?.(new Error(`Error: ${apiError.message}`));
+        return;
+      }
+
+      // Fallback to pattern-based detection for non-JSON errors
       const errorMsg = error.message.toLowerCase();
 
       if (error.message.includes('401')) {
         callbacks.onError?.(new Error(t('error.apiKeyInvalid')));
       } else if (error.message.includes('429')) {
-        // Check for quota exhaustion vs rate limit
         if (errorMsg.includes('quota') || errorMsg.includes('exceeded') || errorMsg.includes('limit')) {
           callbacks.onError?.(new Error(t('error.quotaExhausted')));
         } else {
@@ -692,9 +704,6 @@ ${noteContent}`;
       } else if (error.message.includes('400') &&
                  (errorMsg.includes('billing') || errorMsg.includes('payment') || errorMsg.includes('credit'))) {
         callbacks.onError?.(new Error(t('error.billingIssue')));
-      } else if (errorMsg.includes('content filter') || errorMsg.includes('blocked')) {
-        // Content filtering error - suggest rephrasing
-        callbacks.onError?.(new Error(t('error.contentFiltered')));
       } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
         callbacks.onError?.(new Error(t('error.connection')));
       } else {
@@ -703,5 +712,29 @@ ${noteContent}`;
     } else {
       callbacks.onError?.(new Error(t('error.unknown')));
     }
+  }
+
+  /**
+   * Parse structured error from Anthropic API response
+   * Extracts error details from JSON format: {"type":"error","error":{"type":"...","message":"..."}}
+   */
+  private parseAnthropicError(errorString: string): { type: string; message: string } | null {
+    try {
+      // Find JSON object in the error string (may be prefixed with "X: " or "SSE Error: ")
+      const jsonMatch = errorString.match(/\{[\s\S]*"type"\s*:\s*"error"[\s\S]*\}/);
+      if (!jsonMatch) return null;
+
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      if (parsed.type === 'error' && parsed.error?.message) {
+        return {
+          type: parsed.error.type || 'unknown_error',
+          message: parsed.error.message,
+        };
+      }
+    } catch {
+      // JSON parsing failed, return null to use fallback
+    }
+    return null;
   }
 }

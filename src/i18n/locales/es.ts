@@ -585,6 +585,8 @@ CONTEXTO DE LA BÓVEDA:
   'tokens.historyTitle': 'Historial de Uso de Tokens',
   'tokens.sessionTitle': 'Sesión Actual',
   'tokens.closeButton': 'Cerrar',
+  'tokens.byModelTitle': 'Uso por Modelo',
+  'tokens.noModelData': 'Aún no hay datos de modelos',
   'settings.showTokens.name': 'Mostrar indicador de tokens',
   'settings.showTokens.desc': 'Muestra el uso de tokens en el pie del chat.',
   'settings.section.tokenTracking': 'Seguimiento de Tokens',

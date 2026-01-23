@@ -585,6 +585,8 @@ VAULT CONTEXT:
   'tokens.historyTitle': 'Token Usage History',
   'tokens.sessionTitle': 'Current Session',
   'tokens.closeButton': 'Close',
+  'tokens.byModelTitle': 'Usage by Model',
+  'tokens.noModelData': 'No model data recorded yet',
   'settings.showTokens.name': 'Show token indicator',
   'settings.showTokens.desc': 'Display token usage in the chat footer.',
   'settings.section.tokenTracking': 'Token Tracking',

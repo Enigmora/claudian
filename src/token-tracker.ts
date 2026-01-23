@@ -27,6 +27,11 @@ export interface TokenStats {
 }
 
 /**
+ * Statistics per model
+ */
+export type ModelStats = Record<string, TokenStats>;
+
+/**
  * Historical token usage data (persisted to data.json)
  */
 export interface TokenUsageHistory {
@@ -34,6 +39,7 @@ export interface TokenUsageHistory {
   weekly: Record<string, TokenStats>;  // YYYY-Www
   monthly: Record<string, TokenStats>; // YYYY-MM
   allTime: TokenStats;
+  byModel: ModelStats;                 // Per-model statistics
   lastUpdated: number;
 }
 
@@ -42,6 +48,7 @@ export interface TokenUsageHistory {
  */
 export interface SessionTokenStats extends TokenStats {
   startTime: number;
+  byModel: ModelStats;
 }
 
 /**
@@ -63,6 +70,7 @@ export function createEmptyHistory(): TokenUsageHistory {
       totalTokens: 0,
       callCount: 0
     },
+    byModel: {},
     lastUpdated: 0
   };
 }
@@ -76,7 +84,8 @@ function createEmptySessionStats(): SessionTokenStats {
     outputTokens: 0,
     totalTokens: 0,
     callCount: 0,
-    startTime: Date.now()
+    startTime: Date.now(),
+    byModel: {}
   };
 }
 
@@ -179,6 +188,14 @@ export class TokenUsageTracker {
     this.sessionStats.totalTokens += usage.inputTokens + usage.outputTokens;
     this.sessionStats.callCount += 1;
 
+    // Update session stats by model
+    if (usage.model) {
+      this.sessionStats.byModel[usage.model] = mergeStats(
+        getOrCreateStats(this.sessionStats.byModel, usage.model),
+        usage
+      );
+    }
+
     // Update historical stats
     const date = new Date(usage.timestamp);
     const dailyKey = getDailyKey(date);
@@ -201,6 +218,19 @@ export class TokenUsageTracker {
     );
 
     this.history.allTime = mergeStats(this.history.allTime, usage);
+
+    // Update historical stats by model
+    if (usage.model) {
+      // Initialize byModel if missing (migration from old data)
+      if (!this.history.byModel) {
+        this.history.byModel = {};
+      }
+      this.history.byModel[usage.model] = mergeStats(
+        getOrCreateStats(this.history.byModel, usage.model),
+        usage
+      );
+    }
+
     this.history.lastUpdated = Date.now();
 
     // Notify update callbacks
@@ -268,6 +298,33 @@ export class TokenUsageTracker {
    */
   getAllTimeStats(): TokenStats {
     return { ...this.history.allTime };
+  }
+
+  /**
+   * Get statistics by model (all-time)
+   */
+  getStatsByModel(): ModelStats {
+    return { ...(this.history.byModel || {}) };
+  }
+
+  /**
+   * Get session statistics by model
+   */
+  getSessionStatsByModel(): ModelStats {
+    return { ...this.sessionStats.byModel };
+  }
+
+  /**
+   * Get stats for a specific model
+   */
+  getModelStats(modelId: string): TokenStats {
+    const byModel = this.history.byModel || {};
+    return byModel[modelId] || {
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
+      callCount: 0
+    };
   }
 
   /**

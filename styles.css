@@ -1912,6 +1912,19 @@
   animation-delay: var(--animation-delay, 0s);
 }
 
+/* Model-specific bar colors */
+.token-history-bar.model-bar-haiku {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.token-history-bar.model-bar-sonnet {
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+}
+
+.token-history-bar.model-bar-opus {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
 @keyframes barGrow {
   0% {
     width: 0;
@@ -1935,6 +1948,24 @@
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Model stats section */
+.token-history-model {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.token-history-model h3 {
+  margin-bottom: 12px;
+}
+
+.token-history-no-data {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 16px;
 }
 
 .token-history-session-grid {

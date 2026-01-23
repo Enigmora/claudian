@@ -399,6 +399,8 @@ export type Translations = {
   'tokens.historyTitle': string;
   'tokens.sessionTitle': string;
   'tokens.closeButton': string;
+  'tokens.byModelTitle': string;
+  'tokens.noModelData': string;
   'settings.showTokens.name': string;
   'settings.showTokens.desc': string;
   'settings.section.tokenTracking': string;

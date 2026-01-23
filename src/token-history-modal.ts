@@ -6,7 +6,8 @@
 import { App, Modal } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { t } from './i18n';
-import type { TokenStats } from './token-tracker';
+import type { TokenStats, ModelStats } from './token-tracker';
+import { MODELS } from './model-orchestrator';
 
 interface HistoryItem {
   label: string;
@@ -112,6 +113,57 @@ export class TokenHistoryModal extends Modal {
     totalItem.createDiv({ cls: 'session-item-value', text: tracker.formatTokenCount(sessionStats.totalTokens) });
     totalItem.createDiv({ cls: 'session-item-label', text: t('tokens.totalLabel') });
 
+    // Usage by Model section
+    const modelSection = contentEl.createDiv({ cls: 'token-history-model' });
+    modelSection.createEl('h3', { text: t('tokens.byModelTitle') });
+
+    const modelStats = tracker.getStatsByModel();
+    const modelKeys = Object.keys(modelStats);
+
+    if (modelKeys.length === 0) {
+      modelSection.createEl('p', { cls: 'token-history-no-data', text: t('tokens.noModelData') });
+    } else {
+      // Find max for model bars
+      const maxModelTokens = Math.max(
+        ...modelKeys.map(k => modelStats[k].totalTokens),
+        1
+      );
+
+      const modelChart = modelSection.createDiv({ cls: 'token-history-chart' });
+
+      // Sort by total tokens descending
+      const sortedModels = modelKeys.sort((a, b) =>
+        modelStats[b].totalTokens - modelStats[a].totalTokens
+      );
+
+      sortedModels.forEach((modelId, index) => {
+        const stats = modelStats[modelId];
+        const percentage = (stats.totalTokens / maxModelTokens) * 100;
+
+        const row = modelChart.createDiv({ cls: 'token-history-row' });
+
+        // Get display name for model
+        const displayName = this.getModelDisplayName(modelId);
+        row.createDiv({ cls: 'token-history-label', text: displayName });
+
+        // Bar container
+        const barContainer = row.createDiv({ cls: 'token-history-bar-container' });
+
+        // Animated bar with model-specific color
+        const bar = barContainer.createDiv({ cls: `token-history-bar model-bar-${this.getModelColorClass(modelId)}` });
+        bar.style.setProperty('--target-width', `${percentage}%`);
+        bar.style.setProperty('--animation-delay', `${index * 0.15}s`);
+
+        // Value
+        const value = row.createDiv({ cls: 'token-history-value' });
+        value.setText(tracker.formatTokenCount(stats.totalTokens));
+
+        // Detailed stats on hover
+        const detailText = `${t('tokens.inputLabel')}: ${tracker.formatTokenCount(stats.inputTokens)} | ${t('tokens.outputLabel')}: ${tracker.formatTokenCount(stats.outputTokens)} | ${t('tokens.callsLabel')}: ${stats.callCount}`;
+        row.setAttribute('title', detailText);
+      });
+    }
+
     // Close button
     const buttonContainer = contentEl.createDiv({ cls: 'token-history-buttons' });
     const closeBtn = buttonContainer.createEl('button', {
@@ -124,5 +176,25 @@ export class TokenHistoryModal extends Modal {
   onClose(): void {
     const { contentEl } = this;
     contentEl.empty();
+  }
+
+  /**
+   * Get display name for a model ID
+   */
+  private getModelDisplayName(modelId: string): string {
+    if (modelId.includes('haiku')) return 'Haiku 4.5';
+    if (modelId.includes('sonnet-4')) return 'Sonnet 4';
+    if (modelId.includes('opus')) return 'Opus 4';
+    if (modelId.includes('sonnet')) return 'Sonnet 3.5';
+    return modelId.split('-').slice(0, 2).join(' ');
+  }
+
+  /**
+   * Get color class for a model
+   */
+  private getModelColorClass(modelId: string): string {
+    if (modelId.includes('haiku')) return 'haiku';
+    if (modelId.includes('opus')) return 'opus';
+    return 'sonnet';
   }
 }

@@ -13,6 +13,7 @@ export interface TokenUsage {
   outputTokens: number;
   timestamp: number;
   method?: UsageMethod;
+  model?: string;  // Model used for this request
 }
 
 /**

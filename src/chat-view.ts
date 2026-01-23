@@ -15,6 +15,8 @@ import { TaskPlanner, TaskPlan, TaskAnalysis } from './task-planner';
 import type { TokenUsage, SessionTokenStats } from './token-tracker';
 // Phase 6: Context Management
 import type { ContextManager } from './context-manager';
+// Model Orchestrator
+import { ModelOrchestrator, ExecutionMode, ModelId, RouteResult } from './model-orchestrator';
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -59,6 +61,10 @@ export class ChatView extends ItemView {
   // Welcome Screen
   private welcomeScreen: HTMLElement | null = null;
 
+  // Model Orchestrator
+  private orchestrator: ModelOrchestrator;
+  private lastRouteResult: RouteResult | null = null;
+
   constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
     super(leaf);
     this.plugin = plugin;
@@ -74,6 +80,9 @@ export class ChatView extends ItemView {
       maxSubtasks: 10,
       enableAutoPlan: plugin.settings.enableAutoPlan
     });
+
+    // Model Orchestrator
+    this.orchestrator = new ModelOrchestrator(plugin.settings.executionMode);
   }
 
   getViewType(): string {
@@ -511,6 +520,10 @@ export class ChatView extends ItemView {
     // Phase 6: Check for summarization before sending
     await this.checkAndPerformSummarization();
 
+    // Route request through orchestrator
+    this.lastRouteResult = this.orchestrator.routeRequest(message, false);
+    const selectedModel = this.lastRouteResult.model;
+
     let fullResponse = '';
 
     await this.client.sendMessageStream(message, {
@@ -571,7 +584,7 @@ export class ChatView extends ItemView {
 
         this.resetButtonToSend();
       }
-    });
+    }, selectedModel);
   }
 
   private async sendAgentMessage(
@@ -582,6 +595,10 @@ export class ChatView extends ItemView {
   ): Promise<void> {
     // Phase 6: Check for summarization before sending
     await this.checkAndPerformSummarization();
+
+    // Route request through orchestrator
+    this.lastRouteResult = this.orchestrator.routeRequest(message, true);
+    const selectedModel = this.lastRouteResult.model;
 
     let fullResponse = '';
     let streamingIndicator: HTMLElement | null = null;
@@ -622,7 +639,9 @@ export class ChatView extends ItemView {
       }
     }
 
-    const agentSystemPrompt = this.agentMode.getSystemPrompt() + systemPromptAdditions;
+    // Get system prompt with model-specific optimizations
+    // Haiku uses a more verbose prompt for better results
+    const agentSystemPrompt = this.agentMode.getSystemPrompt(selectedModel) + systemPromptAdditions;
 
     // Reset auto-continue counter for new message
     this.autoContinueCount = 0;
@@ -644,7 +663,7 @@ export class ChatView extends ItemView {
         this.updateStreamingIndicator(streamingIndicator, fullResponse);
         this.scrollToBottom();
       },
-      onComplete: async (response) => {
+      onComplete: async (response: string) => {
         cursorEl.remove();
         contentEl.empty();
 
@@ -733,7 +752,7 @@ export class ChatView extends ItemView {
 
         this.resetButtonToSend();
       }
-    });
+    }, selectedModel);
   }
 
   /**
@@ -778,7 +797,9 @@ export class ChatView extends ItemView {
     const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
 
     let continuationResponse = '';
-    const agentSystemPrompt = this.agentMode.getSystemPrompt();
+    // Use the model from the last route result (if available) or re-route
+    const selectedModel = this.lastRouteResult?.model;
+    const agentSystemPrompt = this.agentMode.getSystemPrompt(selectedModel);
 
     // Streaming indicator - kept visible throughout streaming to prevent JSON flash
     let streamingIndicator: HTMLElement | null = null;
@@ -861,7 +882,7 @@ export class ChatView extends ItemView {
         this.autoContinueCount = 0;
         this.resetButtonToSend();
       }
-    });
+    }, selectedModel);
   }
 
   /**
@@ -888,7 +909,9 @@ export class ChatView extends ItemView {
     const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });
 
     let retryResponse = '';
-    const agentSystemPrompt = this.agentMode.getSystemPrompt() +
+    // Use the model from the last route result (if available)
+    const selectedModel = this.lastRouteResult?.model;
+    const agentSystemPrompt = this.agentMode.getSystemPrompt(selectedModel) +
       '\n\n' + t('agent.reinforcement.reminder');
 
     // Streaming indicator - kept visible throughout streaming to prevent JSON flash
@@ -948,7 +971,7 @@ export class ChatView extends ItemView {
         this.autoContinueCount = 0;
         this.resetButtonToSend();
       }
-    });
+    }, selectedModel);
   }
 
   private async handleAgentResponse(
@@ -1127,8 +1150,9 @@ export class ChatView extends ItemView {
     // Create new streaming indicator
     const streamingIndicator = this.createStreamingIndicator(indicatorContainer);
 
-    // Get system prompt
-    const agentSystemPrompt = this.agentMode.getSystemPrompt();
+    // Get system prompt with model-specific optimizations
+    const selectedModel = this.lastRouteResult?.model;
+    const agentSystemPrompt = this.agentMode.getSystemPrompt(selectedModel);
 
     let fullResponse = '';
 
@@ -1198,7 +1222,7 @@ export class ChatView extends ItemView {
         }
         this.resetButtonToSend();
       }
-    });
+    }, selectedModel);
   }
 
   /**
@@ -2053,6 +2077,14 @@ ${completedActions}
     } else {
       this.tokenFooter.addClass('hidden');
     }
+  }
+
+  /**
+   * Update execution mode from settings
+   * Public method to allow settings to trigger updates
+   */
+  public updateExecutionMode(mode: ExecutionMode): void {
+    this.orchestrator.setMode(mode);
   }
 
   /**

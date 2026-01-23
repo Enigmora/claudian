@@ -66,6 +66,14 @@ export default class ClaudeCompanionPlugin extends Plugin {
       await this.saveSettings();
     }
 
+    // Migration: convert old model to executionMode
+    // If executionMode is not set but model is, set executionMode to 'automatic'
+    if (this.settings.executionMode === undefined) {
+      this.settings.executionMode = 'automatic';
+      await this.saveSettings();
+      console.log('[Claudian] Migrated to execution mode: automatic');
+    }
+
     // Phase 5: Initialize token tracker
     this.tokenUsageHistory = await this.loadTokenHistory();
     this.tokenTracker = new TokenUsageTracker(this.tokenUsageHistory);

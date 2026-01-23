@@ -3,11 +3,13 @@ import ClaudeCompanionPlugin from './main';
 import { t, getSupportedLocales, setLocale, resolveLocale } from './i18n';
 import type { Locale } from './i18n';
 import { VIEW_TYPE_CHAT, ChatView } from './chat-view';
+import { ExecutionMode, EXECUTION_MODES, MODELS } from './model-orchestrator';
 
 export interface ClaudeCompanionSettings {
   language: 'auto' | Locale;
   apiKey: string;
-  model: string;
+  model: string;  // Deprecated: kept for migration
+  executionMode: ExecutionMode;
   notesFolder: string;
   maxTokens: number;
   customInstructions: string;
@@ -33,7 +35,8 @@ export interface ClaudeCompanionSettings {
 export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   language: 'auto',
   apiKey: '',
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-20250514',  // Deprecated: kept for migration
+  executionMode: 'automatic',
   notesFolder: 'Claudian',
   maxTokens: 4096,
   customInstructions: '',
@@ -58,14 +61,14 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
 
 export interface ModelOption {
   id: string;
-  nameKey: 'settings.model.sonnet4' | 'settings.model.opus4' | 'settings.model.sonnet35' | 'settings.model.haiku35';
+  nameKey: 'settings.model.sonnet4' | 'settings.model.opus4' | 'settings.model.sonnet35' | 'settings.model.haiku45';
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   { id: 'claude-sonnet-4-20250514', nameKey: 'settings.model.sonnet4' },
   { id: 'claude-opus-4-20250514', nameKey: 'settings.model.opus4' },
   { id: 'claude-3-5-sonnet-20241022', nameKey: 'settings.model.sonnet35' },
-  { id: 'claude-3-5-haiku-20241022', nameKey: 'settings.model.haiku35' },
+  { id: 'claude-haiku-4-5-20251001', nameKey: 'settings.model.haiku45' },
 ];
 
 export class ClaudeCompanionSettingTab extends PluginSettingTab {
@@ -152,21 +155,37 @@ export class ClaudeCompanionSettingTab extends PluginSettingTab {
     consoleLink.setAttr('target', '_blank');
     apiKeyDescEl.createSpan({ text: t('settings.apiKey.descPart2') });
 
-    // Model
-    new Setting(containerEl)
-      .setName(t('settings.model.name'))
-      .setDesc(t('settings.model.desc'))
+    // Execution Mode (Model Orchestrator)
+    const executionModeSetting = new Setting(containerEl)
+      .setName(t('settings.executionMode.name'))
       .addDropdown(dropdown => {
-        AVAILABLE_MODELS.forEach(model => {
-          dropdown.addOption(model.id, t(model.nameKey));
+        EXECUTION_MODES.forEach(mode => {
+          dropdown.addOption(mode.id, t(mode.nameKey));
         });
         dropdown
-          .setValue(this.plugin.settings.model)
+          .setValue(this.plugin.settings.executionMode)
           .onChange(async (value) => {
-            this.plugin.settings.model = value;
+            this.plugin.settings.executionMode = value as ExecutionMode;
             await this.plugin.saveSettings();
+            // Refresh the description
+            this.display();
+            // Update orchestrator in chat view if open
+            const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CHAT);
+            for (const leaf of leaves) {
+              const view = leaf.view;
+              if (view instanceof ChatView) {
+                view.updateExecutionMode(value as ExecutionMode);
+              }
+            }
           });
       });
+
+    // Build description with current mode info
+    const modeDescEl = executionModeSetting.descEl;
+    const currentMode = EXECUTION_MODES.find(m => m.id === this.plugin.settings.executionMode);
+    if (currentMode) {
+      modeDescEl.createEl('p', { text: t(currentMode.descKey), cls: 'setting-item-description' });
+    }
 
     // Notes folder
     new Setting(containerEl)

@@ -5,6 +5,7 @@ import { ExtractionTemplate } from './extraction-templates';
 import { t } from './i18n';
 import type { TokenUsage, UsageMethod } from './token-tracker';
 import type { ContextManager } from './context-manager';
+import type { ModelId } from './model-orchestrator';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -204,7 +205,8 @@ export class ClaudeClient {
 
   async sendMessageStream(
     userMessage: string,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    modelOverride?: ModelId
   ): Promise<void> {
     if (!this.client) {
       callbacks.onError?.(new Error(t('error.apiKeyMissing')));
@@ -234,8 +236,10 @@ export class ClaudeClient {
       // Phase 6: Get messages from the appropriate source
       const messages = this.getHistory();
 
+      const modelToUse = modelOverride || this.settings.model;
+
       const stream = this.client.messages.stream({
-        model: this.settings.model,
+        model: modelToUse,
         max_tokens: this.settings.maxTokens,
         system: systemPrompt,
         messages: messages.map(msg => ({
@@ -262,7 +266,8 @@ export class ClaudeClient {
           inputTokens: finalMessage.usage.input_tokens,
           outputTokens: finalMessage.usage.output_tokens,
           timestamp: Date.now(),
-          method: 'chat'
+          method: 'chat',
+          model: modelToUse
         });
       }
 
@@ -324,7 +329,8 @@ export class ClaudeClient {
     noteContent: string,
     noteTitle: string,
     vaultContext: VaultContext,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    modelOverride?: ModelId
   ): Promise<void> {
     if (!this.client) {
       callbacks.onError?.(new Error(t('error.apiKeyMissing')));
@@ -339,8 +345,10 @@ export class ClaudeClient {
     let fullResponse = '';
 
     try {
+      const modelToUse = modelOverride || this.settings.model;
+
       const stream = this.client.messages.stream({
-        model: this.settings.model,
+        model: modelToUse,
         max_tokens: this.settings.maxTokens,
         system: systemPrompt,
         messages: [{
@@ -362,7 +370,8 @@ export class ClaudeClient {
           inputTokens: finalMessage.usage.input_tokens,
           outputTokens: finalMessage.usage.output_tokens,
           timestamp: Date.now(),
-          method: 'process'
+          method: 'process',
+          model: modelToUse
         });
       }
 
@@ -393,7 +402,8 @@ ${noteContent}`;
   async processWithTemplate(
     prompt: string,
     template: ExtractionTemplate,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    modelOverride?: ModelId
   ): Promise<void> {
     if (!this.client) {
       callbacks.onError?.(new Error(t('error.apiKeyMissing')));
@@ -411,8 +421,10 @@ ${noteContent}`;
     let fullResponse = '';
 
     try {
+      const modelToUse = modelOverride || this.settings.model;
+
       const stream = this.client.messages.stream({
-        model: this.settings.model,
+        model: modelToUse,
         max_tokens: this.settings.maxTokens,
         system: systemPrompt,
         messages: [{
@@ -434,7 +446,8 @@ ${noteContent}`;
           inputTokens: finalMessage.usage.input_tokens,
           outputTokens: finalMessage.usage.output_tokens,
           timestamp: Date.now(),
-          method: 'template'
+          method: 'template',
+          model: modelToUse
         });
       }
 
@@ -447,7 +460,8 @@ ${noteContent}`;
 
   async generateConceptMap(
     prompt: string,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    modelOverride?: ModelId
   ): Promise<void> {
     if (!this.client) {
       callbacks.onError?.(new Error(t('error.apiKeyMissing')));
@@ -461,8 +475,10 @@ ${noteContent}`;
     let fullResponse = '';
 
     try {
+      const modelToUse = modelOverride || this.settings.model;
+
       const stream = this.client.messages.stream({
-        model: this.settings.model,
+        model: modelToUse,
         max_tokens: this.settings.maxTokens,
         system: systemPrompt,
         messages: [{
@@ -484,7 +500,8 @@ ${noteContent}`;
           inputTokens: finalMessage.usage.input_tokens,
           outputTokens: finalMessage.usage.output_tokens,
           timestamp: Date.now(),
-          method: 'conceptMap'
+          method: 'conceptMap',
+          model: modelToUse
         });
       }
 
@@ -498,7 +515,8 @@ ${noteContent}`;
   async sendAgentMessageStream(
     userMessage: string,
     agentSystemPrompt: string,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    modelOverride?: ModelId
   ): Promise<void> {
     if (!this.client) {
       callbacks.onError?.(new Error(t('error.apiKeyMissing')));
@@ -527,9 +545,10 @@ ${noteContent}`;
 
       // Phase 6: Get messages from the appropriate source
       const messages = this.getHistory();
+      const modelToUse = modelOverride || this.settings.model;
 
       const stream = this.client.messages.stream({
-        model: this.settings.model,
+        model: modelToUse,
         max_tokens: this.settings.maxTokens,
         system: systemPrompt,
         messages: messages.map(msg => ({
@@ -556,7 +575,8 @@ ${noteContent}`;
           inputTokens: finalMessage.usage.input_tokens,
           outputTokens: finalMessage.usage.output_tokens,
           timestamp: Date.now(),
-          method: 'agent'
+          method: 'agent',
+          model: modelToUse
         });
       }
 

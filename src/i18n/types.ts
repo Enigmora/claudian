@@ -27,7 +27,17 @@ export type Translations = {
   'settings.model.sonnet4': string;
   'settings.model.opus4': string;
   'settings.model.sonnet35': string;
-  'settings.model.haiku35': string;
+  'settings.model.haiku45': string;
+  // Execution Mode (Model Orchestrator)
+  'settings.executionMode.name': string;
+  'settings.executionMode.desc': string;
+  'settings.executionMode.automatic': string;
+  'settings.executionMode.automaticDesc': string;
+  'settings.executionMode.economic': string;
+  'settings.executionMode.economicDesc': string;
+  'settings.executionMode.maxQuality': string;
+  'settings.executionMode.maxQualityDesc': string;
+  'settings.executionMode.currentModel': string;
   'settings.folder.name': string;
   'settings.folder.desc': string;
   'settings.folder.placeholder': string;
@@ -369,6 +379,7 @@ export type Translations = {
   'prompt.templateProcessor': string;
   'prompt.conceptMapGenerator': string;
   'prompt.agentMode': string;
+  'prompt.agentModeHaiku': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TOKEN TRACKING (Phase 5)

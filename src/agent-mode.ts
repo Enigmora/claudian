@@ -3,6 +3,8 @@ import ClaudeCompanionPlugin from './main';
 import { VaultActionExecutor, VaultAction, ActionResult, ProgressCallback } from './vault-actions';
 import { VaultIndexer } from './vault-indexer';
 import { t } from './i18n';
+import type { ModelId } from './model-orchestrator';
+import { MODELS } from './model-orchestrator';
 
 export interface AgentResponse {
   thinking?: string;
@@ -434,7 +436,11 @@ export class AgentMode {
     }
   }
 
-  getSystemPrompt(): string {
+  /**
+   * Get the system prompt for agent mode
+   * @param model - Optional model ID. Haiku uses a more verbose prompt for better results.
+   */
+  getSystemPrompt(model?: ModelId): string {
     const vaultContext = this.indexer.getVaultContext();
 
     // Get folder list
@@ -446,13 +452,17 @@ export class AgentMode {
     });
     const folderList = Array.from(folders).slice(0, 30).join(', ') || '(none)';
 
+    // Choose prompt key based on model
+    // Haiku needs a more verbose, explicit prompt for better performance
+    const promptKey = (model === MODELS.HAIKU) ? 'prompt.agentModeHaiku' : 'prompt.agentMode';
+
     // Build complete agent prompt: base identity + agent mode + custom instructions
     // NOTE: noteTitles removed from context to prevent confusion - titles don't include paths,
     // so the model would incorrectly assume files are in requested folders.
     // The agent should use list-folder to discover actual file locations.
     const parts = [
       t('prompt.baseIdentity'),
-      t('prompt.agentMode', {
+      t(promptKey, {
         maxActions: String(this.plugin.settings.maxActionsPerMessage || 10),
         noteCount: String(vaultContext.noteCount),
         folders: folderList,

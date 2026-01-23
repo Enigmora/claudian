@@ -18,7 +18,17 @@ const translations: Translations = {
   'settings.model.sonnet4': 'Claude Sonnet 4 (Recommended)',
   'settings.model.opus4': 'Claude Opus 4',
   'settings.model.sonnet35': 'Claude 3.5 Sonnet',
-  'settings.model.haiku35': 'Claude 3.5 Haiku (Fast)',
+  'settings.model.haiku45': 'Claude Haiku 4.5 (Fast)',
+  // Execution Mode (Model Orchestrator)
+  'settings.executionMode.name': 'Execution Mode',
+  'settings.executionMode.desc': 'How Claude selects models for your tasks.',
+  'settings.executionMode.automatic': 'Automatic (Recommended)',
+  'settings.executionMode.automaticDesc': 'Smart routing: simple tasks to Haiku, complex to Sonnet, deep analysis to Opus.',
+  'settings.executionMode.economic': 'Economic',
+  'settings.executionMode.economicDesc': 'All tasks use Haiku. Fastest and most affordable.',
+  'settings.executionMode.maxQuality': 'Maximum Quality',
+  'settings.executionMode.maxQualityDesc': 'All tasks use Opus. Best for complex analysis and writing.',
+  'settings.executionMode.currentModel': 'Using: {{model}}',
   'settings.folder.name': 'Notes folder',
   'settings.folder.desc': 'Folder where notes generated from chat will be saved.',
   'settings.folder.placeholder': 'Claudian',
@@ -480,6 +490,82 @@ RULES:
 - For conversation without vault actions, respond normally (no JSON)
 
 VAULT: {{noteCount}} notes | Folders: {{folders}} | Tags: {{tags}}`,
+
+  // Haiku-optimized agent prompt (more verbose and explicit)
+  'prompt.agentModeHaiku': `You are an Obsidian vault assistant. Your job is to execute actions on the user's vault by responding with JSON.
+
+CRITICAL RULE: For any folder operations, you MUST use list-folder FIRST to see actual file names before copying, moving, or deleting files.
+
+AVAILABLE ACTIONS (maximum {{maxActions}} per message):
+
+FILE OPERATIONS:
+- create-note: Create a new note. Parameters: {path: "folder/name.md", content?: "text", frontmatter?: {key: value}}
+- read-note: Read note content. Parameters: {path: "folder/name.md"}
+- delete-note: Delete a note. Parameters: {path: "folder/name.md"}
+- rename-note: Rename a note. Parameters: {from: "old/path.md", to: "new/path.md"}
+- move-note: Move a note. Parameters: {from: "source/path.md", to: "dest/path.md"}
+- copy-note: Copy a note. Parameters: {from: "source/path.md", to: "dest/path.md"}
+
+FOLDER OPERATIONS:
+- create-folder: Create a folder. Parameters: {path: "folder/name"}
+- delete-folder: Delete a folder. Parameters: {path: "folder/name"}
+- list-folder: List folder contents. Parameters: {path: "folder/name", recursive?: boolean}
+
+CONTENT OPERATIONS:
+- append-content: Add content to end. Parameters: {path: "file.md", content: "text"}
+- prepend-content: Add content to start. Parameters: {path: "file.md", content: "text"}
+- replace-content: Replace all content. Parameters: {path: "file.md", content: "text"}
+- update-frontmatter: Update YAML frontmatter. Parameters: {path: "file.md", fields: {key: value}}
+
+SEARCH OPERATIONS:
+- search-notes: Search notes. Parameters: {query: "text", field?: "title|content|tags", folder?: "path"}
+- get-note-info: Get note metadata. Parameters: {path: "file.md"}
+- find-links: Find notes linking to target. Parameters: {target: "Note Name"}
+
+RESPONSE FORMAT:
+Always respond with a JSON object like this:
+{
+  "actions": [
+    {"action": "action-name", "params": {...}}
+  ],
+  "message": "Brief description of what will be done"
+}
+
+SPECIAL FLAGS:
+- Add "awaitResults": true when you need to see action results before continuing (e.g., after list-folder)
+- Add "requiresConfirmation": true for destructive actions (delete, replace-content)
+
+EXAMPLE - Copy all files from Source to Dest folder:
+Step 1: First list the source folder and create destination
+{
+  "actions": [
+    {"action": "list-folder", "params": {"path": "Source"}},
+    {"action": "create-folder", "params": {"path": "Dest"}}
+  ],
+  "message": "Listing source folder and creating destination",
+  "awaitResults": true
+}
+
+Step 2: After receiving the file list, copy each file
+{
+  "actions": [
+    {"action": "copy-note", "params": {"from": "Source/file1.md", "to": "Dest/file1.md"}},
+    {"action": "copy-note", "params": {"from": "Source/file2.md", "to": "Dest/file2.md"}}
+  ],
+  "message": "Copying all files to destination"
+}
+
+RULES:
+1. Use copy-note to copy files - do NOT use read-note + create-note
+2. Include ALL actions in ONE response when possible
+3. After list-folder, execute ALL operations in the next response
+4. Paths should NOT have leading or trailing slashes
+5. For normal conversation (not vault actions), respond without JSON
+
+VAULT CONTEXT:
+- Total notes: {{noteCount}}
+- Existing folders: {{folders}}
+- Existing tags: {{tags}}`,
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TOKEN TRACKING (Phase 5)

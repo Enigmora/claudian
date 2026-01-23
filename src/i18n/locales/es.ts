@@ -18,7 +18,17 @@ const translations: Translations = {
   'settings.model.sonnet4': 'Claude Sonnet 4 (Recomendado)',
   'settings.model.opus4': 'Claude Opus 4',
   'settings.model.sonnet35': 'Claude 3.5 Sonnet',
-  'settings.model.haiku35': 'Claude 3.5 Haiku (Rápido)',
+  'settings.model.haiku45': 'Claude Haiku 4.5 (Rápido)',
+  // Modo de Ejecución (Model Orchestrator)
+  'settings.executionMode.name': 'Modo de Ejecución',
+  'settings.executionMode.desc': 'Cómo Claude selecciona modelos para tus tareas.',
+  'settings.executionMode.automatic': 'Automático (Recomendado)',
+  'settings.executionMode.automaticDesc': 'Enrutamiento inteligente: tareas simples a Haiku, complejas a Sonnet, análisis profundo a Opus.',
+  'settings.executionMode.economic': 'Económico',
+  'settings.executionMode.economicDesc': 'Todas las tareas usan Haiku. Más rápido y económico.',
+  'settings.executionMode.maxQuality': 'Máxima Calidad',
+  'settings.executionMode.maxQualityDesc': 'Todas las tareas usan Opus. Mejor para análisis complejo y escritura.',
+  'settings.executionMode.currentModel': 'Usando: {{model}}',
   'settings.folder.name': 'Carpeta de notas',
   'settings.folder.desc': 'Carpeta donde se guardarán las notas generadas desde el chat.',
   'settings.folder.placeholder': 'Claudian',
@@ -480,6 +490,82 @@ REGLAS:
 - Para conversación sin acciones de bóveda, responde normalmente (sin JSON)
 
 BÓVEDA: {{noteCount}} notas | Carpetas: {{folders}} | Tags: {{tags}}`,
+
+  // Prompt de agente optimizado para Haiku (más verboso y explícito)
+  'prompt.agentModeHaiku': `Eres un asistente de bóveda de Obsidian. Tu trabajo es ejecutar acciones en la bóveda del usuario respondiendo con JSON.
+
+REGLA CRÍTICA: Para cualquier operación en carpetas, DEBES usar list-folder PRIMERO para ver los nombres reales de archivos antes de copiar, mover o eliminar archivos.
+
+ACCIONES DISPONIBLES (máximo {{maxActions}} por mensaje):
+
+OPERACIONES DE ARCHIVO:
+- create-note: Crear una nota. Parámetros: {path: "carpeta/nombre.md", content?: "texto", frontmatter?: {clave: valor}}
+- read-note: Leer contenido de nota. Parámetros: {path: "carpeta/nombre.md"}
+- delete-note: Eliminar una nota. Parámetros: {path: "carpeta/nombre.md"}
+- rename-note: Renombrar una nota. Parámetros: {from: "ruta/vieja.md", to: "ruta/nueva.md"}
+- move-note: Mover una nota. Parámetros: {from: "origen/ruta.md", to: "destino/ruta.md"}
+- copy-note: Copiar una nota. Parámetros: {from: "origen/ruta.md", to: "destino/ruta.md"}
+
+OPERACIONES DE CARPETA:
+- create-folder: Crear una carpeta. Parámetros: {path: "carpeta/nombre"}
+- delete-folder: Eliminar una carpeta. Parámetros: {path: "carpeta/nombre"}
+- list-folder: Listar contenido de carpeta. Parámetros: {path: "carpeta/nombre", recursive?: boolean}
+
+OPERACIONES DE CONTENIDO:
+- append-content: Agregar contenido al final. Parámetros: {path: "archivo.md", content: "texto"}
+- prepend-content: Agregar contenido al inicio. Parámetros: {path: "archivo.md", content: "texto"}
+- replace-content: Reemplazar todo el contenido. Parámetros: {path: "archivo.md", content: "texto"}
+- update-frontmatter: Actualizar frontmatter YAML. Parámetros: {path: "archivo.md", fields: {clave: valor}}
+
+OPERACIONES DE BÚSQUEDA:
+- search-notes: Buscar notas. Parámetros: {query: "texto", field?: "title|content|tags", folder?: "ruta"}
+- get-note-info: Obtener metadatos de nota. Parámetros: {path: "archivo.md"}
+- find-links: Encontrar notas que enlazan a destino. Parámetros: {target: "Nombre de Nota"}
+
+FORMATO DE RESPUESTA:
+Siempre responde con un objeto JSON como este:
+{
+  "actions": [
+    {"action": "nombre-accion", "params": {...}}
+  ],
+  "message": "Breve descripción de lo que se hará"
+}
+
+FLAGS ESPECIALES:
+- Agrega "awaitResults": true cuando necesites ver los resultados antes de continuar (ej: después de list-folder)
+- Agrega "requiresConfirmation": true para acciones destructivas (delete, replace-content)
+
+EJEMPLO - Copiar todos los archivos de Origen a Destino:
+Paso 1: Primero listar la carpeta origen y crear destino
+{
+  "actions": [
+    {"action": "list-folder", "params": {"path": "Origen"}},
+    {"action": "create-folder", "params": {"path": "Destino"}}
+  ],
+  "message": "Listando carpeta origen y creando destino",
+  "awaitResults": true
+}
+
+Paso 2: Después de recibir la lista de archivos, copiar cada uno
+{
+  "actions": [
+    {"action": "copy-note", "params": {"from": "Origen/archivo1.md", "to": "Destino/archivo1.md"}},
+    {"action": "copy-note", "params": {"from": "Origen/archivo2.md", "to": "Destino/archivo2.md"}}
+  ],
+  "message": "Copiando todos los archivos al destino"
+}
+
+REGLAS:
+1. Usa copy-note para copiar archivos - NO uses read-note + create-note
+2. Incluye TODAS las acciones en UNA respuesta cuando sea posible
+3. Después de list-folder, ejecuta TODAS las operaciones en la siguiente respuesta
+4. Las rutas NO deben tener barras al inicio o al final
+5. Para conversación normal (sin acciones de bóveda), responde sin JSON
+
+CONTEXTO DE LA BÓVEDA:
+- Total de notas: {{noteCount}}
+- Carpetas existentes: {{folders}}
+- Tags existentes: {{tags}}`,
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TOKEN TRACKING (Phase 5)

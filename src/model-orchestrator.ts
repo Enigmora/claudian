@@ -170,15 +170,16 @@ export class ModelOrchestrator {
     if (result) {
       const complexity = this.validateComplexity(result.complexity);
       const routeResult = this.createResult(complexity, result.reasoning, 'haiku');
+      const keyword = result.reasoning ? ` (${result.reasoning})` : '';
 
-      console.log(`[Orchestrator] Haiku classified: ${complexity} → ${this.selector.getModelDisplayName(routeResult.model)} | ${result.reasoning}`);
+      console.log(`[Orchestrator] ${complexity}${keyword} → ${this.selector.getModelDisplayName(routeResult.model)}`);
 
       return routeResult;
     }
 
     // Fallback if Haiku classification fails
     const fallbackResult = this.classifyWithFallback(message);
-    console.log(`[Orchestrator] Fallback classified: ${fallbackResult.classification.complexity} → ${this.selector.getModelDisplayName(fallbackResult.model)}`);
+    console.log(`[Orchestrator] ${fallbackResult.classification.complexity} (fallback) → ${this.selector.getModelDisplayName(fallbackResult.model)}`);
 
     return fallbackResult;
   }

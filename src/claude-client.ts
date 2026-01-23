@@ -125,25 +125,20 @@ export class ClaudeClient {
       return null;
     }
 
-    const classificationPrompt = `You are a task complexity classifier for an Obsidian vault assistant.
+    // Minimal prompt for fast, cheap classification
+    const classificationPrompt = `Classify task complexity. Reply ONLY: {"c":"simple|moderate|complex|deep","k":"keyword"}
 
-Analyze the user's request and classify its complexity level. Respond with ONLY a JSON object, no other text.
+simple=file ops, list, copy, move, delete, placeholder content
+moderate=write content, summarize, translate, explain
+complex=multi-file ops, batch, refactor
+deep=analysis, planning, synthesis, concept maps
 
-Classification levels:
-- "simple": Basic file operations (list, copy, move, delete, rename files/folders), creating empty files or files with placeholder content
-- "moderate": Content creation requiring thinking (write articles, summarize, translate, explain concepts), research tasks, organizing content
-- "complex": Multi-step operations affecting many files, batch processing, refactoring, merging/consolidating content
-- "deep": Comprehensive analysis, strategic planning, knowledge synthesis, concept maps, thorough evaluation
-
-Response format (JSON only):
-{"complexity":"simple|moderate|complex|deep","reasoning":"brief explanation"}
-
-User request: ${message}`;
+Task: ${message}`;
 
     try {
       const response = await this.client.messages.create({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 150,
+        max_tokens: 50,
         messages: [{ role: 'user', content: classificationPrompt }],
       });
 
@@ -157,7 +152,12 @@ User request: ${message}`;
         return null;
       }
 
-      return JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]);
+      // Map compact keys to full names
+      return {
+        complexity: parsed.c || parsed.complexity,
+        reasoning: parsed.k || parsed.reasoning || ''
+      };
     } catch (error) {
       console.warn('[ClaudeClient] Task classification failed:', error);
       return null;

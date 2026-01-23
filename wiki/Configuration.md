@@ -237,6 +237,62 @@ When enabled, shows the current session's token usage in the chat footer. Click 
 
 ---
 
+## Context Management
+
+Settings for automatic conversation optimization to reduce token usage.
+
+### Automatic Context Management
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Automatic context management |
+| **Description** | Automatically summarize conversation history when it gets long |
+| **Default** | On |
+
+When enabled, Claudian automatically summarizes older messages when conversations become long. This reduces token usage while preserving important context, allowing for longer conversations without hitting token limits.
+
+**How it works:**
+- Monitors conversation length
+- When threshold is reached, older messages are summarized
+- Recent messages remain in full detail
+- Summary context is included in new requests
+
+---
+
+### Summarize After Messages
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Summarize after messages |
+| **Description** | Number of messages before triggering automatic summarization |
+| **Default** | 20 |
+| **Range** | 10 - 50 |
+
+Lower values summarize more frequently (more token savings, less context). Higher values keep more full messages before summarizing.
+
+---
+
+### Max Active Messages
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Max active messages |
+| **Description** | Maximum messages to keep in active context after summarization |
+| **Default** | 50 |
+| **Range** | 20 - 100 |
+
+After summarization, this many recent messages are kept in full detail. Older messages are compressed into a summary.
+
+**Token savings estimates:**
+
+| Conversation Length | Without Summarization | With Summarization | Savings |
+|---------------------|----------------------|-------------------|---------|
+| 30 messages | ~7,500 tokens | ~3,000 tokens | 60% |
+| 50 messages | ~12,500 tokens | ~3,500 tokens | 72% |
+| 100 messages | ~25,000 tokens | ~4,000 tokens | 84% |
+
+---
+
 ## Settings File Location
 
 All settings are stored locally in your vault at:

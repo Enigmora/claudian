@@ -173,11 +173,24 @@ See [Agent Mode](Agent-Mode) for complete documentation.
 
 ## Context and Memory
 
-### Current Behavior
+### Conversation Context
 
 - Chat maintains context within the current session
 - Claude remembers previous messages in the conversation
 - Context is cleared when you clear chat or restart Obsidian
+
+### Automatic Context Management
+
+For long conversations, Claudian automatically optimizes token usage:
+
+- **Automatic summarization**: When conversations exceed a configurable threshold (default: 20 messages), older messages are automatically summarized
+- **Smart compression**: Important context is preserved in a summary while recent messages remain in full detail
+- **Token savings**: Reduces token usage by 60-84% for long conversations (30-100+ messages)
+- **Transparent operation**: Works automatically in the background without interrupting your workflow
+
+This allows you to have much longer conversations without hitting token limits or incurring excessive API costs.
+
+**Configure in**: Settings > Claudian > Context Management
 
 ### Vault Context
 

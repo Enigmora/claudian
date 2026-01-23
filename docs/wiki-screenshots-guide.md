@@ -46,6 +46,14 @@ This document provides guidelines for capturing and maintaining screenshots for 
 | Token Indicator | `token-indicator.png` | Token usage indicator in chat footer | Send a message, capture the footer showing input/output tokens |
 | Token History Modal | `token-history-modal.png` | Token usage history modal | Click on token indicator to open modal |
 
+### Context Management
+
+| Screenshot | Filename | Description | How to Capture |
+|------------|----------|-------------|----------------|
+| Context Settings | `settings-context-management.png` | Context management settings section | Open Settings > Claudian, scroll to "Context Management" section |
+
+**Note:** The Context Management section can also be included as part of `settings-panel.png` (full settings view).
+
 ## Technical Specifications
 
 ### Dimensions
@@ -75,6 +83,7 @@ wiki/
     ├── welcome-screen.png
     ├── settings-panel.png
     ├── settings-header.png
+    ├── settings-context-management.png  (optional)
     ├── agent-mode-toggle.png
     ├── confirmation-modal.png
     ├── overwrite-confirmation.png
@@ -164,6 +173,9 @@ Use this checklist to track screenshot progress:
 - [ ] `token-indicator.png` - Token usage indicator in chat footer
 - [ ] `token-history-modal.png` - Token usage history modal
 
+### Context Management
+- [ ] `settings-context-management.png` - Context management settings section *(NEW - optional, can be part of settings-panel.png)*
+
 ### Quick Capture Steps
 
 1. **Welcome Screen** (`welcome-screen.png`)
@@ -198,13 +210,26 @@ Use this checklist to track screenshot progress:
    - Modal opens showing usage history
    - Capture the full modal
 
+7. **Context Management Settings** (`settings-context-management.png`)
+   - Open Settings > Claudian
+   - Scroll down to "Context Management" section
+   - Show all three settings:
+     - "Automatic context management" toggle (ON by default)
+     - "Summarize after messages" slider (default: 20)
+     - "Max active messages" slider (default: 50)
+   - Optionally include as part of `settings-panel.png` full view
+
 ### Settings Panel Notes
 
 The `settings-panel.png` screenshot should show:
 - **Custom Instructions** field (replaced "System Prompt")
 - **Token Tracking** section with "Show token indicator" toggle
+- **Context Management** section with:
+  - "Automatic context management" toggle
+  - "Summarize after messages" slider (10-50)
+  - "Max active messages" slider (20-100)
 - All Agent Mode settings (52 actions now available)
 
 ---
 
-*Last updated: 2026-01-22*
+*Last updated: 2026-01-22 (Added Context Management section)*

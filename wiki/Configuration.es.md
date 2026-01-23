@@ -237,6 +237,62 @@ Cuando está activado, muestra el uso de tokens de la sesión actual en el pie d
 
 ---
 
+## Gestión de Contexto
+
+Ajustes para la optimización automática de conversaciones y reducción del uso de tokens.
+
+### Gestión Automática de Contexto
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Gestión automática de contexto |
+| **Descripción** | Resumir automáticamente el historial cuando las conversaciones se hacen largas |
+| **Por defecto** | Activado |
+
+Cuando está activado, Claudian resume automáticamente los mensajes antiguos cuando las conversaciones se hacen largas. Esto reduce el uso de tokens mientras preserva el contexto importante, permitiendo conversaciones más largas sin alcanzar los límites de tokens.
+
+**Cómo funciona:**
+- Monitorea la longitud de la conversación
+- Cuando se alcanza el umbral, los mensajes antiguos se resumen
+- Los mensajes recientes permanecen en detalle completo
+- El contexto del resumen se incluye en nuevas solicitudes
+
+---
+
+### Resumir Después de Mensajes
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Resumir después de mensajes |
+| **Descripción** | Número de mensajes antes de activar el resumen automático |
+| **Por defecto** | 20 |
+| **Rango** | 10 - 50 |
+
+Valores más bajos resumen con más frecuencia (más ahorro de tokens, menos contexto). Valores más altos mantienen más mensajes completos antes de resumir.
+
+---
+
+### Máximo de Mensajes Activos
+
+| Ajuste | Descripción |
+|--------|-------------|
+| **Nombre** | Máximo de mensajes activos |
+| **Descripción** | Máximo de mensajes a mantener en contexto activo después del resumen |
+| **Por defecto** | 50 |
+| **Rango** | 20 - 100 |
+
+Después del resumen, esta cantidad de mensajes recientes se mantienen en detalle completo. Los mensajes más antiguos se comprimen en un resumen.
+
+**Estimaciones de ahorro de tokens:**
+
+| Longitud de Conversación | Sin Resumen | Con Resumen | Ahorro |
+|--------------------------|-------------|-------------|--------|
+| 30 mensajes | ~7,500 tokens | ~3,000 tokens | 60% |
+| 50 mensajes | ~12,500 tokens | ~3,500 tokens | 72% |
+| 100 mensajes | ~25,000 tokens | ~4,000 tokens | 84% |
+
+---
+
 ## Ubicación del Archivo de Ajustes
 
 Todos los ajustes se almacenan localmente en tu bóveda en:

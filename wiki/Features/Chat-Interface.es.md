@@ -173,11 +173,24 @@ Consulta [Modo Agente](Agent-Mode.es) para documentación completa.
 
 ## Contexto y Memoria
 
-### Comportamiento Actual
+### Contexto de Conversación
 
 - El chat mantiene contexto dentro de la sesión actual
 - Claude recuerda mensajes anteriores en la conversación
 - El contexto se limpia cuando limpias el chat o reinicias Obsidian
+
+### Gestión Automática de Contexto
+
+Para conversaciones largas, Claudian optimiza automáticamente el uso de tokens:
+
+- **Resumen automático**: Cuando las conversaciones exceden un umbral configurable (por defecto: 20 mensajes), los mensajes antiguos se resumen automáticamente
+- **Compresión inteligente**: El contexto importante se preserva en un resumen mientras los mensajes recientes permanecen en detalle completo
+- **Ahorro de tokens**: Reduce el uso de tokens en 60-84% para conversaciones largas (30-100+ mensajes)
+- **Operación transparente**: Funciona automáticamente en segundo plano sin interrumpir tu flujo de trabajo
+
+Esto te permite tener conversaciones mucho más largas sin alcanzar límites de tokens ni incurrir en costos excesivos de API.
+
+**Configurar en**: Ajustes > Claudian > Gestión de Contexto
 
 ### Contexto de Bóveda
 

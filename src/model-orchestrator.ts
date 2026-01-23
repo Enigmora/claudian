@@ -98,18 +98,27 @@ export class TaskClassifier {
   private readonly simplePatterns: RegExp[] = [
     // List operations
     /^(?:list|lista|listar|show|mostrar|ver|muestra)\s+(?:files?|archivos?|notes?|notas?|folders?|carpetas?)/i,
-    /^(?:what|qué|cuáles?)\s+(?:files?|archivos?|notes?|notas?)\s+(?:are|hay|tengo)/i,
+    /(?:what|qué|cuáles?)\s+(?:files?|archivos?|notes?|notas?)\s+(?:are|hay|tengo)/i,
 
-    // Simple file operations
-    /^(?:copy|copiar|move|mover|rename|renombrar|delete|eliminar|borrar)\s+(?:the\s+)?(?:file|archivo|note|nota)/i,
-    /^(?:create|crear)\s+(?:a\s+)?(?:folder|carpeta)/i,
+    // Copy/move file operations (flexible patterns)
+    /^copia\s+(?:todos?\s+)?(?:los?\s+)?(?:archivos?|notas?|ficheros?)/i,
+    /^copy\s+(?:all\s+)?(?:the\s+)?(?:files?|notes?)/i,
+    /^(?:mueve|mover|move)\s+(?:todos?\s+)?(?:los?\s+)?(?:archivos?|notas?|ficheros?)/i,
+    /(?:copy|copiar|copia)\s+(?:archivos?|files?|notas?|notes?)\s+(?:de|from|to|a|en)/i,
+    /(?:move|mover|mueve)\s+(?:archivos?|files?|notas?|notes?)\s+(?:de|from|to|a|en)/i,
+
+    // Simple single file operations
+    /^(?:copy|copiar|move|mover|rename|renombrar|delete|eliminar|borrar)\s+(?:the\s+)?(?:file|archivo|note|nota)\b/i,
+    /^(?:create|crear|crea)\s+(?:una?\s+)?(?:folder|carpeta)/i,
 
     // Simple read operations
-    /^(?:read|leer|open|abrir)\s+(?:the\s+)?(?:file|archivo|note|nota)/i,
+    /^(?:read|leer|lee|open|abrir|abre)\s+(?:the\s+|la\s+|el\s+)?(?:file|archivo|note|nota)/i,
 
     // Status/info queries
-    /^(?:what|cuál)\s+is\s+(?:the\s+)?(?:status|estado)/i,
-    /^(?:how\s+many|cuántas?)\s+(?:files?|archivos?|notes?|notas?)/i,
+    /(?:how\s+many|cuántas?|cuántos?)\s+(?:files?|archivos?|notes?|notas?)/i,
+
+    // Folder content operations
+    /(?:archivos?|files?|notas?|notes?)\s+(?:en|in|de|from|contenidos?\s+en)\s+(?:la\s+)?(?:carpeta|folder)/i,
   ];
 
   // Content creation (Sonnet-appropriate)

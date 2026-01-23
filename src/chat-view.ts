@@ -192,10 +192,13 @@ export class ChatView extends ItemView {
    * Handle send/stop button click
    */
   private handleButtonClick(): void {
-    if (this.isStreaming) {
-      // Stop the current stream
+    if (this.isStreaming || this.agentLoopActive) {
+      // Stop the current stream and/or cancel the agentic loop
       this.client.abortStream();
-      this.resetButtonToSend();
+      if (this.agentLoopActive) {
+        this.agentLoopCancelled = true;
+      }
+      this.resetButtonToSend(true); // Force reset
     } else {
       // Send new message
       this.sendMessage();
@@ -213,9 +216,20 @@ export class ChatView extends ItemView {
 
   /**
    * Reset button to Send mode
+   * @param force - Force reset even if agentic loop is active (used for cancellation)
    */
-  private resetButtonToSend(): void {
+  private resetButtonToSend(force: boolean = false): void {
     this.isStreaming = false;
+
+    // Don't reset to Send if agentic loop is still active (unless forced)
+    if (this.agentLoopActive && !force) {
+      // Keep button in Stop mode while loop is active
+      this.sendButton.setText(t('chat.stop'));
+      this.sendButton.addClass('is-stop');
+      this.sendButton.disabled = false;
+      return;
+    }
+
     this.sendButton.setText(t('chat.send'));
     this.sendButton.removeClass('is-stop');
     this.sendButton.disabled = false;
@@ -342,7 +356,8 @@ export class ChatView extends ItemView {
 
   private async sendMessage(): Promise<void> {
     const message = this.inputEl.value.trim();
-    if (!message || this.isStreaming) return;
+    // Prevent sending if streaming or agentic loop is active
+    if (!message || this.isStreaming || this.agentLoopActive) return;
 
     // Check if user is asking for vault actions without agent mode
     if (!this.isAgentModeActive && this.detectsVaultActionIntent(message)) {

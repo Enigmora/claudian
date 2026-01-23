@@ -893,8 +893,11 @@ export class ChatView extends ItemView {
 
         // Phase 3: Complete partial and clean up
         if (this.currentPartialId && contextManager) {
-          await contextManager.completePartialResponse(this.currentPartialId);
-          this.currentPartialId = null;
+          try {
+            await contextManager.completePartialResponse(this.currentPartialId);
+          } finally {
+            this.currentPartialId = null;
+          }
         }
 
         // Process complete response
@@ -914,8 +917,11 @@ export class ChatView extends ItemView {
 
         // Phase 3: Clean up partial on error
         if (this.currentPartialId && contextManager) {
-          await contextManager.completePartialResponse(this.currentPartialId);
-          this.currentPartialId = null;
+          try {
+            await contextManager.completePartialResponse(this.currentPartialId);
+          } finally {
+            this.currentPartialId = null;
+          }
         }
 
         contentEl.createEl('span', {

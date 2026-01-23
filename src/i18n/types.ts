@@ -100,6 +100,20 @@ export type Translations = {
   'error.parseJson': string;
   'error.parseResponse': string;
   'error.tooManyActions': string;
+  // Vault action errors
+  'error.protectedPath': string;
+  'error.folderNotFound': string;
+  'error.folderNotEmpty': string;
+  'error.fileAlreadyExists': string;
+  'error.noteNotFound': string;
+  'error.sourceNoteNotFound': string;
+  'error.fileNotFound': string;
+  'error.momentNotAvailable': string;
+  'error.noActiveLeafToSplit': string;
+  'error.unknownError': string;
+  // Concept map errors
+  'error.conceptMapParse': string;
+  'error.noValidJsonInResponse': string;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NOTE CREATOR MODAL

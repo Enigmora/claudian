@@ -2,6 +2,7 @@ import { TFile, Notice } from 'obsidian';
 import ClaudeCompanionPlugin from './main';
 import { ClaudeClient } from './claude-client';
 import { VaultIndexer } from './vault-indexer';
+import { t } from './i18n';
 
 export interface ConceptNode {
   name: string;
@@ -87,7 +88,7 @@ export class ConceptMapGenerator {
               callbacks.onComplete?.(map);
               resolve(map);
             } catch (error) {
-              const err = error instanceof Error ? error : new Error('Error al parsear mapa');
+              const err = error instanceof Error ? error : new Error(t('error.conceptMapParse'));
               callbacks.onError?.(err);
               reject(err);
             }
@@ -147,7 +148,7 @@ NOTAS A ANALIZAR:
   private parseConceptMapResponse(response: string): Partial<ConceptMap> {
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('No se encontró JSON válido en la respuesta');
+      throw new Error(t('error.noValidJsonInResponse'));
     }
 
     return JSON.parse(jsonMatch[0]);

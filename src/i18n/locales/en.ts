@@ -91,6 +91,20 @@ const translations: Translations = {
   'error.parseJson': 'No valid JSON found in response.',
   'error.parseResponse': 'Error parsing suggestion JSON.',
   'error.tooManyActions': 'Too many actions ({{count}}). Maximum allowed: {{max}}',
+  // Vault action errors
+  'error.protectedPath': 'Protected path: {{path}}',
+  'error.folderNotFound': 'Folder not found: {{path}}',
+  'error.folderNotEmpty': 'Folder is not empty: {{path}}',
+  'error.fileAlreadyExists': 'File already exists: {{path}}. Use overwrite: true to overwrite.',
+  'error.noteNotFound': 'Note not found: {{path}}',
+  'error.sourceNoteNotFound': 'Source note not found: {{path}}',
+  'error.fileNotFound': 'File not found: {{path}}',
+  'error.momentNotAvailable': 'Moment.js not available',
+  'error.noActiveLeafToSplit': 'No active leaf to split',
+  'error.unknownError': 'Unknown error',
+  // Concept map errors
+  'error.conceptMapParse': 'Error parsing concept map',
+  'error.noValidJsonInResponse': 'No valid JSON found in response',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NOTE CREATOR MODAL

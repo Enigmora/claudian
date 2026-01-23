@@ -344,8 +344,11 @@ Task: ${message}`;
         return;
       }
 
-      // Remove user message if error (from local history)
+      // Remove user message if error (from local and context manager)
       this.conversationHistory.pop();
+      if (this.contextManagementEnabled && this.contextManager) {
+        this.contextManager.removeLastMessage();
+      }
 
       if (error instanceof Error) {
         // Improve common error messages
@@ -652,7 +655,11 @@ ${noteContent}`;
         }
         callbacks.onError?.(new Error(t('chat.streamStopped')));
       } else {
+        // Remove user message if error (from local and context manager)
         this.conversationHistory.pop();
+        if (this.contextManagementEnabled && this.contextManager) {
+          this.contextManager.removeLastMessage();
+        }
         this.handleErrorWithQuota(error, callbacks);
       }
     }

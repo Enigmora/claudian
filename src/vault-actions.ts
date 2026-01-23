@@ -71,7 +71,7 @@ export class VaultActionExecutor {
       return {
         success: false,
         action,
-        error: error instanceof Error ? error.message : 'Error desconocido'
+        error: error instanceof Error ? error.message : t('error.unknownError')
       };
     }
   }
@@ -298,7 +298,7 @@ export class VaultActionExecutor {
     const normalizedPath = this.sanitizePath(path);
 
     if (this.isProtectedPath(normalizedPath)) {
-      throw new Error(`Ruta protegida: ${normalizedPath}`);
+      throw new Error(t('error.protectedPath', { path: normalizedPath }));
     }
 
     const existing = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
@@ -314,16 +314,16 @@ export class VaultActionExecutor {
     const normalizedPath = this.normalizePath(path);
 
     if (this.isProtectedPath(normalizedPath)) {
-      throw new Error(`Ruta protegida: ${normalizedPath}`);
+      throw new Error(t('error.protectedPath', { path: normalizedPath }));
     }
 
     const folder = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
     if (!folder || !(folder instanceof TFolder)) {
-      throw new Error(`Carpeta no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.folderNotFound', { path: normalizedPath }));
     }
 
     if (folder.children.length > 0) {
-      throw new Error(`La carpeta no está vacía: ${normalizedPath}`);
+      throw new Error(t('error.folderNotEmpty', { path: normalizedPath }));
     }
 
     await this.plugin.app.vault.delete(folder);
@@ -340,7 +340,7 @@ export class VaultActionExecutor {
       : this.plugin.app.vault.getRoot();
 
     if (!folder || !(folder instanceof TFolder)) {
-      throw new Error(`Carpeta no encontrada: ${normalizedPath || '/'}`);
+      throw new Error(t('error.folderNotFound', { path: normalizedPath || '/' }));
     }
 
     const folders: string[] = [];
@@ -380,14 +380,14 @@ export class VaultActionExecutor {
     }
 
     if (this.isProtectedPath(normalizedPath)) {
-      throw new Error(`Ruta protegida: ${normalizedPath}`);
+      throw new Error(t('error.protectedPath', { path: normalizedPath }));
     }
 
     // Verificar si ya existe
     const existing = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
     if (existing) {
       if (!overwrite) {
-        throw new Error(`Ya existe un archivo: ${normalizedPath}. Usa overwrite: true para sobreescribir.`);
+        throw new Error(t('error.fileAlreadyExists', { path: normalizedPath }));
       }
       // Overwrite existing file
       if (existing instanceof TFile) {
@@ -428,7 +428,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     const content = await this.plugin.app.vault.read(file);
@@ -444,12 +444,12 @@ export class VaultActionExecutor {
     const normalizedPath = this.normalizeNotePath(path);
 
     if (this.isProtectedPath(normalizedPath)) {
-      throw new Error(`Ruta protegida: ${normalizedPath}`);
+      throw new Error(t('error.protectedPath', { path: normalizedPath }));
     }
 
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     await this.plugin.app.vault.delete(file);
@@ -465,12 +465,12 @@ export class VaultActionExecutor {
     }
 
     if (this.isProtectedPath(normalizedFrom) || this.isProtectedPath(normalizedTo)) {
-      throw new Error('Ruta protegida');
+      throw new Error(t('error.protectedPath', { path: normalizedFrom }));
     }
 
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedFrom);
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedFrom}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedFrom }));
     }
 
     await this.plugin.app.fileManager.renameFile(file, normalizedTo);
@@ -492,13 +492,13 @@ export class VaultActionExecutor {
     }
 
     if (this.isProtectedPath(normalizedTo)) {
-      throw new Error(`Ruta protegida: ${normalizedTo}`);
+      throw new Error(t('error.protectedPath', { path: normalizedTo }));
     }
 
     // Read source file
     const sourceFile = this.plugin.app.vault.getAbstractFileByPath(normalizedFrom);
     if (!sourceFile || !(sourceFile instanceof TFile)) {
-      throw new Error(`Nota origen no encontrada: ${normalizedFrom}`);
+      throw new Error(t('error.sourceNoteNotFound', { path: normalizedFrom }));
     }
 
     // Read exact content
@@ -532,7 +532,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     await this.plugin.app.vault.process(file, (data) => {
@@ -547,7 +547,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     await this.plugin.app.vault.process(file, (data) => {
@@ -567,11 +567,11 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     if (this.isProtectedPath(normalizedPath)) {
-      throw new Error(`Ruta protegida: ${normalizedPath}`);
+      throw new Error(t('error.protectedPath', { path: normalizedPath }));
     }
 
     await this.plugin.app.vault.modify(file, content);
@@ -586,7 +586,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -657,7 +657,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`Nota no encontrada: ${normalizedPath}`);
+      throw new Error(t('error.noteNotFound', { path: normalizedPath }));
     }
 
     const cache = this.plugin.app.metadataCache.getFileCache(file);
@@ -1004,7 +1004,7 @@ export class VaultActionExecutor {
     // Try to get today's daily note
     const moment = (window as any).moment;
     if (!moment) {
-      throw new Error('Moment.js not available');
+      throw new Error(t('error.momentNotAvailable'));
     }
 
     const format = dailyNotes.options?.format || 'YYYY-MM-DD';
@@ -1035,7 +1035,7 @@ export class VaultActionExecutor {
 
     const moment = (window as any).moment;
     if (!moment) {
-      throw new Error('Moment.js not available');
+      throw new Error(t('error.momentNotAvailable'));
     }
 
     const format = dailyNotes.options?.format || 'YYYY-MM-DD';
@@ -1144,7 +1144,7 @@ export class VaultActionExecutor {
     const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
     if (!file) {
-      throw new Error(`File not found: ${normalizedPath}`);
+      throw new Error(t('error.fileNotFound', { path: normalizedPath }));
     }
 
     // Add bookmark via the bookmarks instance
@@ -1260,7 +1260,7 @@ export class VaultActionExecutor {
     const normalizedPath = this.normalizeNotePath(file);
     const fileObj = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
     if (!fileObj || !(fileObj instanceof TFile)) {
-      throw new Error(`File not found: ${normalizedPath}`);
+      throw new Error(t('error.fileNotFound', { path: normalizedPath }));
     }
 
     const node = canvas.createFileNode({
@@ -1477,7 +1477,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file || !(file instanceof TFile)) {
-      throw new Error(`File not found: ${normalizedPath}`);
+      throw new Error(t('error.fileNotFound', { path: normalizedPath }));
     }
 
     const leaf = this.plugin.app.workspace.getLeaf(false);
@@ -1501,7 +1501,7 @@ export class VaultActionExecutor {
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
     if (!file) {
-      throw new Error(`File not found: ${normalizedPath}`);
+      throw new Error(t('error.fileNotFound', { path: normalizedPath }));
     }
 
     // Get the file explorer leaf
@@ -1550,7 +1550,7 @@ export class VaultActionExecutor {
   }> {
     const activeLeaf = this.plugin.app.workspace.activeLeaf;
     if (!activeLeaf) {
-      throw new Error('No active leaf to split');
+      throw new Error(t('error.noActiveLeafToSplit'));
     }
 
     const newLeaf = this.plugin.app.workspace.createLeafBySplit(

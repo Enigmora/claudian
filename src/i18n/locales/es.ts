@@ -91,6 +91,20 @@ const translations: Translations = {
   'error.parseJson': 'No se encontró JSON válido en la respuesta.',
   'error.parseResponse': 'Error al parsear JSON de sugerencias.',
   'error.tooManyActions': 'Demasiadas acciones ({{count}}). Máximo permitido: {{max}}',
+  // Vault action errors
+  'error.protectedPath': 'Ruta protegida: {{path}}',
+  'error.folderNotFound': 'Carpeta no encontrada: {{path}}',
+  'error.folderNotEmpty': 'La carpeta no está vacía: {{path}}',
+  'error.fileAlreadyExists': 'Ya existe un archivo: {{path}}. Usa overwrite: true para sobreescribir.',
+  'error.noteNotFound': 'Nota no encontrada: {{path}}',
+  'error.sourceNoteNotFound': 'Nota origen no encontrada: {{path}}',
+  'error.fileNotFound': 'Archivo no encontrado: {{path}}',
+  'error.momentNotAvailable': 'Moment.js no disponible',
+  'error.noActiveLeafToSplit': 'No hay pestaña activa para dividir',
+  'error.unknownError': 'Error desconocido',
+  // Concept map errors
+  'error.conceptMapParse': 'Error al parsear mapa de conceptos',
+  'error.noValidJsonInResponse': 'No se encontró JSON válido en la respuesta',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NOTE CREATOR MODAL

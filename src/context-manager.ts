@@ -581,6 +581,18 @@ export class ContextManager {
   }
 
   /**
+   * Remove the last message from the session
+   * Used to rollback when an API call fails after adding the user message
+   */
+  async removeLastMessage(): Promise<void> {
+    if (this.currentSession && this.currentSession.messages.length > 0) {
+      this.currentSession.messages.pop();
+      this.currentSession.metadata.totalMessages = Math.max(0, this.currentSession.metadata.totalMessages - 1);
+      await this.saveCurrentSession();
+    }
+  }
+
+  /**
    * Get active messages for sending to the API
    * Includes summary context if available
    */

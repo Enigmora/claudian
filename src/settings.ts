@@ -59,18 +59,6 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   maxActiveContextMessages: 50
 };
 
-export interface ModelOption {
-  id: string;
-  nameKey: 'settings.model.sonnet4' | 'settings.model.opus4' | 'settings.model.sonnet35' | 'settings.model.haiku45';
-}
-
-export const AVAILABLE_MODELS: ModelOption[] = [
-  { id: 'claude-sonnet-4-20250514', nameKey: 'settings.model.sonnet4' },
-  { id: 'claude-opus-4-20250514', nameKey: 'settings.model.opus4' },
-  { id: 'claude-3-5-sonnet-20241022', nameKey: 'settings.model.sonnet35' },
-  { id: 'claude-haiku-4-5-20251001', nameKey: 'settings.model.haiku45' },
-];
-
 export class ClaudeCompanionSettingTab extends PluginSettingTab {
   plugin: ClaudeCompanionPlugin;
 

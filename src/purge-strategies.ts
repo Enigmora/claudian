@@ -26,7 +26,7 @@ export class ExpiredPurgeStrategy implements PurgeStrategy {
   name = 'expired';
   priority = 100;
 
-  shouldPurge(file: TempFileMetadata, now: number): boolean {
+  shouldPurge(file: TempFileMetadata, now: number, _stats: StorageStats): boolean {
     return file.expiresAt < now;
   }
 }
@@ -45,7 +45,7 @@ export class SizeLimitPurgeStrategy implements PurgeStrategy {
   private exceedsLimit: boolean = false;
   private currentSize: number = 0;
 
-  shouldPurge(file: TempFileMetadata, now: number, stats: StorageStats): boolean {
+  shouldPurge(file: TempFileMetadata, _now: number, stats: StorageStats): boolean {
     // Check if we're over the limit
     if (!this.exceedsLimit) {
       this.exceedsLimit = stats.totalSize > SizeLimitPurgeStrategy.MAX_TOTAL_SIZE;
@@ -89,7 +89,7 @@ export class InactivePurgeStrategy implements PurgeStrategy {
     partial: 30 * 60 * 1000           // 30 minutes
   };
 
-  shouldPurge(file: TempFileMetadata, now: number): boolean {
+  shouldPurge(file: TempFileMetadata, now: number, _stats: StorageStats): boolean {
     const threshold = InactivePurgeStrategy.INACTIVE_THRESHOLDS[file.type];
     return (now - file.lastAccessedAt) > threshold;
   }
@@ -109,7 +109,7 @@ export class OrphanedPurgeStrategy implements PurgeStrategy {
     this.activeSessions = new Set(activeSessions);
   }
 
-  shouldPurge(file: TempFileMetadata): boolean {
+  shouldPurge(file: TempFileMetadata, _now: number, _stats: StorageStats): boolean {
     // If file has a related session, check if it still exists
     if (file.relatedSessionId) {
       return !this.activeSessions.has(file.relatedSessionId);

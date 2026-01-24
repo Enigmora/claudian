@@ -13,7 +13,7 @@ Referencia completa de todos los ajustes de Claudian. Accede a los ajustes en **
 | **Nombre** | Idioma |
 | **Descripción** | Idioma de la interfaz del plugin |
 | **Por defecto** | Auto (sigue el idioma de Obsidian) |
-| **Opciones** | Auto, English, Español |
+| **Opciones** | Auto, English, Español, 中文, Deutsch, Français, 日本語 |
 
 El plugin detecta automáticamente el idioma de Obsidian, o puedes anularlo manualmente.
 
@@ -184,7 +184,7 @@ Lista separada por comas de rutas de carpetas. El modo agente rechazará modific
 |--------|-------------|
 | **Nombre** | Máximo de acciones por mensaje |
 | **Descripción** | Máximo de operaciones en la bóveda por respuesta del agente |
-| **Por defecto** | 20 |
+| **Por defecto** | 25 |
 | **Rango** | 1 - 50 |
 
 Limita el número de acciones que Claude puede ejecutar en una sola respuesta para prevenir operaciones descontroladas.

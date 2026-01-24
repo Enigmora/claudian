@@ -20,11 +20,10 @@ Claudian en sí es gratuito y de código abierto bajo la licencia MIT. Sin embar
 
 ### ¿Qué modelos de Claude están soportados?
 
-Claudian soporta:
-- **Claude Sonnet 4** (recomendado)
-- **Claude Opus 4** (para tareas complejas)
-- **Claude 3.5 Sonnet**
-- **Claude 3.5 Haiku** (más rápido, menor costo)
+Claudian usa orquestación inteligente de modelos con estos modelos Claude 4:
+- **Claude Haiku 4.5** (más rápido, menor costo)
+- **Claude Sonnet 4** (equilibrado)
+- **Claude Opus 4** (máxima calidad, tareas complejas)
 
 ---
 
@@ -94,7 +93,7 @@ Consulta la [página de precios de Anthropic](https://www.anthropic.com/pricing)
 
 ### ¿Cómo puedo reducir los costos de API?
 
-- Usa Claude 3.5 Haiku para consultas simples
+- Usa el modo de ejecución **Económico** (enruta todas las tareas a Haiku 4.5)
 - Reduce los tokens máximos en los ajustes
 - Sé conciso en tus mensajes
 - Reduce notas/tags en contexto

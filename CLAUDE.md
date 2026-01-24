@@ -2,6 +2,42 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## CRITICAL RULES - READ FIRST
+
+> **These rules are NON-NEGOTIABLE and must be followed at all times.**
+
+### 1. NEVER commit directly to `main`
+```
+STOP! Before ANY commit, ask yourself:
+- Am I on main? → WRONG. Create a feature branch first.
+- Did I create a branch? → Good. Proceed with commit.
+```
+
+**Workflow for ANY change:**
+```bash
+# 1. FIRST: Create and switch to a feature branch
+git checkout -b feat/your-feature-name
+
+# 2. Make your changes and commits on the branch
+git add <files>
+git commit -m "feat: description"
+
+# 3. Push the branch (NOT main)
+git push -u origin feat/your-feature-name
+
+# 4. Create PR via GitHub
+```
+
+### 2. All strings must be internationalized
+Use `t('key')` from `./i18n` for ALL user-visible text. Never hardcode strings.
+
+### 3. Never use console.log directly
+Use `logger.debug/info/warn/error` from `./logger.ts`.
+
+---
+
 ## Project Overview
 
 **Claudian** - The ultimate Claude AI integration for Obsidian. Powered by Claude.
@@ -268,21 +304,83 @@ wiki/
 
 ## Git Branching Strategy
 
-**CRITICAL: Never commit directly to `main` branch.**
+> **STOP! This is the most commonly violated rule. Read carefully.**
 
-All changes must go through feature/fix branches and Pull Requests. This ensures code review, CI validation, and a clean commit history.
+### Pre-Commit Checklist
+
+Before EVERY commit, verify:
+
+```
+[ ] I am NOT on the main branch (run: git branch --show-current)
+[ ] I created a feature/fix branch for this work
+[ ] My branch name follows the naming convention below
+[ ] I will create a PR to merge into main
+```
+
+**If you are on main:** STOP. Create a branch first:
+```bash
+git checkout -b feat/your-feature-name
+```
+
+### Why This Matters
+
+- Direct commits to main bypass code review
+- CI/CD validation is skipped
+- Rollbacks become difficult
+- Commit history becomes messy
+
+### Complete Workflow
+
+```bash
+# 1. Ensure you're on main and up to date
+git checkout main
+git pull origin main
+
+# 2. Create your feature branch
+git checkout -b feat/i18n-korean-support
+
+# 3. Make changes, then commit
+git add src/i18n/locales/ko.ts
+git commit -m "feat(i18n): add Korean language support"
+
+# 4. Push your branch (NEVER push directly to main)
+git push -u origin feat/i18n-korean-support
+
+# 5. Create Pull Request on GitHub
+# 6. After PR is approved and merged, clean up
+git checkout main
+git pull origin main
+git branch -d feat/i18n-korean-support
+```
 
 ### Branch Naming Convention
 
 | Prefix | Purpose | Example |
 |--------|---------|---------|
 | `feature/` | New features or enhancements | `feature/export-excel` |
-| `feat/` | Alias for feature | `feat/folio-c5` |
+| `feat/` | Alias for feature | `feat/i18n-korean` |
 | `fix/` | Bug fixes | `fix/report-form-tests` |
 | `hotfix/` | Urgent production fixes | `hotfix/auth-bypass` |
 | `docs/` | Documentation-only changes | `docs/api-reference` |
 | `refactor/` | Code refactoring (no behavior change) | `refactor/catalog-service` |
 | `test/` | Test-only changes | `test/bunit-coverage` |
+
+### Common Mistakes to Avoid
+
+```bash
+# WRONG - Committing directly to main
+git checkout main
+git commit -m "feat: new feature"  # NO!
+
+# WRONG - Pushing to main
+git push origin main  # NO! (unless merging a PR)
+
+# CORRECT - Always use branches
+git checkout -b feat/new-feature
+git commit -m "feat: new feature"
+git push -u origin feat/new-feature
+# Then create PR on GitHub
+```
 
 ## Releases
 

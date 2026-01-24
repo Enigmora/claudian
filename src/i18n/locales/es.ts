@@ -668,7 +668,13 @@ CONVERSACIÓN:
   'welcome.example3': '"Lee mi nota de Ideas.md y sugiere wikilinks a otras notas relacionadas"',
   'welcome.example4': '"Busca todas las notas con el tag #proyecto y genera un mapa conceptual con sus conexiones"',
   'welcome.example5': '"Organiza mis notas sobre productividad en carpetas por tema y crea un índice enlazado"',
-  'welcome.agentModeHint': 'Activa el Modo Agente para crear, modificar y organizar notas automáticamente.'
+  'welcome.agentModeHint': 'Activa el Modo Agente para crear, modificar y organizar notas automáticamente.',
+  // Personalized example templates
+  'welcome.template.search': '"¿Qué notas tengo sobre {{topic}}?"',
+  'welcome.template.read': '"Lee mi nota "{{noteName}}" y hazme un resumen"',
+  'welcome.template.create': '"Crea una nota con ideas sobre {{topic}}"',
+  'welcome.template.analyze': '"Busca notas con el tag #{{tag}} y sugiere conexiones entre ellas"',
+  'welcome.template.organize': '"Organiza mis notas sobre {{topic}} en carpetas por subtema y crea un índice"'
 };
 
 export default translations;

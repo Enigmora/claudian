@@ -455,6 +455,12 @@ export type Translations = {
   'welcome.example4': string;
   'welcome.example5': string;
   'welcome.agentModeHint': string;
+  // Personalized example templates
+  'welcome.template.search': string;
+  'welcome.template.read': string;
+  'welcome.template.create': string;
+  'welcome.template.analyze': string;
+  'welcome.template.organize': string;
 };
 
 /**

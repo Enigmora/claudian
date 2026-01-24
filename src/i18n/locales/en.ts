@@ -668,7 +668,13 @@ CONVERSATION:
   'welcome.example3': '"Read my Ideas.md note and suggest wikilinks to related notes"',
   'welcome.example4': '"Find all notes with the #project tag and generate a concept map with their connections"',
   'welcome.example5': '"Organize my productivity notes into folders by topic and create a linked index"',
-  'welcome.agentModeHint': 'Enable Agent Mode to create, modify and organize notes automatically.'
+  'welcome.agentModeHint': 'Enable Agent Mode to create, modify and organize notes automatically.',
+  // Personalized example templates
+  'welcome.template.search': '"What notes do I have about {{topic}}?"',
+  'welcome.template.read': '"Read my "{{noteName}}" note and summarize it"',
+  'welcome.template.create': '"Create a note with ideas about {{topic}}"',
+  'welcome.template.analyze': '"Find notes with the #{{tag}} tag and suggest connections between them"',
+  'welcome.template.organize': '"Organize my notes about {{topic}} into folders by subtopic and create an index"'
 };
 
 export default translations;

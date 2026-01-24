@@ -25,6 +25,7 @@ import { TokenTrackingUI } from './token-tracking-ui';
 import { ContextSessionManager } from './context-session-manager';
 import { RobustnessHandler, RobustnessCallbacks } from './robustness-handler';
 import { AgentLoopManager } from './agent-loop-manager';
+import { WelcomeExamplesGenerator } from './welcome-examples-generator';
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -337,13 +338,19 @@ export class ChatView extends ItemView {
     });
 
     const examplesList = examplesEl.createEl('ul', { cls: 'claudian-welcome-examples-list' });
-    const examples = [
-      t('welcome.example1'),
-      t('welcome.example2'),
-      t('welcome.example3'),
-      t('welcome.example4'),
-      t('welcome.example5')
-    ];
+
+    // Generate personalized examples or use static fallbacks
+    const generator = new WelcomeExamplesGenerator(this.app, this.plugin.indexer);
+    const personalizedExamples = generator.generate();
+    const examples = personalizedExamples
+      ? personalizedExamples.map(e => e.text)
+      : [
+          t('welcome.example1'),
+          t('welcome.example2'),
+          t('welcome.example3'),
+          t('welcome.example4'),
+          t('welcome.example5')
+        ];
 
     examples.forEach(example => {
       const li = examplesList.createEl('li', { text: example });

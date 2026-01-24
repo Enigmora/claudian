@@ -22,7 +22,8 @@
   <a href="#instalación">Instalación</a> •
   <a href="#características">Características</a> •
   <a href="https://github.com/Enigmora/claudian/wiki">Documentación</a> •
-  <a href="README.md">English</a>
+  <a href="README.md">English</a> •
+  <a href="README_ZH.md">中文</a>
 </p>
 
 ---

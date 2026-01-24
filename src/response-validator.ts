@@ -26,37 +26,57 @@ export interface ValidationWarning {
 export class ResponseValidator {
   // Patterns indicating the model CLAIMS to have performed actions
   private static readonly ACTION_CLAIM_PATTERNS: Array<{ pattern: RegExp; action: string }> = [
-    // Creation claims
+    // Creation claims - Spanish/English
     { pattern: /(?:he |i have |i've |ya he |acabo de )(?:creado|created|generado|generated)/i, action: 'create' },
     { pattern: /(?:creé|created|hice|made)\s+(?:el|la|the|a)?\s*(?:archivo|file|nota|note|carpeta|folder)/i, action: 'create' },
+    // Creation claims - Chinese
+    { pattern: /(?:我[已经]?|已[经]?)(?:创建|生成)了?/, action: 'create' },
+    { pattern: /(?:创建|生成)了?\s*(?:文件|笔记|文件夹)/, action: 'create' },
 
-    // Move claims
+    // Move claims - Spanish/English
     { pattern: /(?:he |i have |i've |ya he )(?:movido|moved)/i, action: 'move' },
     { pattern: /(?:moví|moved)\s+(?:el|la|the)?\s*(?:archivo|file|nota|note)/i, action: 'move' },
+    // Move claims - Chinese
+    { pattern: /(?:我[已经]?|已[经]?)移动了?/, action: 'move' },
 
-    // Delete claims
+    // Delete claims - Spanish/English
     { pattern: /(?:he |i have |i've |ya he )(?:eliminado|deleted|borrado|removed)/i, action: 'delete' },
     { pattern: /(?:eliminé|deleted|borré)\s+(?:el|la|the)?\s*(?:archivo|file|nota|note|carpeta|folder)/i, action: 'delete' },
+    // Delete claims - Chinese
+    { pattern: /(?:我[已经]?|已[经]?)(?:删除|移除)了?/, action: 'delete' },
 
-    // Rename claims
+    // Rename claims - Spanish/English
     { pattern: /(?:he |i have |i've |ya he )(?:renombrado|renamed)/i, action: 'rename' },
     { pattern: /(?:renombré|renamed)\s+(?:el|la|the)?\s*(?:archivo|file|nota|note)/i, action: 'rename' },
+    // Rename claims - Chinese
+    { pattern: /(?:我[已经]?|已[经]?)重命名了?/, action: 'rename' },
 
-    // Update claims
+    // Update claims - Spanish/English
     { pattern: /(?:he |i have |i've |ya he )(?:actualizado|updated|modificado|modified)/i, action: 'update' },
     { pattern: /(?:actualicé|updated|modifiqué|modified)\s+(?:el|la|the)?\s*(?:archivo|file|nota|note|contenido|content)/i, action: 'update' },
+    // Update claims - Chinese
+    { pattern: /(?:我[已经]?|已[经]?)(?:更新|修改)了?/, action: 'update' },
 
-    // Completion claims
+    // Completion claims - Spanish/English
     { pattern: /(?:listo|done|completado|completed|terminado|finished)/i, action: 'completed' },
     { pattern: /(?:aquí está|here is|here's|te presento)/i, action: 'present' },
+    // Completion claims - Chinese
+    { pattern: /(?:完成|已完成|搞定)/, action: 'completed' },
+    { pattern: /(?:这是|给你|这里是)/, action: 'present' },
   ];
 
   // Patterns indicating confusion about capabilities
   private static readonly CONFUSION_PATTERNS = [
+    // Spanish/English
     /(?:no puedo|cannot|can't|i'm unable to|no tengo la capacidad de)\s+(?:crear|create|escribir|write|generar|generate)/i,
     /(?:como\s+(?:un\s+)?(?:modelo|asistente|ia)|as\s+an?\s+(?:ai|assistant|model|language model))/i,
     /(?:no tengo acceso|don't have access|cannot access)/i,
     /(?:solo puedo|i can only)\s+(?:proporcionar|provide|dar|give|sugerir|suggest)/i,
+    // Chinese
+    /(?:我不能|无法|我没有能力)\s*(?:创建|写|生成)/,
+    /(?:作为[一个]?(?:模型|助手|AI)|我是[一个]?(?:AI|助手))/,
+    /(?:我没有访问权限|无法访问)/,
+    /(?:我只能)\s*(?:提供|给|建议)/,
   ];
 
   /**

@@ -69,33 +69,54 @@ export class TaskPlanner {
     weight: number;
     description: string;
   }> = [
-    // Multiple items
+    // Multiple items - Spanish/English
     { pattern: /(?:crear?|create?|genera?r?)\s+(\d+|varios|multiple|many|muchos)/i, weight: 3, description: 'Multiple items requested' },
     { pattern: /(?:todos?|all)\s+(?:los?|the)?\s*(?:archivos?|files?|notas?|notes?)/i, weight: 4, description: 'All files/notes' },
+    // Multiple items - Chinese
+    { pattern: /(?:创建|生成)\s*(\d+|多个|许多|几个)/, weight: 3, description: 'Multiple items requested (Chinese)' },
+    { pattern: /(?:所有|全部)\s*(?:的)?\s*(?:文件|笔记)/, weight: 4, description: 'All files/notes (Chinese)' },
 
-    // Structure creation
+    // Structure creation - Spanish/English
     { pattern: /(?:estructura|structure)\s+(?:de\s+)?(?:proyecto|project|carpetas?|folders?)/i, weight: 3, description: 'Structure creation' },
     { pattern: /(?:árbol|tree)\s+(?:de\s+)?(?:carpetas?|folders?|directorios?)/i, weight: 3, description: 'Folder tree' },
+    // Structure creation - Chinese
+    { pattern: /(?:结构|项目结构|文件夹结构)/, weight: 3, description: 'Structure creation (Chinese)' },
+    { pattern: /(?:目录树|文件夹树)/, weight: 3, description: 'Folder tree (Chinese)' },
 
-    // Batch operations
+    // Batch operations - Spanish/English
     { pattern: /(?:organizar?|organize?|ordenar?|sort)\s+(?:todos?|all|las?|los?|the)/i, weight: 3, description: 'Batch organization' },
     { pattern: /(?:mover?|move?)\s+(?:todos?|all|múltiples?|multiple)/i, weight: 3, description: 'Batch move' },
+    // Batch operations - Chinese
+    { pattern: /(?:组织|整理|排序)\s*(?:所有|全部)/, weight: 3, description: 'Batch organization (Chinese)' },
+    { pattern: /(?:移动)\s*(?:多个|全部|所有)/, weight: 3, description: 'Batch move (Chinese)' },
 
-    // Content generation
+    // Content generation - Spanish/English
     { pattern: /(?:con\s+)?(?:contenido|content)\s+(?:sobre|about|de|on)/i, weight: 2, description: 'Content generation' },
     { pattern: /(?:escribe?|write?|genera?r?|generate?)\s+(?:un\s+)?(?:artículo|article|ensayo|essay|documento|document)/i, weight: 2, description: 'Document generation' },
+    // Content generation - Chinese
+    { pattern: /(?:内容|关于|涉及)/, weight: 2, description: 'Content generation (Chinese)' },
+    { pattern: /(?:写|生成)\s*(?:一篇?)?\s*(?:文章|论文|文档)/, weight: 2, description: 'Document generation (Chinese)' },
 
-    // Lists and series
+    // Lists and series - Spanish/English
     { pattern: /(?:lista|list)\s+(?:de\s+)?(?:\d+|\w+)\s+(?:archivos?|files?|notas?|notes?|items?)/i, weight: 2, description: 'List of items' },
     { pattern: /(?:serie|series)\s+(?:de\s+)?(?:notas?|notes?|archivos?|files?)/i, weight: 3, description: 'Series of files' },
+    // Lists and series - Chinese
+    { pattern: /(?:列表|一[系串]列)\s*(?:\d+|多个)?\s*(?:文件|笔记)/, weight: 2, description: 'List of items (Chinese)' },
+    { pattern: /(?:系列|一系列)\s*(?:笔记|文件)/, weight: 3, description: 'Series of files (Chinese)' },
 
-    // Detailed content
+    // Detailed content - Spanish/English
     { pattern: /(?:detallado|detailed|completo|complete|exhaustivo|comprehensive)/i, weight: 2, description: 'Detailed content' },
     { pattern: /(?:historia|history|biografía|biography)\s+(?:de|of|sobre|about)/i, weight: 2, description: 'Historical content' },
+    // Detailed content - Chinese
+    { pattern: /(?:详细|完整|全面|综合)/, weight: 2, description: 'Detailed content (Chinese)' },
+    { pattern: /(?:历史|传记)\s*(?:关于)?/, weight: 2, description: 'Historical content (Chinese)' },
 
-    // With subfolders/subcategories
+    // With subfolders/subcategories - Spanish/English
     { pattern: /(?:con\s+)?(?:subcarpetas?|subfolders?|subdirectorios?)/i, weight: 2, description: 'With subfolders' },
     { pattern: /(?:categorías?|categories?|secciones?|sections?)/i, weight: 1, description: 'Categories/sections' },
+    // With subfolders/subcategories - Chinese
+    { pattern: /(?:包含)?\s*(?:子文件夹|子目录)/, weight: 2, description: 'With subfolders (Chinese)' },
+    { pattern: /(?:类别|分类|部分|章节)/, weight: 1, description: 'Categories/sections (Chinese)' },
   ];
 
   // Patterns to detect multi-file requests with explicit items
@@ -140,15 +161,47 @@ export class TaskPlanner {
         return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
       }
     },
+    // Chinese: "笔记关于..." or "创建笔记关于..."
+    {
+      pattern: /(?:笔记|文件)\s*(?:关于|涉及|对于)\s*(.+)/,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|，\s*|\s+和\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;，。；]$/, ''));
+      }
+    },
+    {
+      pattern: /(?:创建|生成)\s*(?:笔记)\s*(?:关于|对于)\s*(.+)/,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|，\s*|\s+和\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;，。；]$/, ''));
+      }
+    },
+    // Chinese count-based: "创建5个笔记..."
+    {
+      pattern: /(?:创建|生成)\s*(\d+)\s*(?:个)?\s*(?:笔记|文件)/,
+      extractor: (match) => {
+        const count = parseInt(match[1], 10);
+        return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
+      }
+    },
   ];
 
   // Action keywords for counting
   private static readonly ACTION_KEYWORDS = [
+    // Spanish/English
     /\b(?:crea|create|genera|generate|haz|make)\b/gi,
     /\b(?:mueve|move|mover)\b/gi,
     /\b(?:elimina|delete|borra|remove)\b/gi,
     /\b(?:renombra|rename)\b/gi,
     /\b(?:escribe|write|agrega|add)\b/gi,
+    // Chinese
+    /(?:创建|生成|做|制作)/g,
+    /(?:移动)/g,
+    /(?:删除|移除|删掉)/g,
+    /(?:重命名)/g,
+    /(?:写|添加|追加)/g,
   ];
 
   constructor(config: Partial<PlanningConfig> = {}) {

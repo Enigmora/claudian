@@ -36,9 +36,17 @@ export class WelcomeExamplesGenerator {
     'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either', 'neither',
     'not', 'only', 'own', 'same', 'than', 'too', 'very', 'just', 'also',
     'note', 'notes', 'file', 'files', 'document', 'documents',
-    // Common date/time words
+    // Common date/time words (English/Spanish)
     'day', 'week', 'month', 'year', 'today', 'yesterday', 'tomorrow',
-    'dia', 'semana', 'mes', 'ano', 'hoy', 'ayer', 'manana'
+    'dia', 'semana', 'mes', 'ano', 'hoy', 'ayer', 'manana',
+    // Chinese stop words
+    '的', '了', '和', '是', '在', '有', '我', '他', '她', '它',
+    '这', '那', '这个', '那个', '一个', '一些', '什么', '怎么',
+    '为什么', '哪里', '哪个', '谁', '如何', '可以', '应该', '会',
+    '能', '要', '想', '让', '把', '被', '给', '从', '到', '对',
+    '笔记', '文件', '文档', '档案',
+    // Chinese date/time
+    '天', '周', '月', '年', '今天', '昨天', '明天', '日期'
   ]);
 
   constructor(

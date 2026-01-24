@@ -53,7 +53,8 @@ src/
 │   ├── core.ts              # Runtime logic
 │   └── locales/
 │       ├── en.ts            # English translations (default)
-│       └── es.ts            # Spanish translations
+│       ├── es.ts            # Spanish translations
+│       └── zh.ts            # Chinese translations (Simplified)
 └── templates/
     └── default.ts           # Template de notas con frontmatter
 ```
@@ -105,7 +106,8 @@ button.setButtonText('Send');
 1. Add the translation key to `src/i18n/types.ts`
 2. Add translations in `src/i18n/locales/en.ts` (required)
 3. Add translations in `src/i18n/locales/es.ts` (required)
-4. Use `t('your.key')` in the code
+4. Add translations in `src/i18n/locales/zh.ts` (required)
+5. Use `t('your.key')` in the code
 
 **Parameter interpolation:**
 ```typescript
@@ -115,8 +117,9 @@ t('batch.processing', { current: 5, total: 10, note: 'My Note' })
 
 **Supported locales:**
 - Phase 1 (current): `en` (default), `es`
-- Phase 2 (planned): `zh`, `de`
-- Phase 3 (planned): `fr`, `ja`
+- Phase 2 (current): `zh`
+- Phase 3 (planned): `de`
+- Phase 4 (planned): `fr`, `ja`
 
 **Multilingual regex patterns:**
 
@@ -124,7 +127,15 @@ Some features use regex patterns that match user input in multiple languages. Wh
 
 | Location | Variable | Purpose |
 |----------|----------|---------|
-| `src/chat-view.ts` | `continuationPatterns` | Detects continuation commands ("continúa", "continue", etc.) |
+| `src/continuation-handler.ts` | `continuationPatterns` | Detects continuation commands ("continúa", "continue", "继续", etc.) |
+| `src/response-validator.ts` | `ACTION_CLAIM_PATTERNS` | Detects action claims in responses |
+| `src/response-validator.ts` | `CONFUSION_PATTERNS` | Detects model confusion about capabilities |
+| `src/context-reinforcer.ts` | `confusionPatterns` | Detects when model forgets agent mode |
+| `src/context-reinforcer.ts` | `actionPatterns` | Detects action requests in user messages |
+| `src/task-planner.ts` | `COMPLEXITY_PATTERNS` | Detects complex task indicators |
+| `src/task-planner.ts` | `MULTI_FILE_PATTERNS` | Detects multi-file requests |
+| `src/task-planner.ts` | `ACTION_KEYWORDS` | Action keyword matching |
+| `src/welcome-examples-generator.ts` | `STOP_WORDS` | Common words to filter from topic extraction |
 
 Example of adding German patterns:
 ```typescript
@@ -135,6 +146,10 @@ Example of adding German patterns:
 // Add German
 /^weiter$/i,           // German: "continue"
 /^fortfahren$/i,       // German: "proceed"
+
+// Chinese (already implemented)
+/^继续$/,              // Chinese: "continue"
+/^接着$/,              // Chinese: "go on"
 ```
 
 ## Logging

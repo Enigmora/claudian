@@ -93,10 +93,16 @@ export class ContextReinforcer {
    */
   private claimsCannotDoActions(content: string): boolean {
     const confusionPatterns = [
+      // Spanish/English
       /(?:no puedo|cannot|can't|i'm unable to|no tengo la capacidad)/i,
       /(?:crear archivos|create files|write files|escribir archivos)/i,
       /(?:solo puedo|i can only|only able to)/i,
       /(?:como (?:un )?(?:modelo|asistente|ia)|as an? (?:ai|assistant|model))/i,
+      // Chinese
+      /(?:我不能|无法|我没有能力)/,
+      /(?:创建文件|写文件|编写文件)/,
+      /(?:我只能|只能够)/,
+      /(?:作为[一个]?(?:模型|助手|AI))/,
     ];
 
     return confusionPatterns.some(pattern => pattern.test(content));
@@ -175,6 +181,7 @@ export class ContextReinforcer {
    */
   private isActionRequest(message: string): boolean {
     const actionPatterns = [
+      // Spanish/English
       /(?:crea|create|genera|generate|haz|make)/i,
       /(?:mueve|move|mover)/i,
       /(?:elimina|delete|borra|remove)/i,
@@ -183,6 +190,15 @@ export class ContextReinforcer {
       /(?:lista|list|muestra|show)/i,
       /(?:agrega|add|añade|append)/i,
       /(?:carpeta|folder|nota|note|archivo|file)/i,
+      // Chinese
+      /(?:创建|生成|做|制作)/,
+      /(?:移动)/,
+      /(?:删除|移除|删掉)/,
+      /(?:重命名)/,
+      /(?:搜索|查找|找)/,
+      /(?:列[出表]|显示|展示)/,
+      /(?:添加|增加|追加)/,
+      /(?:文件夹|笔记|文件|档案)/,
     ];
 
     const matchCount = actionPatterns.filter(p => p.test(message)).length;

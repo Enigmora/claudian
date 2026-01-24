@@ -161,6 +161,28 @@ export class TaskPlanner {
     // French - With subfolders
     { pattern: /(?:avec)?\s*(?:sous-dossiers?|sous-r[ée]pertoires?)/i, weight: 2, description: 'With subfolders (French)' },
     { pattern: /(?:cat[ée]gories?|sections?|parties?)/i, weight: 1, description: 'Categories/sections (French)' },
+
+    // Japanese - Multiple items
+    { pattern: /(?:作成|生成)\s*(?:\d+|複数|いくつか|たくさん)/, weight: 3, description: 'Multiple items (Japanese)' },
+    { pattern: /(?:すべて|全て|全部)の(?:ファイル|ノート)/, weight: 4, description: 'All files/notes (Japanese)' },
+    // Japanese - Structure creation
+    { pattern: /(?:構造|プロジェクト構造|フォルダ構造)/, weight: 3, description: 'Structure creation (Japanese)' },
+    { pattern: /(?:ディレクトリ|フォルダ)(?:ツリー|階層)/, weight: 3, description: 'Folder tree (Japanese)' },
+    // Japanese - Batch operations
+    { pattern: /(?:整理|ソート|並べ替え)\s*(?:すべて|全て|全部)/, weight: 3, description: 'Batch organization (Japanese)' },
+    { pattern: /(?:移動)\s*(?:複数|すべて|全て|全部)/, weight: 3, description: 'Batch move (Japanese)' },
+    // Japanese - Content generation
+    { pattern: /(?:について|に関して|関する)/, weight: 2, description: 'Content generation (Japanese)' },
+    { pattern: /(?:書いて|書く|執筆)\s*(?:記事|エッセイ|ドキュメント)/, weight: 2, description: 'Document generation (Japanese)' },
+    // Japanese - Lists and series
+    { pattern: /(?:リスト|一覧|シリーズ)\s*(?:の)?\s*(?:\d+)?(?:個|件|つ)?(?:ファイル|ノート)?/, weight: 2, description: 'List of items (Japanese)' },
+    { pattern: /(?:シリーズ|連続)(?:の)?(?:ノート|ファイル)/, weight: 3, description: 'Series of files (Japanese)' },
+    // Japanese - Detailed content
+    { pattern: /(?:詳細|詳しく|完全|包括的|徹底的)/, weight: 2, description: 'Detailed content (Japanese)' },
+    { pattern: /(?:歴史|伝記|物語)(?:について|に関して)/, weight: 2, description: 'Historical content (Japanese)' },
+    // Japanese - With subfolders
+    { pattern: /(?:サブフォルダ|下位フォルダ|子フォルダ)(?:付き|含む|と共に)?/, weight: 2, description: 'With subfolders (Japanese)' },
+    { pattern: /(?:カテゴリ|セクション|部分|区分)/, weight: 1, description: 'Categories/sections (Japanese)' },
   ];
 
   // Patterns to detect multi-file requests with explicit items
@@ -280,6 +302,31 @@ export class TaskPlanner {
         return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
       }
     },
+    // Japanese: "〜についてのノート" or "ノートを作成"
+    {
+      pattern: /(?:ノート|ファイル)\s*(?:を)?\s*(?:について|関して)\s*(.+)/,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:、|と|および)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[。、]$/, ''));
+      }
+    },
+    {
+      pattern: /(.+)(?:について|に関して|関する)(?:ノート|ファイル)(?:を)?(?:作成|作って)/,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:、|と|および)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[。、]$/, ''));
+      }
+    },
+    // Japanese count-based: "5つのノートを作成"
+    {
+      pattern: /(\d+)\s*(?:個|つ|件)(?:の)?(?:ノート|ファイル)(?:を)?(?:作成|作って)/,
+      extractor: (match) => {
+        const count = parseInt(match[1], 10);
+        return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
+      }
+    },
   ];
 
   // Action keywords for counting
@@ -308,6 +355,12 @@ export class TaskPlanner {
     /(?:supprime|supprimer|efface|effacer)/gi,
     /(?:renomme|renommer)/gi,
     /(?:[ée]cris|[ée]crire|ajoute|ajouter)/gi,
+    // Japanese
+    /(?:作成|作って|作る|生成)/g,
+    /(?:移動|移して|移す)/g,
+    /(?:削除|消して|消す|除去)/g,
+    /(?:名前(?:を)?変更|リネーム)/g,
+    /(?:書いて|書く|追加|足して)/g,
   ];
 
   constructor(config: Partial<PlanningConfig> = {}) {

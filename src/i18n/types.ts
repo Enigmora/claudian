@@ -4,9 +4,9 @@
  * Phase 2: zh
  * Phase 3: de
  * Phase 4: fr
- * Phase 5: ja (planned)
+ * Phase 5: ja
  */
-export type Locale = 'en' | 'es' | 'zh' | 'de' | 'fr';
+export type Locale = 'en' | 'es' | 'zh' | 'de' | 'fr' | 'ja';
 
 /**
  * Translation dictionary type

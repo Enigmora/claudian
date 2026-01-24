@@ -25,7 +25,8 @@
   <a href="README.md">English</a> •
   <a href="README_ES.md">Español</a> •
   <a href="README_ZH.md">中文</a> •
-  <a href="README_DE.md">Deutsch</a>
+  <a href="README_DE.md">Deutsch</a> •
+  <a href="README_JA.md">日本語</a>
 </p>
 
 ---
@@ -76,7 +77,7 @@ L'orchestration automatique des modèles route chaque tâche vers le modèle Cla
 - Analyse approfondie → Opus (qualité maximale)
 
 ### 🌍 Multilingue
-Support complet pour l'**anglais**, l'**espagnol**, le **chinois**, l'**allemand** et le **français**. D'autres langues arrivent bientôt.
+Support complet pour l'**anglais**, l'**espagnol**, le **chinois**, l'**allemand**, le **français** et le **japonais**. D'autres langues arrivent bientôt.
 
 ---
 

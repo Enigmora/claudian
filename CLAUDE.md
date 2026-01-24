@@ -56,7 +56,8 @@ src/
 │       ├── es.ts            # Spanish translations
 │       ├── zh.ts            # Chinese translations (Simplified)
 │       ├── de.ts            # German translations
-│       └── fr.ts            # French translations
+│       ├── fr.ts            # French translations
+│       └── ja.ts            # Japanese translations
 └── templates/
     └── default.ts           # Template de notas con frontmatter
 ```
@@ -111,7 +112,8 @@ button.setButtonText('Send');
 4. Add translations in `src/i18n/locales/zh.ts` (required)
 5. Add translations in `src/i18n/locales/de.ts` (required)
 6. Add translations in `src/i18n/locales/fr.ts` (required)
-7. Use `t('your.key')` in the code
+7. Add translations in `src/i18n/locales/ja.ts` (required)
+8. Use `t('your.key')` in the code
 
 **Parameter interpolation:**
 ```typescript
@@ -124,7 +126,8 @@ t('batch.processing', { current: 5, total: 10, note: 'My Note' })
 - Phase 2 (current): `zh`
 - Phase 3 (current): `de`
 - Phase 4 (current): `fr`
-- Phase 5 (planned): `ja`
+- Phase 5 (current): `ja`
+- Phase 6 (planned): Additional languages
 
 **Multilingual regex patterns:**
 
@@ -142,7 +145,7 @@ Some features use regex patterns that match user input in multiple languages. Wh
 | `src/task-planner.ts` | `ACTION_KEYWORDS` | Action keyword matching |
 | `src/welcome-examples-generator.ts` | `STOP_WORDS` | Common words to filter from topic extraction |
 
-Example of adding Japanese patterns:
+Example of adding a new language (e.g., Korean):
 ```typescript
 // Existing patterns
 /^contin[uú]a?r?$/i,  // Spanish
@@ -150,10 +153,11 @@ Example of adding Japanese patterns:
 /^继续$/,              // Chinese
 /^weiter$/i,           // German
 /^continuer$/i,        // French
+/^続けて$/,            // Japanese
 
-// Add Japanese
-/^続[けく]$/,          // Japanese: "tsuzuke/tsuzuku" (continue)
-/^次$/,                // Japanese: "tsugi" (next)
+// Add Korean
+/^계속$/,              // Korean: "gyesok" (continue)
+/^다음$/,              // Korean: "da-eum" (next)
 ```
 
 ## Logging

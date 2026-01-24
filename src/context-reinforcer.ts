@@ -113,6 +113,11 @@ export class ContextReinforcer {
       /(?:cr[ée]er des fichiers|[ée]crire des fichiers)/i,
       /(?:je peux seulement|je ne peux que)/i,
       /(?:en tant qu[e']?\s*(?:mod[èe]le|assistant|ia))/i,
+      // Japanese
+      /(?:できません|不可能です|無理です)/,
+      /(?:ファイル(?:を)?(?:作成|書き込み|生成))/,
+      /(?:のみ|だけ|しか)(?:できます|可能です)/,
+      /(?:AIとして|モデルとして|アシスタントとして)/,
     ];
 
     return confusionPatterns.some(pattern => pattern.test(content));
@@ -227,6 +232,15 @@ export class ContextReinforcer {
       /(?:liste|lister|montre|montrer|affiche|afficher)/i,
       /(?:ajoute|ajouter|rajoute|rajouter)/i,
       /(?:dossier|note|fichier|document)/i,
+      // Japanese
+      /(?:作成|作って|作る|生成)/,
+      /(?:移動|移して|移す)/,
+      /(?:削除|消して|消す|除去)/,
+      /(?:名前(?:を)?変更|リネーム)/,
+      /(?:検索|探して|探す|見つけて)/,
+      /(?:一覧|リスト|表示)/,
+      /(?:追加|足して|加えて)/,
+      /(?:フォルダ|ノート|ファイル|ドキュメント)/,
     ];
 
     const matchCount = actionPatterns.filter(p => p.test(message)).length;

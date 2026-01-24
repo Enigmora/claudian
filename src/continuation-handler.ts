@@ -27,7 +27,7 @@ export class ContinuationHandler {
       return false;
     }
 
-    // Common continuation patterns in Spanish, English, Chinese, German, and French
+    // Common continuation patterns in Spanish, English, Chinese, German, French, and Japanese
     // NOTE: When adding new locales, add corresponding patterns here
     // See CLAUDE.md "Multilingual regex patterns" section
     const continuationPatterns = [
@@ -76,6 +76,19 @@ export class ContinuationHandler {
       /^ok[,.]?\s*continue$/i,  // "ok, continue"
       /^vas-y$/i,               // "vas-y" (go on, informal)
       /^allez$/i,               // "allez" (go on, formal)
+      // Japanese (no case sensitivity needed for Japanese characters)
+      /^続け(て|る)?$/,           // "続けて/続ける" (continue)
+      /^続(ける|けて|き)$/,        // "続ける/続けて/続き" (continue - kanji variations)
+      /^次$/,                      // "次" (next)
+      /^次へ$/,                    // "次へ" (to next)
+      /^もっと$/,                  // "もっと" (more)
+      /^さらに$/,                  // "さらに" (furthermore)
+      /^続行$/,                    // "続行" (proceed)
+      /^完了$/,                    // "完了" (complete)
+      /^終わり$/,                  // "終わり" (finish)
+      /^ok[,、.]?続(けて|き)?$/i,  // "ok続けて" (ok continue)
+      /^はい[,、]?続(けて|き)?$/,  // "はい、続けて" (yes, continue)
+      /^進(める|めて|む)$/,        // "進める" (advance/proceed)
     ];
 
     return continuationPatterns.some(pattern => pattern.test(normalized));

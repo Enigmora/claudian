@@ -25,7 +25,8 @@
   <a href="README.md">English</a> •
   <a href="README_ZH.md">中文</a> •
   <a href="README_DE.md">Deutsch</a> •
-  <a href="README_FR.md">Français</a>
+  <a href="README_FR.md">Français</a> •
+  <a href="README_JA.md">日本語</a>
 </p>
 
 ---
@@ -76,7 +77,7 @@ Orquestación automática de modelos que enruta cada tarea al modelo óptimo de 
 - Análisis profundo → Opus (máxima calidad)
 
 ### 🌍 Multilingüe
-Soporte completo para **Inglés**, **Español**, **Chino**, **Alemán** y **Francés**. Más idiomas próximamente.
+Soporte completo para **Inglés**, **Español**, **Chino**, **Alemán**, **Francés** y **Japonés**. Más idiomas próximamente.
 
 ---
 

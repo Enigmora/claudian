@@ -72,7 +72,22 @@ export class WelcomeExamplesGenerator {
     'peut', 'peuvent', 'doit', 'doivent', 'fait', 'font',
     'note', 'notes', 'fichier', 'fichiers', 'document', 'documents',
     // French date/time
-    'jour', 'semaine', 'mois', 'année', 'aujourd', 'hier', 'demain', 'date'
+    'jour', 'semaine', 'mois', 'année', 'aujourd', 'hier', 'demain', 'date',
+    // Japanese particles (助詞)
+    'の', 'は', 'が', 'を', 'に', 'へ', 'と', 'で', 'から', 'まで', 'より', 'も', 'や', 'など',
+    // Japanese auxiliary verbs (助動詞)
+    'です', 'ます', 'た', 'だ', 'ない', 'ある', 'いる', 'する', 'なる', 'できる',
+    // Japanese pronouns
+    'これ', 'それ', 'あれ', 'この', 'その', 'あの', 'ここ', 'そこ', 'あそこ',
+    '私', 'わたし', '僕', 'ぼく', '俺', 'おれ', 'あなた', '彼', '彼女',
+    // Japanese common words
+    'こと', 'もの', 'ため', 'よう', 'ところ', 'とき', '時',
+    // Japanese date/time
+    '日', '週', '月', '年', '今日', '昨日', '明日', '日付', '時間',
+    // Japanese conjunctions
+    'そして', 'しかし', 'でも', 'けど', 'けれど', 'だから', 'ので', 'なので',
+    // Japanese note-related
+    'ノート', 'ファイル', 'ドキュメント', 'メモ', 'フォルダ'
   ]);
 
   constructor(

@@ -93,6 +93,25 @@ export class ResponseValidator {
     // French - Completion claims
     { pattern: /(?:termin[ée]|fini|fait|accompli|compl[ée]t[ée])/i, action: 'completed' },
     { pattern: /(?:voici|voil[àa]|c'est)/i, action: 'present' },
+
+    // Japanese - Creation claims
+    { pattern: /(?:作成|生成|作り)(?:しました|した|できました)/, action: 'create' },
+    { pattern: /(?:ファイル|ノート|フォルダ)を(?:作成|作り|生成)/, action: 'create' },
+    { pattern: /(?:新しい|新規)(?:ファイル|ノート|フォルダ)/, action: 'create' },
+    // Japanese - Move claims
+    { pattern: /(?:移動|移し)(?:しました|した|ました)/, action: 'move' },
+    { pattern: /(?:に|へ)(?:移動|移し)/, action: 'move' },
+    // Japanese - Delete claims
+    { pattern: /(?:削除|消去|除去)(?:しました|した|ました)/, action: 'delete' },
+    { pattern: /(?:ファイル|ノート)を(?:削除|消去)/, action: 'delete' },
+    // Japanese - Rename claims
+    { pattern: /(?:名前を変更|リネーム|改名)(?:しました|した|ました)/, action: 'rename' },
+    // Japanese - Update claims
+    { pattern: /(?:更新|変更|修正|編集)(?:しました|した|ました)/, action: 'update' },
+    { pattern: /(?:内容を|テキストを)(?:追加|更新|変更)/, action: 'update' },
+    // Japanese - Completion claims
+    { pattern: /(?:完了|終了|完成|できました|しました)/, action: 'completed' },
+    { pattern: /(?:こちら(?:が|は)|以下(?:が|は)|これ(?:が|は))/, action: 'present' },
   ];
 
   // Patterns indicating confusion about capabilities
@@ -117,6 +136,13 @@ export class ResponseValidator {
     /(?:en tant qu[e']?\s*(?:mod[èe]le|assistant|ia)|je suis\s+(?:un[e]?\s+)?(?:ia|assistant))/i,
     /(?:je n'ai pas acc[èe]s|ne peux pas acc[ée]der)/i,
     /(?:je peux seulement|je ne peux que)\s+(?:fournir|donner|sugg[ée]rer)/i,
+    // Japanese
+    /(?:できません|することができません|不可能です)/,
+    /(?:AIとして|モデルとして|アシスタントとして)/,
+    /(?:アクセスできません|アクセス権がありません)/,
+    /(?:提供|提示|示す)(?:のみ|だけ|しか)(?:できます|可能です)/,
+    /(?:私は|わたしは)(?:AI|モデル|アシスタント)(?:です|なので)/,
+    /(?:実際に|実際の)(?:ファイル|操作)(?:は|を)(?:できません|不可能)/,
   ];
 
   /**

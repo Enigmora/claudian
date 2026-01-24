@@ -7,11 +7,11 @@
 - [Configuración](Configuration.es)
 
 **Características**
-- [Interfaz de Chat](Features/Chat-Interface.es)
-- [Modo Agente](Features/Agent-Mode.es)
-- [Referencia de Acciones](Features/Agent-Actions-Reference.es)
-- [Procesamiento por Lotes](Features/Batch-Processing.es)
-- [Mapas Conceptuales](Features/Concept-Maps.es)
+- [Interfaz de Chat](Features-Chat-Interface.es)
+- [Modo Agente](Features-Agent-Mode.es)
+- [Referencia de Acciones](Features-Agent-Actions-Reference.es)
+- [Procesamiento por Lotes](Features-Batch-Processing.es)
+- [Mapas Conceptuales](Features-Concept-Maps.es)
 
 **Ayuda**
 - [Solución de Problemas](Troubleshooting.es)

@@ -598,6 +598,6 @@ Las acciones destructivas requieren confirmación:
 
 ## Páginas Relacionadas
 
-- [Modo Agente](Agent-Mode.es) - Descripción general y uso
-- [Configuración](../Configuration.es) - Ajustes del agente
-- [Solución de Problemas](../Troubleshooting.es) - Problemas comunes
+- [Modo Agente](Features-Agent-Mode.es) - Descripción general y uso
+- [Configuración](Configuration.es) - Ajustes del agente
+- [Solución de Problemas](Troubleshooting.es) - Problemas comunes

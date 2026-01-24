@@ -249,6 +249,6 @@ graph LR
 
 ## Related Features
 
-- [Batch Processing](Batch-Processing) - Extract specific information
-- [Chat Interface](Chat-Interface) - Discuss concepts with Claude
-- [Configuration](../Configuration) - Adjust processing settings
+- [Batch Processing](Features-Batch-Processing) - Extract specific information
+- [Chat Interface](Features-Chat-Interface) - Discuss concepts with Claude
+- [Configuration](Configuration) - Adjust processing settings

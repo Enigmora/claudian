@@ -274,6 +274,6 @@ Procesa una carpeta para:
 
 ## Características Relacionadas
 
-- [Interfaz de Chat](Chat-Interface.es) - Conversaciones individuales
-- [Mapas Conceptuales](Concept-Maps.es) - Mapeo visual de relaciones
-- [Configuración](../Configuration.es) - Ajustar configuración de procesamiento
+- [Interfaz de Chat](Features-Chat-Interface.es) - Conversaciones individuales
+- [Mapas Conceptuales](Features-Concept-Maps.es) - Mapeo visual de relaciones
+- [Configuración](Configuration.es) - Ajustar configuración de procesamiento

@@ -165,7 +165,7 @@ El encabezado del chat incluye un toggle de Modo Agente. Cuando está activado:
 - Un indicador muestra que el modo agente está activo
 - Las acciones destructivas requieren confirmación
 
-Consulta [Modo Agente](Agent-Mode.es) para documentación completa.
+Consulta [Modo Agente](Features-Agent-Mode.es) para documentación completa.
 
 ![Toggle de Modo Agente](../images/agent-mode-toggle.svg)
 
@@ -212,5 +212,5 @@ Para comandos de procesamiento de notas, Claude recibe:
 
 ## Características Relacionadas
 
-- [Modo Agente](Agent-Mode.es) - Gestión de bóveda a través del chat
-- [Configuración](../Configuration.es) - Personalizar comportamiento del chat
+- [Modo Agente](Features-Agent-Mode.es) - Gestión de bóveda a través del chat
+- [Configuración](Configuration.es) - Personalizar comportamiento del chat

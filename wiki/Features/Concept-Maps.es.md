@@ -249,6 +249,6 @@ graph LR
 
 ## Características Relacionadas
 
-- [Procesamiento por Lotes](Batch-Processing.es) - Extraer información específica
-- [Interfaz de Chat](Chat-Interface.es) - Discutir conceptos con Claude
-- [Configuración](../Configuration.es) - Ajustar configuración de procesamiento
+- [Procesamiento por Lotes](Features-Batch-Processing.es) - Extraer información específica
+- [Interfaz de Chat](Features-Chat-Interface.es) - Discutir conceptos con Claude
+- [Configuración](Configuration.es) - Ajustar configuración de procesamiento

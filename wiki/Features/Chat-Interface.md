@@ -165,7 +165,7 @@ The chat header includes an Agent Mode toggle. When enabled:
 - An indicator shows agent mode is active
 - Destructive actions require confirmation
 
-See [Agent Mode](Agent-Mode) for complete documentation.
+See [Agent Mode](Features-Agent-Mode) for complete documentation.
 
 ![Agent Mode Toggle](../images/agent-mode-toggle.svg)
 
@@ -212,5 +212,5 @@ For note processing commands, Claude receives:
 
 ## Related Features
 
-- [Agent Mode](Agent-Mode) - Vault management through chat
-- [Configuration](../Configuration) - Customize chat behavior
+- [Agent Mode](Features-Agent-Mode) - Vault management through chat
+- [Configuration](Configuration) - Customize chat behavior

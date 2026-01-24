@@ -50,15 +50,42 @@ Plugin de Obsidian para chat con Claude y generación de notas estructuradas con
 npm install              # Instalar dependencias
 npm run dev              # Build desarrollo (con sourcemaps)
 npm run build            # Build producción (minificado)
-./deploy.sh . <destino>  # Compilar y desplegar a bóveda
+```
+
+**Deploy scripts (compile + copy to vault):**
+
+| Platform | Command |
+|----------|---------|
+| Linux/macOS | `./deploy.sh . <destino>` |
+| Windows (PowerShell) | `.\deploy.ps1 -Destination <destino>` |
+
+Both scripts support development mode for debug logging:
+```bash
+# Linux/macOS
+./deploy.sh . <destino> -d
+
+# Windows PowerShell
+.\deploy.ps1 -Destination <destino> -Dev
 ```
 
 ## Testing Local
 
-1. Ejecutar `./deploy.sh . /ruta/a/boveda/.obsidian/plugins/claudian/`
-2. O copiar archivos de `dist/` manualmente a `.obsidian/plugins/claudian/`
-3. Recargar Obsidian (Ctrl/Cmd + R)
-4. Activar plugin en Settings > Community Plugins
+**Option 1: Use deploy scripts**
+```bash
+# Linux/macOS
+./deploy.sh . /ruta/a/boveda/.obsidian/plugins/claudian/
+
+# Windows PowerShell
+.\deploy.ps1 -Destination "C:\Users\tu-usuario\boveda\.obsidian\plugins\claudian"
+```
+
+**Option 2: Manual copy**
+1. Run `npm run build`
+2. Copy files from `dist/` to `.obsidian/plugins/claudian/`
+
+**After deploying:**
+1. Recargar Obsidian (Ctrl/Cmd + R)
+2. Activar plugin en Settings > Community Plugins
 
 ## Architecture
 

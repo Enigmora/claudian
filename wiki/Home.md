@@ -47,10 +47,10 @@
 
 ### Features
 
-- [Chat Interface](Features/Chat-Interface) - Using the chat panel
-- [Agent Mode](Features/Agent-Mode) - Natural language vault management
-- [Batch Processing](Features/Batch-Processing) - Process multiple notes
-- [Concept Maps](Features/Concept-Maps) - Generate visual diagrams
+- [Chat Interface](Features-Chat-Interface) - Using the chat panel
+- [Agent Mode](Features-Agent-Mode) - Natural language vault management
+- [Batch Processing](Features-Batch-Processing) - Process multiple notes
+- [Concept Maps](Features-Concept-Maps) - Generate visual diagrams
 
 ---
 

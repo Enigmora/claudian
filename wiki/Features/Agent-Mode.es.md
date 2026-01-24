@@ -23,7 +23,7 @@ Con el Modo Agente activado, puedes:
 
 Todo a través de solicitudes simples y conversacionales.
 
-> **Ver también:** [Referencia de Acciones del Agente](Agent-Actions-Reference.es) para la lista completa de 52 acciones disponibles.
+> **Ver también:** [Referencia de Acciones del Agente](Features-Agent-Actions-Reference.es) para la lista completa de 52 acciones disponibles.
 
 ### Progreso Visual
 
@@ -293,12 +293,12 @@ Luego:
 2. Verifica que el archivo/carpeta exista
 3. Comprueba problemas de permisos en tu sistema de archivos
 
-Consulta [Solución de Problemas](../Troubleshooting.es) para más soluciones.
+Consulta [Solución de Problemas](Troubleshooting.es) para más soluciones.
 
 ---
 
 ## Características Relacionadas
 
-- [Referencia de Acciones del Agente](Agent-Actions-Reference.es) - Catálogo completo de acciones (52 acciones)
-- [Interfaz de Chat](Chat-Interface.es) - Uso básico del chat
-- [Configuración](../Configuration.es) - Ajustes del Modo Agente
+- [Referencia de Acciones del Agente](Features-Agent-Actions-Reference.es) - Catálogo completo de acciones (52 acciones)
+- [Interfaz de Chat](Features-Chat-Interface.es) - Uso básico del chat
+- [Configuración](Configuration.es) - Ajustes del Modo Agente

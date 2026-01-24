@@ -274,6 +274,6 @@ Process a folder to:
 
 ## Related Features
 
-- [Chat Interface](Chat-Interface) - Individual conversations
-- [Concept Maps](Concept-Maps) - Visual relationship mapping
-- [Configuration](../Configuration) - Adjust processing settings
+- [Chat Interface](Features-Chat-Interface) - Individual conversations
+- [Concept Maps](Features-Concept-Maps) - Visual relationship mapping
+- [Configuration](Configuration) - Adjust processing settings

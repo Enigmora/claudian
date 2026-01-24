@@ -47,10 +47,10 @@
 
 ### Características
 
-- [Interfaz de Chat](Features/Chat-Interface.es) - Uso del panel de chat
-- [Modo Agente](Features/Agent-Mode.es) - Gestión de bóveda con lenguaje natural
-- [Procesamiento por Lotes](Features/Batch-Processing.es) - Procesar múltiples notas
-- [Mapas Conceptuales](Features/Concept-Maps.es) - Generar diagramas visuales
+- [Interfaz de Chat](Features-Chat-Interface.es) - Uso del panel de chat
+- [Modo Agente](Features-Agent-Mode.es) - Gestión de bóveda con lenguaje natural
+- [Procesamiento por Lotes](Features-Batch-Processing.es) - Procesar múltiples notas
+- [Mapas Conceptuales](Features-Concept-Maps.es) - Generar diagramas visuales
 
 ---
 

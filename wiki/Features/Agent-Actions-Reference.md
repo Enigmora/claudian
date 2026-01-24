@@ -598,6 +598,6 @@ Destructive actions require confirmation:
 
 ## Related Pages
 
-- [Agent Mode](Agent-Mode) - Overview and usage
-- [Configuration](../Configuration) - Agent settings
-- [Troubleshooting](../Troubleshooting) - Common issues
+- [Agent Mode](Features-Agent-Mode) - Overview and usage
+- [Configuration](Configuration) - Agent settings
+- [Troubleshooting](Troubleshooting) - Common issues

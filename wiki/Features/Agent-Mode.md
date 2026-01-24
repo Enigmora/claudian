@@ -23,7 +23,7 @@ With Agent Mode enabled, you can:
 
 All through simple, conversational requests.
 
-> **See also:** [Agent Actions Reference](Agent-Actions-Reference) for the complete list of 52 available actions.
+> **See also:** [Agent Actions Reference](Features-Agent-Actions-Reference) for the complete list of 52 available actions.
 
 ### Visual Progress
 
@@ -293,12 +293,12 @@ Then:
 2. Verify the file/folder exists
 3. Check for permission issues on your filesystem
 
-See [Troubleshooting](../Troubleshooting) for more solutions.
+See [Troubleshooting](Troubleshooting) for more solutions.
 
 ---
 
 ## Related Features
 
-- [Agent Actions Reference](Agent-Actions-Reference) - Complete action catalog (52 actions)
-- [Chat Interface](Chat-Interface) - Basic chat usage
-- [Configuration](../Configuration) - Agent Mode settings
+- [Agent Actions Reference](Features-Agent-Actions-Reference) - Complete action catalog (52 actions)
+- [Chat Interface](Features-Chat-Interface) - Basic chat usage
+- [Configuration](Configuration) - Agent Mode settings

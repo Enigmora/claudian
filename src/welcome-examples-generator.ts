@@ -46,7 +46,19 @@ export class WelcomeExamplesGenerator {
     '能', '要', '想', '让', '把', '被', '给', '从', '到', '对',
     '笔记', '文件', '文档', '档案',
     // Chinese date/time
-    '天', '周', '月', '年', '今天', '昨天', '明天', '日期'
+    '天', '周', '月', '年', '今天', '昨天', '明天', '日期',
+    // German stop words
+    'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einer', 'eines',
+    'einem', 'einen', 'und', 'oder', 'aber', 'wenn', 'weil', 'dass', 'als',
+    'für', 'mit', 'auf', 'von', 'zu', 'bei', 'nach', 'über', 'unter', 'vor',
+    'durch', 'ohne', 'gegen', 'zwischen', 'ist', 'sind', 'war', 'waren',
+    'wird', 'werden', 'wurde', 'wurden', 'hat', 'haben', 'hatte', 'hatten',
+    'kann', 'können', 'muss', 'müssen', 'soll', 'sollen', 'will', 'wollen',
+    'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr',
+    'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes', 'welcher', 'welche',
+    'notiz', 'notizen', 'datei', 'dateien', 'dokument', 'dokumente',
+    // German date/time
+    'tag', 'woche', 'monat', 'jahr', 'heute', 'gestern', 'morgen', 'datum'
   ]);
 
   constructor(

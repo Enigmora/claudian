@@ -2,10 +2,10 @@
  * Supported locales for Claudian
  * Phase 1: en, es
  * Phase 2: zh
- * Phase 3: de (planned)
+ * Phase 3: de
  * Phase 4: fr, ja (planned)
  */
-export type Locale = 'en' | 'es' | 'zh';
+export type Locale = 'en' | 'es' | 'zh' | 'de';
 
 /**
  * Translation dictionary type

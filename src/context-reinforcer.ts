@@ -103,6 +103,11 @@ export class ContextReinforcer {
       /(?:创建文件|写文件|编写文件)/,
       /(?:我只能|只能够)/,
       /(?:作为[一个]?(?:模型|助手|AI))/,
+      // German
+      /(?:ich kann nicht|ich bin nicht in der lage)/i,
+      /(?:dateien erstellen|dateien schreiben)/i,
+      /(?:ich kann nur|nur in der lage)/i,
+      /(?:als (?:ein )?(?:modell|assistent|ki))/i,
     ];
 
     return confusionPatterns.some(pattern => pattern.test(content));
@@ -199,6 +204,15 @@ export class ContextReinforcer {
       /(?:列[出表]|显示|展示)/,
       /(?:添加|增加|追加)/,
       /(?:文件夹|笔记|文件|档案)/,
+      // German
+      /(?:erstell|generier|mach|anlegen)/i,
+      /(?:verschieb|beweg)/i,
+      /(?:l[öo]sch|entfern)/i,
+      /(?:umbenennen|rename)/i,
+      /(?:such|find)/i,
+      /(?:list|zeig|anzeigen)/i,
+      /(?:f[üu]g|hinzuf[üu]gen|anh[äa]ngen)/i,
+      /(?:ordner|notiz|datei|dokument)/i,
     ];
 
     const matchCount = actionPatterns.filter(p => p.test(message)).length;

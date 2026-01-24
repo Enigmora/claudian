@@ -63,6 +63,21 @@ export class ResponseValidator {
     // Completion claims - Chinese
     { pattern: /(?:完成|已完成|搞定)/, action: 'completed' },
     { pattern: /(?:这是|给你|这里是)/, action: 'present' },
+
+    // German - Creation claims
+    { pattern: /(?:ich habe|habe ich)\s+(?:erstellt|generiert|angelegt)/i, action: 'create' },
+    { pattern: /(?:erstellt|angelegt)\s+(?:die|den|das)?\s*(?:datei|notiz|ordner)/i, action: 'create' },
+    // German - Move claims
+    { pattern: /(?:ich habe|habe ich)\s+(?:verschoben|bewegt)/i, action: 'move' },
+    // German - Delete claims
+    { pattern: /(?:ich habe|habe ich)\s+(?:gel[öo]scht|entfernt)/i, action: 'delete' },
+    // German - Rename claims
+    { pattern: /(?:ich habe|habe ich)\s+umbenannt/i, action: 'rename' },
+    // German - Update claims
+    { pattern: /(?:ich habe|habe ich)\s+(?:aktualisiert|ge[äa]ndert|modifiziert)/i, action: 'update' },
+    // German - Completion claims
+    { pattern: /(?:fertig|erledigt|abgeschlossen|vollendet)/i, action: 'completed' },
+    { pattern: /(?:hier ist|hier sind|das ist)/i, action: 'present' },
   ];
 
   // Patterns indicating confusion about capabilities
@@ -77,6 +92,11 @@ export class ResponseValidator {
     /(?:作为[一个]?(?:模型|助手|AI)|我是[一个]?(?:AI|助手))/,
     /(?:我没有访问权限|无法访问)/,
     /(?:我只能)\s*(?:提供|给|建议)/,
+    // German
+    /(?:ich kann nicht|ich bin nicht in der lage)\s+(?:erstellen|schreiben|generieren)/i,
+    /(?:als\s+(?:ein\s+)?(?:modell|assistent|ki)|ich bin\s+(?:ein\s+)?(?:ki|assistent))/i,
+    /(?:ich habe keinen zugriff|kann nicht zugreifen)/i,
+    /(?:ich kann nur)\s+(?:bereitstellen|geben|vorschlagen)/i,
   ];
 
   /**

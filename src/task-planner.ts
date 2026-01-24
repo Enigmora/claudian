@@ -117,6 +117,28 @@ export class TaskPlanner {
     // With subfolders/subcategories - Chinese
     { pattern: /(?:包含)?\s*(?:子文件夹|子目录)/, weight: 2, description: 'With subfolders (Chinese)' },
     { pattern: /(?:类别|分类|部分|章节)/, weight: 1, description: 'Categories/sections (Chinese)' },
+
+    // German - Multiple items
+    { pattern: /(?:erstell|generier)\s*(\d+|mehrere|viele|einige)/i, weight: 3, description: 'Multiple items (German)' },
+    { pattern: /(?:alle|s[äa]mtliche)\s*(?:dateien|notizen)/i, weight: 4, description: 'All files/notes (German)' },
+    // German - Structure creation
+    { pattern: /(?:struktur|projektstruktur|ordnerstruktur)/i, weight: 3, description: 'Structure creation (German)' },
+    { pattern: /(?:verzeichnisbaum|ordnerbaum)/i, weight: 3, description: 'Folder tree (German)' },
+    // German - Batch operations
+    { pattern: /(?:organisier|sortier|ordnen)\s*(?:alle|s[äa]mtliche)/i, weight: 3, description: 'Batch organization (German)' },
+    { pattern: /(?:verschieb)\s*(?:mehrere|alle|s[äa]mtliche)/i, weight: 3, description: 'Batch move (German)' },
+    // German - Content generation
+    { pattern: /(?:inhalt|[üu]ber|bez[üu]glich)/i, weight: 2, description: 'Content generation (German)' },
+    { pattern: /(?:schreib|generier)\s*(?:einen?)?\s*(?:artikel|aufsatz|dokument)/i, weight: 2, description: 'Document generation (German)' },
+    // German - Lists and series
+    { pattern: /(?:liste|reihe)\s*(?:von)?\s*(?:\d+|mehreren)?\s*(?:dateien|notizen)/i, weight: 2, description: 'List of items (German)' },
+    { pattern: /(?:serie|reihe)\s*(?:von)?\s*(?:notizen|dateien)/i, weight: 3, description: 'Series of files (German)' },
+    // German - Detailed content
+    { pattern: /(?:detailliert|vollst[äa]ndig|umfassend|ausf[üu]hrlich)/i, weight: 2, description: 'Detailed content (German)' },
+    { pattern: /(?:geschichte|biografie)\s*(?:[üu]ber|von)/i, weight: 2, description: 'Historical content (German)' },
+    // German - With subfolders
+    { pattern: /(?:mit)?\s*(?:unterordnern?|unterverzeichnissen?)/i, weight: 2, description: 'With subfolders (German)' },
+    { pattern: /(?:kategorien?|abschnitte?|bereiche?)/i, weight: 1, description: 'Categories/sections (German)' },
   ];
 
   // Patterns to detect multi-file requests with explicit items
@@ -186,6 +208,31 @@ export class TaskPlanner {
         return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
       }
     },
+    // German: "Notizen über..." or "Erstelle Notizen über..."
+    {
+      pattern: /(?:notizen?|dateien?)\s*(?:[üu]ber|bez[üu]glich|zu)\s*(.+)/i,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|\s+und\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    {
+      pattern: /(?:erstell|generier)\s*(?:notizen?)\s*(?:[üu]ber|zu)\s*(.+)/i,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|\s+und\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    // German count-based: "Erstelle 5 Notizen..."
+    {
+      pattern: /(?:erstell|generier)\s*(\d+)\s*(?:notizen?|dateien?)/i,
+      extractor: (match) => {
+        const count = parseInt(match[1], 10);
+        return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
+      }
+    },
   ];
 
   // Action keywords for counting
@@ -202,6 +249,12 @@ export class TaskPlanner {
     /(?:删除|移除|删掉)/g,
     /(?:重命名)/g,
     /(?:写|添加|追加)/g,
+    // German
+    /(?:erstell|generier|mach|anleg)/gi,
+    /(?:verschieb|beweg)/gi,
+    /(?:l[öo]sch|entfern)/gi,
+    /(?:umbenennen)/gi,
+    /(?:schreib|hinzuf[üu]g|anh[äa]ng)/gi,
   ];
 
   constructor(config: Partial<PlanningConfig> = {}) {

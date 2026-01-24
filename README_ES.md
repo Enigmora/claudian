@@ -23,7 +23,8 @@
   <a href="#características">Características</a> •
   <a href="https://github.com/Enigmora/claudian/wiki">Documentación</a> •
   <a href="README.md">English</a> •
-  <a href="README_ZH.md">中文</a>
+  <a href="README_ZH.md">中文</a> •
+  <a href="README_DE.md">Deutsch</a>
 </p>
 
 ---
@@ -74,7 +75,7 @@ Orquestación automática de modelos que enruta cada tarea al modelo óptimo de 
 - Análisis profundo → Opus (máxima calidad)
 
 ### 🌍 Multilingüe
-Soporte completo para **Inglés** y **Español**. Más idiomas próximamente.
+Soporte completo para **Inglés**, **Español**, **Chino** y **Alemán**. Más idiomas próximamente.
 
 ---
 

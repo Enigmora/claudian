@@ -13,7 +13,7 @@ Complete reference for all Claudian settings. Access settings via **Settings > C
 | **Name** | Language |
 | **Description** | Interface language for the plugin |
 | **Default** | Auto (follows Obsidian's language) |
-| **Options** | Auto, English, Spanish |
+| **Options** | Auto, English, Español, 中文, Deutsch, Français, 日本語 |
 
 The plugin automatically detects Obsidian's language setting, or you can manually override it.
 
@@ -184,7 +184,7 @@ Comma-separated list of folder paths. Agent mode will refuse to modify files in 
 |---------|-------------|
 | **Name** | Max actions per message |
 | **Description** | Maximum vault operations per agent response |
-| **Default** | 20 |
+| **Default** | 25 |
 | **Range** | 1 - 50 |
 
 Limits the number of actions Claude can execute in a single response to prevent runaway operations.

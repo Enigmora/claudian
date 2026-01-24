@@ -57,9 +57,10 @@ Una vez publicado en los plugins de la comunidad de Obsidian:
 1. Abre los **Ajustes** de Obsidian
 2. Navega a **Claudian** en la barra lateral izquierda
 3. Pega tu clave API en el campo **Clave API**
-4. Selecciona tu **Modelo** preferido (Claude Sonnet 4 recomendado para uso general)
-
-![Panel de Ajustes](images/settings-panel.png)
+4. Selecciona tu **Modo de Ejecución** preferido:
+   - **Automático** (recomendado) - enruta inteligentemente las tareas a los modelos óptimos
+   - **Económico** - usa Haiku 4.5 para todas las tareas (menor costo)
+   - **Máxima Calidad** - usa Opus 4 para todas las tareas (mayor calidad)
 
 ### 3. Abre el Chat
 

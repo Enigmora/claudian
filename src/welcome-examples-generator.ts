@@ -58,7 +58,21 @@ export class WelcomeExamplesGenerator {
     'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes', 'welcher', 'welche',
     'notiz', 'notizen', 'datei', 'dateien', 'dokument', 'dokumente',
     // German date/time
-    'tag', 'woche', 'monat', 'jahr', 'heute', 'gestern', 'morgen', 'datum'
+    'tag', 'woche', 'monat', 'jahr', 'heute', 'gestern', 'morgen', 'datum',
+    // French stop words
+    'le', 'la', 'les', 'un', 'une', 'des', 'du', 'au', 'aux',
+    'et', 'ou', 'mais', 'donc', 'car', 'ni', 'que', 'qui', 'quoi',
+    'ce', 'cette', 'ces', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes',
+    'son', 'sa', 'ses', 'notre', 'nos', 'votre', 'vos', 'leur', 'leurs',
+    'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'on',
+    'pour', 'avec', 'sans', 'dans', 'sur', 'sous', 'entre', 'vers',
+    'par', 'chez', 'après', 'avant', 'depuis', 'pendant', 'contre',
+    'est', 'sont', 'était', 'étaient', 'sera', 'seront', 'été',
+    'ont', 'avait', 'avaient', 'aura', 'auront',
+    'peut', 'peuvent', 'doit', 'doivent', 'fait', 'font',
+    'note', 'notes', 'fichier', 'fichiers', 'document', 'documents',
+    // French date/time
+    'jour', 'semaine', 'mois', 'année', 'aujourd', 'hier', 'demain', 'date'
   ]);
 
   constructor(

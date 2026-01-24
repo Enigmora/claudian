@@ -78,6 +78,21 @@ export class ResponseValidator {
     // German - Completion claims
     { pattern: /(?:fertig|erledigt|abgeschlossen|vollendet)/i, action: 'completed' },
     { pattern: /(?:hier ist|hier sind|das ist)/i, action: 'present' },
+
+    // French - Creation claims
+    { pattern: /(?:j'ai|je viens de)\s+(?:cr[ée][ée]?|g[ée]n[ée]r[ée]?|fait)/i, action: 'create' },
+    { pattern: /(?:cr[ée][ée]?|g[ée]n[ée]r[ée]?)\s+(?:le|la|les|un|une)?\s*(?:fichier|note|dossier)/i, action: 'create' },
+    // French - Move claims
+    { pattern: /(?:j'ai|je viens de)\s+(?:d[ée]plac[ée]?|boug[ée]?)/i, action: 'move' },
+    // French - Delete claims
+    { pattern: /(?:j'ai|je viens de)\s+(?:supprim[ée]?|effac[ée]?|enlev[ée]?)/i, action: 'delete' },
+    // French - Rename claims
+    { pattern: /(?:j'ai|je viens de)\s+renomm[ée]?/i, action: 'rename' },
+    // French - Update claims
+    { pattern: /(?:j'ai|je viens de)\s+(?:mis [àa] jour|modifi[ée]?|chang[ée]?)/i, action: 'update' },
+    // French - Completion claims
+    { pattern: /(?:termin[ée]|fini|fait|accompli|compl[ée]t[ée])/i, action: 'completed' },
+    { pattern: /(?:voici|voil[àa]|c'est)/i, action: 'present' },
   ];
 
   // Patterns indicating confusion about capabilities
@@ -97,6 +112,11 @@ export class ResponseValidator {
     /(?:als\s+(?:ein\s+)?(?:modell|assistent|ki)|ich bin\s+(?:ein\s+)?(?:ki|assistent))/i,
     /(?:ich habe keinen zugriff|kann nicht zugreifen)/i,
     /(?:ich kann nur)\s+(?:bereitstellen|geben|vorschlagen)/i,
+    // French
+    /(?:je ne peux pas|je suis incapable de)\s+(?:cr[ée]er|[ée]crire|g[ée]n[ée]rer)/i,
+    /(?:en tant qu[e']?\s*(?:mod[èe]le|assistant|ia)|je suis\s+(?:un[e]?\s+)?(?:ia|assistant))/i,
+    /(?:je n'ai pas acc[èe]s|ne peux pas acc[ée]der)/i,
+    /(?:je peux seulement|je ne peux que)\s+(?:fournir|donner|sugg[ée]rer)/i,
   ];
 
   /**

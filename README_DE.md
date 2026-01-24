@@ -24,7 +24,8 @@
   <a href="https://github.com/Enigmora/claudian/wiki">Dokumentation</a> •
   <a href="README.md">English</a> •
   <a href="README_ES.md">Español</a> •
-  <a href="README_ZH.md">中文</a>
+  <a href="README_ZH.md">中文</a> •
+  <a href="README_FR.md">Français</a>
 </p>
 
 ---
@@ -75,7 +76,7 @@ Automatische Modellorchestration leitet jede Aufgabe an das optimale Claude-Mode
 - Tiefe Analyse → Opus (maximale Qualität)
 
 ### 🌍 Mehrsprachig
-Volle Unterstützung für **Englisch**, **Spanisch**, **Chinesisch** und **Deutsch**. Weitere Sprachen folgen bald.
+Volle Unterstützung für **Englisch**, **Spanisch**, **Chinesisch**, **Deutsch** und **Französisch**. Weitere Sprachen folgen bald.
 
 ---
 

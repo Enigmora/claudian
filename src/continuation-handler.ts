@@ -27,7 +27,7 @@ export class ContinuationHandler {
       return false;
     }
 
-    // Common continuation patterns in Spanish, English, Chinese, and German
+    // Common continuation patterns in Spanish, English, Chinese, German, and French
     // NOTE: When adding new locales, add corresponding patterns here
     // See CLAUDE.md "Multilingual regex patterns" section
     const continuationPatterns = [
@@ -65,6 +65,17 @@ export class ContinuationHandler {
       /^fertig$/i,              // "fertig" (done/finish)
       /^ok[,.]?\s*weiter$/i,    // "ok, weiter" (ok continue)
       /^abschlie[ßs]en$/i,      // "abschließen" (complete)
+      // French
+      /^continuer$/i,           // "continuer" (continue)
+      /^continue$/i,            // "continue" (imperative)
+      /^poursuivre$/i,          // "poursuivre" (proceed)
+      /^suivant$/i,             // "suivant" (next)
+      /^plus$/i,                // "plus" (more)
+      /^terminer$/i,            // "terminer" (finish)
+      /^finir$/i,               // "finir" (complete)
+      /^ok[,.]?\s*continue$/i,  // "ok, continue"
+      /^vas-y$/i,               // "vas-y" (go on, informal)
+      /^allez$/i,               // "allez" (go on, formal)
     ];
 
     return continuationPatterns.some(pattern => pattern.test(normalized));

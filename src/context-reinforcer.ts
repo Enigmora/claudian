@@ -108,6 +108,11 @@ export class ContextReinforcer {
       /(?:dateien erstellen|dateien schreiben)/i,
       /(?:ich kann nur|nur in der lage)/i,
       /(?:als (?:ein )?(?:modell|assistent|ki))/i,
+      // French
+      /(?:je ne peux pas|je suis incapable de)/i,
+      /(?:cr[ée]er des fichiers|[ée]crire des fichiers)/i,
+      /(?:je peux seulement|je ne peux que)/i,
+      /(?:en tant qu[e']?\s*(?:mod[èe]le|assistant|ia))/i,
     ];
 
     return confusionPatterns.some(pattern => pattern.test(content));
@@ -213,6 +218,15 @@ export class ContextReinforcer {
       /(?:list|zeig|anzeigen)/i,
       /(?:f[üu]g|hinzuf[üu]gen|anh[äa]ngen)/i,
       /(?:ordner|notiz|datei|dokument)/i,
+      // French
+      /(?:cr[ée]e|cr[ée]er|g[ée]n[èe]re|g[ée]n[ée]rer|fais|faire)/i,
+      /(?:d[ée]place|d[ée]placer|bouge|bouger)/i,
+      /(?:supprime|supprimer|efface|effacer)/i,
+      /(?:renomme|renommer)/i,
+      /(?:cherche|chercher|trouve|trouver)/i,
+      /(?:liste|lister|montre|montrer|affiche|afficher)/i,
+      /(?:ajoute|ajouter|rajoute|rajouter)/i,
+      /(?:dossier|note|fichier|document)/i,
     ];
 
     const matchCount = actionPatterns.filter(p => p.test(message)).length;

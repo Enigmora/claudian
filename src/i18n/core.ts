@@ -8,7 +8,7 @@ let currentLocale: Locale = 'en';
 /**
  * Supported locales
  */
-export const SUPPORTED_LOCALES: readonly Locale[] = ['en', 'es', 'zh', 'de'] as const;
+export const SUPPORTED_LOCALES: readonly Locale[] = ['en', 'es', 'zh', 'de', 'fr'] as const;
 
 /**
  * Default locale
@@ -62,6 +62,8 @@ async function loadTranslations(locale: Locale): Promise<Translations> {
       return (await import('./locales/zh')).default;
     case 'de':
       return (await import('./locales/de')).default;
+    case 'fr':
+      return (await import('./locales/fr')).default;
     case 'en':
     default:
       return (await import('./locales/en')).default;
@@ -95,7 +97,8 @@ export function getSupportedLocales(): Array<{ code: Locale; name: string }> {
     { code: 'en', name: 'English' },
     { code: 'es', name: 'Español' },
     { code: 'zh', name: '中文' },
-    { code: 'de', name: 'Deutsch' }
+    { code: 'de', name: 'Deutsch' },
+    { code: 'fr', name: 'Français' }
   ];
 }
 

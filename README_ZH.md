@@ -24,7 +24,8 @@
   <a href="https://github.com/Enigmora/claudian/wiki">文档</a> •
   <a href="README.md">English</a> •
   <a href="README_ES.md">Español</a> •
-  <a href="README_DE.md">Deutsch</a>
+  <a href="README_DE.md">Deutsch</a> •
+  <a href="README_FR.md">Français</a>
 </p>
 
 ---
@@ -75,7 +76,7 @@ Claudian 将 **Claude AI** 直接带入您的 Obsidian 知识库。在专用侧�
 - 深度分析 → Opus（最高质量）
 
 ### 🌍 多语言支持
-完全支持**英语**、**西班牙语**、**中文**和**德语**。更多语言即将推出。
+完全支持**英语**、**西班牙语**、**中文**、**德语**和**法语**。更多语言即将推出。
 
 ---
 

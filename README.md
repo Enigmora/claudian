@@ -24,7 +24,8 @@
   <a href="https://github.com/Enigmora/claudian/wiki">Documentation</a> •
   <a href="README_ES.md">Español</a> •
   <a href="README_ZH.md">中文</a> •
-  <a href="README_DE.md">Deutsch</a>
+  <a href="README_DE.md">Deutsch</a> •
+  <a href="README_FR.md">Français</a>
 </p>
 
 ---
@@ -75,7 +76,7 @@ Automatic model orchestration routes each task to the optimal Claude model:
 - Deep analysis → Opus (maximum quality)
 
 ### 🌍 Multilingual
-Full support for **English**, **Spanish**, **Chinese**, and **German**. More languages coming soon.
+Full support for **English**, **Spanish**, **Chinese**, **German**, and **French**. More languages coming soon.
 
 ---
 

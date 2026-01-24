@@ -139,6 +139,28 @@ export class TaskPlanner {
     // German - With subfolders
     { pattern: /(?:mit)?\s*(?:unterordnern?|unterverzeichnissen?)/i, weight: 2, description: 'With subfolders (German)' },
     { pattern: /(?:kategorien?|abschnitte?|bereiche?)/i, weight: 1, description: 'Categories/sections (German)' },
+
+    // French - Multiple items
+    { pattern: /(?:cr[ée]e|g[ée]n[èe]re)\s*(\d+|plusieurs|beaucoup|quelques)/i, weight: 3, description: 'Multiple items (French)' },
+    { pattern: /(?:tous?|toutes?)\s*(?:les)?\s*(?:fichiers?|notes?)/i, weight: 4, description: 'All files/notes (French)' },
+    // French - Structure creation
+    { pattern: /(?:structure|arborescence|hi[ée]rarchie)/i, weight: 3, description: 'Structure creation (French)' },
+    { pattern: /(?:arbre\s+de\s+(?:dossiers?|r[ée]pertoires?))/i, weight: 3, description: 'Folder tree (French)' },
+    // French - Batch operations
+    { pattern: /(?:organise|trie|range)\s*(?:tous?|toutes?)/i, weight: 3, description: 'Batch organization (French)' },
+    { pattern: /(?:d[ée]place)\s*(?:plusieurs|tous?|toutes?)/i, weight: 3, description: 'Batch move (French)' },
+    // French - Content generation
+    { pattern: /(?:contenu|[àa] propos de|concernant|sur)/i, weight: 2, description: 'Content generation (French)' },
+    { pattern: /(?:[ée]cris|r[ée]dige|g[ée]n[èe]re)\s*(?:un[e]?)?\s*(?:article|essai|document)/i, weight: 2, description: 'Document generation (French)' },
+    // French - Lists and series
+    { pattern: /(?:liste|s[ée]rie)\s*(?:de)?\s*(?:\d+|plusieurs)?\s*(?:fichiers?|notes?)/i, weight: 2, description: 'List of items (French)' },
+    { pattern: /(?:s[ée]rie)\s*(?:de)?\s*(?:notes?|fichiers?)/i, weight: 3, description: 'Series of files (French)' },
+    // French - Detailed content
+    { pattern: /(?:d[ée]taill[ée]|complet|exhaustif|approfondi)/i, weight: 2, description: 'Detailed content (French)' },
+    { pattern: /(?:histoire|biographie)\s*(?:de|sur|[àa] propos)/i, weight: 2, description: 'Historical content (French)' },
+    // French - With subfolders
+    { pattern: /(?:avec)?\s*(?:sous-dossiers?|sous-r[ée]pertoires?)/i, weight: 2, description: 'With subfolders (French)' },
+    { pattern: /(?:cat[ée]gories?|sections?|parties?)/i, weight: 1, description: 'Categories/sections (French)' },
   ];
 
   // Patterns to detect multi-file requests with explicit items
@@ -233,6 +255,31 @@ export class TaskPlanner {
         return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
       }
     },
+    // French: "Notes sur..." or "Crée des notes sur..."
+    {
+      pattern: /(?:notes?|fichiers?)\s*(?:sur|[àa] propos de|concernant)\s*(.+)/i,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|\s+et\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    {
+      pattern: /(?:cr[ée]e|g[ée]n[èe]re)\s*(?:des\s+)?(?:notes?)\s*(?:sur|concernant)\s*(.+)/i,
+      extractor: (match) => {
+        const content = match[1];
+        const items = content.split(/(?:,\s*|\s+et\s+)/).filter(s => s.trim().length > 1);
+        return items.map(s => s.trim().replace(/[.,;]$/, ''));
+      }
+    },
+    // French count-based: "Crée 5 notes..."
+    {
+      pattern: /(?:cr[ée]e|g[ée]n[èe]re)\s*(\d+)\s*(?:notes?|fichiers?)/i,
+      extractor: (match) => {
+        const count = parseInt(match[1], 10);
+        return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
+      }
+    },
   ];
 
   // Action keywords for counting
@@ -255,6 +302,12 @@ export class TaskPlanner {
     /(?:l[öo]sch|entfern)/gi,
     /(?:umbenennen)/gi,
     /(?:schreib|hinzuf[üu]g|anh[äa]ng)/gi,
+    // French
+    /(?:cr[ée]e|cr[ée]er|g[ée]n[èe]re|g[ée]n[ée]rer|fais|faire)/gi,
+    /(?:d[ée]place|d[ée]placer|bouge|bouger)/gi,
+    /(?:supprime|supprimer|efface|effacer)/gi,
+    /(?:renomme|renommer)/gi,
+    /(?:[ée]cris|[ée]crire|ajoute|ajouter)/gi,
   ];
 
   constructor(config: Partial<PlanningConfig> = {}) {

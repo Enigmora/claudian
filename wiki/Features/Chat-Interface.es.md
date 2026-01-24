@@ -12,7 +12,7 @@ Hay múltiples formas de abrir el panel de chat:
 2. **Paleta de Comandos**: Presiona `Ctrl/Cmd + P` y busca "Abrir chat con Claude"
 3. **Atajo de Teclado**: Asigna un atajo personalizado en los ajustes de Obsidian
 
-![Interfaz de Chat](../images/chat-interface.png)
+![Interfaz de Chat](../images/chat-interface.svg)
 
 ---
 
@@ -34,7 +34,7 @@ El panel de chat consiste en:
 
 Cuando abres el chat sin historial de mensajes, se muestra una pantalla de bienvenida:
 
-![Pantalla de Bienvenida](../images/welcome-screen.png)
+![Pantalla de Bienvenida](../images/welcome-screen.svg)
 
 ### Elementos
 
@@ -120,7 +120,7 @@ Haz clic en **Crear nota** para guardar la respuesta como una nueva nota:
 3. Agrega o elimina tags sugeridos
 4. Haz clic en **Crear** para guardar
 
-![Modal de Creación de Nota](../images/note-creator-modal.png)
+![Modal de Creación de Nota](../images/note-creator-modal.svg)
 
 La nota se creará con:
 - Frontmatter YAML (fecha de creación, tags, fuente)
@@ -167,7 +167,7 @@ El encabezado del chat incluye un toggle de Modo Agente. Cuando está activado:
 
 Consulta [Modo Agente](Agent-Mode.es) para documentación completa.
 
-![Toggle de Modo Agente](../images/agent-mode-toggle.png)
+![Toggle de Modo Agente](../images/agent-mode-toggle.svg)
 
 ---
 

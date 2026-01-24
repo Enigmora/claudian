@@ -12,7 +12,7 @@ There are multiple ways to open the chat panel:
 2. **Command Palette**: Press `Ctrl/Cmd + P` and search for "Open chat with Claude"
 3. **Hotkey**: Assign a custom hotkey in Obsidian settings
 
-![Chat Interface](../images/chat-interface.png)
+![Chat Interface](../images/chat-interface.svg)
 
 ---
 
@@ -34,7 +34,7 @@ The chat panel consists of:
 
 When you open the chat with no message history, a welcome screen is displayed:
 
-![Welcome Screen](../images/welcome-screen.png)
+![Welcome Screen](../images/welcome-screen.svg)
 
 ### Elements
 
@@ -120,7 +120,7 @@ Click **Create note** to save the response as a new note:
 3. Add or remove suggested tags
 4. Click **Create** to save
 
-![Note Creator Modal](../images/note-creator-modal.png)
+![Note Creator Modal](../images/note-creator-modal.svg)
 
 The note will be created with:
 - YAML frontmatter (created date, tags, source)
@@ -167,7 +167,7 @@ The chat header includes an Agent Mode toggle. When enabled:
 
 See [Agent Mode](Agent-Mode) for complete documentation.
 
-![Agent Mode Toggle](../images/agent-mode-toggle.png)
+![Agent Mode Toggle](../images/agent-mode-toggle.svg)
 
 ---
 

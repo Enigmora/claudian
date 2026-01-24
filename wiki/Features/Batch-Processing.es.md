@@ -21,7 +21,7 @@ Con el procesamiento por lotes, puedes:
 2. Busca **"Procesar notas por lotes"**
 3. Selecciona el comando
 
-![Modal de Lotes](../images/batch-modal.png)
+![Modal de Lotes](../images/batch-modal.svg)
 
 ---
 
@@ -138,7 +138,7 @@ Elige una plantilla que coincida con tu objetivo de análisis:
 3. Haz clic en **Procesar**
 4. Espera a que termine
 
-![Progreso del Lote](../images/batch-progress.png)
+![Progreso del Lote](../images/batch-progress.svg)
 
 ### Seguimiento de Progreso
 

@@ -1,0 +1,38 @@
+<svg width="500" height="320" xmlns="http://www.w3.org/2000/svg">
+  <!-- Backdrop -->
+  <rect width="500" height="320" fill="#000" opacity="0.7"/>
+
+  <!-- Modal -->
+  <rect x="50" y="30" width="400" height="260" rx="12" fill="#2d2d2d" stroke="#444" stroke-width="1"/>
+
+  <!-- Warning Icon -->
+  <circle cx="250" cy="70" r="25" fill="#E95D3C" opacity="0.2"/>
+  <text x="242" y="80" font-family="system-ui, sans-serif" font-size="24" fill="#E95D3C">!</text>
+
+  <!-- Header -->
+  <text x="250" y="115" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e0e0e0" text-anchor="middle">Confirm Actions</text>
+
+  <!-- Description -->
+  <text x="250" y="145" font-family="system-ui, sans-serif" font-size="13" fill="#888" text-anchor="middle">The following actions will be executed:</text>
+
+  <!-- Action List -->
+  <rect x="75" y="160" width="350" height="70" rx="6" fill="#1e1e1e"/>
+
+  <!-- Action items -->
+  <circle cx="95" cy="180" r="4" fill="#E95D3C"/>
+  <text x="110" y="185" font-family="system-ui, sans-serif" font-size="12" fill="#e0e0e0">delete-note "old-draft.md"</text>
+
+  <circle cx="95" cy="205" r="4" fill="#E95D3C"/>
+  <text x="110" y="210" font-family="system-ui, sans-serif" font-size="12" fill="#e0e0e0">delete-note "temp-notes.md"</text>
+
+  <!-- Buttons -->
+  <rect x="230" y="245" width="80" height="35" rx="6" fill="#444"/>
+  <text x="253" y="268" font-family="system-ui, sans-serif" font-size="13" fill="#e0e0e0">Cancel</text>
+
+  <rect x="320" y="245" width="80" height="35" rx="6" fill="#E95D3C"/>
+  <text x="340" y="268" font-family="system-ui, sans-serif" font-size="13" fill="white">Confirm</text>
+
+  <!-- Placeholder Label -->
+  <rect x="150" y="5" width="200" height="18" rx="4" fill="#E95D3C" opacity="0.9"/>
+  <text x="170" y="16" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="white">PLACEHOLDER - Replace with screenshot</text>
+</svg>

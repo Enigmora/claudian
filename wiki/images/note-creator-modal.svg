@@ -1,0 +1,42 @@
+<svg width="500" height="350" xmlns="http://www.w3.org/2000/svg">
+  <!-- Backdrop -->
+  <rect width="500" height="350" fill="#000" opacity="0.7"/>
+
+  <!-- Modal -->
+  <rect x="50" y="40" width="400" height="270" rx="12" fill="#2d2d2d" stroke="#444" stroke-width="1"/>
+
+  <!-- Header -->
+  <text x="75" y="75" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#e0e0e0">Create Note</text>
+
+  <!-- Close button -->
+  <circle cx="420" cy="65" r="12" fill="#444"/>
+  <text x="415" y="70" font-family="system-ui, sans-serif" font-size="16" fill="#888">×</text>
+
+  <!-- Title Field -->
+  <text x="75" y="110" font-family="system-ui, sans-serif" font-size="13" fill="#888">Title</text>
+  <rect x="75" y="120" width="350" height="35" rx="6" fill="#1e1e1e" stroke="#444" stroke-width="1"/>
+  <text x="90" y="143" font-family="system-ui, sans-serif" font-size="13" fill="#e0e0e0">Meeting Notes - January 2025</text>
+
+  <!-- Tags Field -->
+  <text x="75" y="180" font-family="system-ui, sans-serif" font-size="13" fill="#888">Tags</text>
+  <rect x="75" y="190" width="350" height="35" rx="6" fill="#1e1e1e" stroke="#444" stroke-width="1"/>
+
+  <!-- Tag chips -->
+  <rect x="85" y="198" width="60" height="20" rx="10" fill="#7F52FF"/>
+  <text x="95" y="212" font-family="system-ui, sans-serif" font-size="11" fill="white">meeting</text>
+  <rect x="155" y="198" width="50" height="20" rx="10" fill="#7F52FF"/>
+  <text x="165" y="212" font-family="system-ui, sans-serif" font-size="11" fill="white">work</text>
+  <rect x="215" y="198" width="55" height="20" rx="10" fill="#7F52FF"/>
+  <text x="225" y="212" font-family="system-ui, sans-serif" font-size="11" fill="white">2025</text>
+
+  <!-- Buttons -->
+  <rect x="270" y="250" width="70" height="35" rx="6" fill="#444"/>
+  <text x="288" y="273" font-family="system-ui, sans-serif" font-size="13" fill="#e0e0e0">Cancel</text>
+
+  <rect x="350" y="250" width="70" height="35" rx="6" fill="#7F52FF"/>
+  <text x="370" y="273" font-family="system-ui, sans-serif" font-size="13" fill="white">Create</text>
+
+  <!-- Placeholder Label -->
+  <rect x="150" y="5" width="200" height="20" rx="4" fill="#E95D3C" opacity="0.9"/>
+  <text x="170" y="18" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="white">PLACEHOLDER - Replace with screenshot</text>
+</svg>

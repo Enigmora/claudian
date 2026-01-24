@@ -75,7 +75,7 @@ Una vez publicado en los plugins de la comunidad de Obsidian:
 2. Presiona `Enter` o haz clic en **Enviar**
 3. Observa la respuesta de Claude aparecer en tiempo real con streaming
 
-![Interfaz de Chat](images/chat-interface.png)
+![Interfaz de Chat](images/chat-interface.svg)
 
 ### Crear una Nota desde una Respuesta
 

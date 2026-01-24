@@ -1,0 +1,21 @@
+<svg width="400" height="80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="80" fill="#2d2d2d" rx="8"/>
+
+  <!-- Header bar simulation -->
+  <text x="20" y="45" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#e0e0e0">Claudian Chat</text>
+
+  <!-- Agent Mode Toggle - Active State -->
+  <rect x="240" y="28" width="50" height="24" rx="12" fill="#7F52FF"/>
+  <circle cx="278" cy="40" r="10" fill="white"/>
+
+  <!-- Label -->
+  <text x="300" y="45" font-family="system-ui, sans-serif" font-size="13" fill="#7F52FF" font-weight="500">Agent Mode</text>
+
+  <!-- Indicator dot -->
+  <circle cx="230" cy="40" r="5" fill="#4ade80"/>
+
+  <!-- Placeholder Label -->
+  <rect x="100" y="5" width="200" height="18" rx="4" fill="#E95D3C" opacity="0.9"/>
+  <text x="120" y="16" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="white">PLACEHOLDER - Replace with screenshot</text>
+</svg>

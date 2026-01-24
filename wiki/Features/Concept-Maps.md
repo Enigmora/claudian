@@ -65,7 +65,7 @@ Topics that appear across multiple notes.
 
 A visual graph rendered in Obsidian:
 
-![Concept Map Result](../images/concept-map-result.png)
+![Concept Map Result](../images/concept-map-result.svg)
 
 ---
 
@@ -90,7 +90,7 @@ graph TD
 | Arrows | Relationships |
 | Labels on arrows | Relationship type |
 
-![Mermaid Diagram](../images/concept-map-mermaid.png)
+![Mermaid Diagram](../images/concept-map-mermaid.svg)
 
 ---
 

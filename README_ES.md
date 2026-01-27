@@ -7,6 +7,9 @@
 </p>
 
 <p align="center">
+  <a href="https://enigmora.com">
+    <img src="https://img.shields.io/badge/by-Enigmora-purple.svg?style=flat-square" alt="by Enigmora">
+  </a>
   <a href="https://obsidian.md">
     <img src="https://img.shields.io/badge/Obsidian-Plugin-7C3AED?style=flat-square&logo=obsidian&logoColor=white" alt="Obsidian Plugin">
   </a>

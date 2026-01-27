@@ -1,7 +1,7 @@
 # Claudian
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Enigmora/claudian/main/logo-2.svg" alt="Claudian by Enigmora SC" width="400">
+  <img src="https://raw.githubusercontent.com/Enigmora/claudian/main/assets/logo-2.svg" alt="Claudian by Enigmora SC" width="400">
 </p>
 
 <p align="center">

@@ -249,6 +249,9 @@ export class ChatView extends ItemView {
   private resetButtonToSend(force: boolean = false): void {
     this.isStreaming = false;
 
+    // Always hide processing status - actions are done even if loop continues
+    this.streamingUI.hideProcessingStatus(this.processingOverlay, this.inputEl);
+
     // Don't reset to Send if agentic loop is still active (unless forced)
     if (this.agentLoopManager.isActive() && !force) {
       // Keep button in Stop mode while loop is active
@@ -257,9 +260,6 @@ export class ChatView extends ItemView {
       this.sendButton.disabled = false;
       return;
     }
-
-    // Hide processing status when fully done
-    this.streamingUI.hideProcessingStatus(this.processingOverlay, this.inputEl);
 
     this.sendButton.setText(t('chat.send'));
     this.sendButton.removeClass('is-stop');
@@ -632,7 +632,11 @@ export class ChatView extends ItemView {
           cls: 'claudian-error'
         });
 
+        // Show visible notice so user knows something went wrong
+        new Notice(t('chat.error', { message: error.message }), 5000);
+
         this.resetButtonToSend();
+        this.scrollToBottom();
       }
     }, selectedModel);
   }
@@ -812,10 +816,14 @@ export class ChatView extends ItemView {
           cls: 'claudian-error'
         });
 
+        // Show visible notice so user knows something went wrong
+        new Notice(t('chat.error', { message: error.message }), 5000);
+
         this.robustnessHandler.resetCounters();
         this.currentPlan = null;
 
         this.resetButtonToSend();
+        this.scrollToBottom();
       }
     }, selectedModel);
   }
@@ -1066,8 +1074,11 @@ export class ChatView extends ItemView {
             text: t('chat.error', { message: error.message }),
             cls: 'claudian-error'
           });
+          // Show visible notice so user knows something went wrong
+          new Notice(t('chat.error', { message: error.message }), 5000);
         }
         this.resetButtonToSend();
+        this.scrollToBottom();
       }
     }, selectedModel);
   }

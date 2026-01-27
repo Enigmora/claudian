@@ -7,18 +7,10 @@
 </p>
 
 <p align="center">
-  <a href="https://enigmora.com">
-    <img src="https://img.shields.io/badge/by-Enigmora-purple.svg?style=flat-square" alt="by Enigmora">
-  </a>
-  <a href="https://obsidian.md">
-    <img src="https://img.shields.io/badge/Obsidian-Plugin-7C3AED?style=flat-square&logo=obsidian&logoColor=white" alt="Obsidian Plugin">
-  </a>
-  <a href="https://anthropic.com">
-    <img src="https://img.shields.io/badge/Powered%20by-Claude-FF6B35?style=flat-square" alt="Powered by Claude">
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/Lizenz-MIT-green?style=flat-square" alt="MIT Lizenz">
-  </a>
+  <a href="https://enigmora.com"><img src="https://img.shields.io/badge/by-Enigmora-purple.svg?style=flat-square" alt="by Enigmora"></a>
+  <a href="https://obsidian.md"><img src="https://img.shields.io/badge/Obsidian-Plugin-7C3AED?style=flat-square&logo=obsidian&logoColor=white" alt="Obsidian Plugin"></a>
+  <a href="https://anthropic.com"><img src="https://img.shields.io/badge/Powered%20by-Claude-FF6B35?style=flat-square" alt="Powered by Claude"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Lizenz-MIT-green?style=flat-square" alt="MIT Lizenz"></a>
 </p>
 
 <p align="center">

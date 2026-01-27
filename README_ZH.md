@@ -7,18 +7,10 @@
 </p>
 
 <p align="center">
-  <a href="https://enigmora.com">
-    <img src="https://img.shields.io/badge/by-Enigmora-purple.svg?style=flat-square" alt="by Enigmora">
-  </a>
-  <a href="https://obsidian.md">
-    <img src="https://img.shields.io/badge/Obsidian-插件-7C3AED?style=flat-square&logo=obsidian&logoColor=white" alt="Obsidian 插件">
-  </a>
-  <a href="https://anthropic.com">
-    <img src="https://img.shields.io/badge/由Claude驱动-FF6B35?style=flat-square" alt="由 Claude 驱动">
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/许可证-MIT-green?style=flat-square" alt="MIT 许可证">
-  </a>
+  <a href="https://enigmora.com"><img src="https://img.shields.io/badge/by-Enigmora-purple.svg?style=flat-square" alt="by Enigmora"></a>
+  <a href="https://obsidian.md"><img src="https://img.shields.io/badge/Obsidian-插件-7C3AED?style=flat-square&logo=obsidian&logoColor=white" alt="Obsidian 插件"></a>
+  <a href="https://anthropic.com"><img src="https://img.shields.io/badge/由Claude驱动-FF6B35?style=flat-square" alt="由 Claude 驱动"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green?style=flat-square" alt="MIT 许可证"></a>
 </p>
 
 <p align="center">

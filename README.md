@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/logo-banner.png" alt="Claudian" width="600">
+  <img src="assets/logo-2.svg" alt="Claudian" width="400">
 </p>
 
 <p align="center">
@@ -140,7 +140,7 @@ npm run dev
 ---
 
 <p align="center">
-  <img src="logo.svg" alt="Claudian" width="48">
+  <img src="assets/logo.svg" alt="Claudian" width="48">
 </p>
 
 <p align="center">

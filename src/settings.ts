@@ -159,10 +159,11 @@ export class ClaudianSettingTab extends PluginSettingTab {
     // Build description with clickable link
     const apiKeyDescEl = apiKeySetting.descEl;
     apiKeyDescEl.createSpan({ text: t('settings.apiKey.descPart1') });
+    const anthropicDomain = 'console.anthropic.com';
     const consoleLink = apiKeyDescEl.createEl('a', {
-      text: 'console.anthropic.com',
       href: 'https://console.anthropic.com'
     });
+    consoleLink.textContent = anthropicDomain;
     consoleLink.setAttr('target', '_blank');
     apiKeyDescEl.createSpan({ text: t('settings.apiKey.descPart2') });
 
@@ -482,10 +483,11 @@ export class ClaudianSettingTab extends PluginSettingTab {
     });
     licenseLine.createSpan({ text: `${t('settings.footer.license')} · ` });
     licenseLine.createSpan({ text: `${t('settings.footer.developedBy')} ` });
+    const companyName = 'Enigmora SC';
     const enigmoraLink = licenseLine.createEl('a', {
-      text: 'Enigmora SC',
       href: 'https://enigmora.com'
     });
+    enigmoraLink.textContent = companyName;
     enigmoraLink.setAttr('target', '_blank');
 
     // Source code line

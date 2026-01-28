@@ -181,7 +181,7 @@ export class ChatView extends ItemView {
     this.messagesContainer = container.createDiv({ cls: 'claudian-messages' });
 
     // Restore history if exists
-    await this.restoreHistory();
+    this.restoreHistory();
 
     // Input wrapper container (for resize)
     const inputWrapper = container.createDiv({ cls: 'claudian-input-wrapper' });

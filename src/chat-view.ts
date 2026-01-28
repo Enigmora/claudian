@@ -284,7 +284,7 @@ export class ChatView extends ItemView {
     this.sendButton.disabled = false;
   }
 
-  async onClose(): Promise<void> {
+  onClose(): void {
     // Cleanup token tracking subscription
     this.tokenTrackingUI.cleanup();
 

@@ -4,7 +4,7 @@
  */
 
 import { App, Modal } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { t } from './i18n';
 import type { TokenStats, ModelStats } from './token-tracker';
 import { MODELS } from './model-orchestrator';
@@ -16,9 +16,9 @@ interface HistoryItem {
 }
 
 export class TokenHistoryModal extends Modal {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
 
-  constructor(app: App, plugin: ClaudeCompanionPlugin) {
+  constructor(app: App, plugin: ClaudianPlugin) {
     super(app);
     this.plugin = plugin;
   }

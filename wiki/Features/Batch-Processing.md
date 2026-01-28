@@ -21,7 +21,7 @@ With batch processing, you can:
 2. Search for **"Batch process notes"**
 3. Select the command
 
-![Batch Modal](../images/batch-modal.svg)
+![Batch Modal](../images/batch-modal.png)
 
 ---
 
@@ -138,7 +138,7 @@ Choose a template that matches your analysis goal:
 3. Click **Process**
 4. Wait for completion
 
-![Batch Progress](../images/batch-progress.svg)
+![Batch Progress](../images/batch-progress.png)
 
 ### Progress Tracking
 

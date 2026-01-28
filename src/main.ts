@@ -10,7 +10,7 @@ const CLAUDIAN_ICON = `<svg viewBox="0 0 300 300" fill="none" xmlns="http://www.
         fill="currentColor"/>
 </svg>`;
 
-import { ClaudeCompanionSettings, ClaudeCompanionSettingTab, DEFAULT_SETTINGS } from './settings';
+import { ClaudianSettings, ClaudianSettingTab, DEFAULT_SETTINGS } from './settings';
 import { ChatView, VIEW_TYPE_CHAT } from './chat-view';
 import { VaultIndexer } from './vault-indexer';
 import { ClaudeClient } from './claude-client';
@@ -28,8 +28,8 @@ import { PurgeManager } from './purge-strategies';
 // Phase 5: Token Tracking
 import { TokenUsageTracker, TokenUsageHistory, createEmptyHistory } from './token-tracker';
 
-export default class ClaudeCompanionPlugin extends Plugin {
-  settings: ClaudeCompanionSettings;
+export default class ClaudianPlugin extends Plugin {
+  settings: ClaudianSettings;
   indexer: VaultIndexer;
   claudeClient: ClaudeClient;
   noteProcessor: NoteProcessor;
@@ -166,7 +166,7 @@ export default class ClaudeCompanionPlugin extends Plugin {
     });
 
     // Add settings tab
-    this.addSettingTab(new ClaudeCompanionSettingTab(this.app, this));
+    this.addSettingTab(new ClaudianSettingTab(this.app, this));
   }
 
   private async processActiveNote(file: TFile): Promise<void> {

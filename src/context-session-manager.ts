@@ -7,7 +7,7 @@
 
 import { t } from './i18n';
 import { logger } from './logger';
-import type ClaudeCompanionPlugin from './main';
+import type ClaudianPlugin from './main';
 import type { ClaudeClient, Message } from './claude-client';
 
 /**
@@ -15,7 +15,7 @@ import type { ClaudeClient, Message } from './claude-client';
  */
 export class ContextSessionManager {
   constructor(
-    private plugin: ClaudeCompanionPlugin,
+    private plugin: ClaudianPlugin,
     private client: ClaudeClient
   ) {}
 

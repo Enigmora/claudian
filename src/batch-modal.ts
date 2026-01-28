@@ -1,5 +1,5 @@
 import { Modal, TFile, TFolder, Notice, setIcon } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { ExtractionTemplate, getAllTemplates } from './extraction-templates';
 import { BatchProcessor, BatchProgress } from './batch-processor';
 import { ConceptMapGenerator } from './concept-map-generator';
@@ -8,7 +8,7 @@ import { t } from './i18n';
 type BatchMode = 'extraction' | 'concept-map';
 
 export class BatchModal extends Modal {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private batchProcessor: BatchProcessor;
   private conceptMapGenerator: ConceptMapGenerator;
   private mode: BatchMode;
@@ -23,7 +23,7 @@ export class BatchModal extends Modal {
   private actionsContainer: HTMLElement;
 
   constructor(
-    plugin: ClaudeCompanionPlugin,
+    plugin: ClaudianPlugin,
     batchProcessor: BatchProcessor,
     conceptMapGenerator: ConceptMapGenerator,
     mode: BatchMode = 'extraction'

@@ -1,16 +1,16 @@
 import { Modal, setIcon } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { VaultAction } from './vault-actions';
 import { t } from './i18n';
 
 export class ConfirmationModal extends Modal {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private actions: VaultAction[];
   private onConfirm: () => void;
   private onCancel: () => void;
 
   constructor(
-    plugin: ClaudeCompanionPlugin,
+    plugin: ClaudianPlugin,
     actions: VaultAction[],
     onConfirm: () => void,
     onCancel: () => void

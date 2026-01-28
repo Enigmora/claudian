@@ -1,5 +1,5 @@
 import { TFile, Notice } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { ClaudeClient } from './claude-client';
 import { ExtractionTemplate, TemplateResult, buildTemplatePrompt } from './extraction-templates';
 
@@ -21,11 +21,11 @@ export interface BatchCallbacks {
 }
 
 export class BatchProcessor {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private claudeClient: ClaudeClient;
   private isCancelled: boolean = false;
 
-  constructor(plugin: ClaudeCompanionPlugin, claudeClient: ClaudeClient) {
+  constructor(plugin: ClaudianPlugin, claudeClient: ClaudeClient) {
     this.plugin = plugin;
     this.claudeClient = claudeClient;
   }

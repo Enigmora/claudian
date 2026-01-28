@@ -1,5 +1,5 @@
 import { TFile, MetadataCache, Vault, Events } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 
 export interface NoteMetadata {
   title: string;
@@ -14,13 +14,13 @@ export interface VaultContext {
 }
 
 export class VaultIndexer {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private vault: Vault;
   private metadataCache: MetadataCache;
   private noteIndex: Map<string, NoteMetadata> = new Map();
   private allTags: Set<string> = new Set();
 
-  constructor(plugin: ClaudeCompanionPlugin) {
+  constructor(plugin: ClaudianPlugin) {
     this.plugin = plugin;
     this.vault = plugin.app.vault;
     this.metadataCache = plugin.app.metadataCache;

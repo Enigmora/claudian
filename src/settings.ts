@@ -1,11 +1,11 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { t, getSupportedLocales, setLocale, resolveLocale } from './i18n';
 import type { Locale } from './i18n';
 import { VIEW_TYPE_CHAT, ChatView } from './chat-view';
 import { ExecutionMode, EXECUTION_MODES, MODELS } from './model-orchestrator';
 
-export interface ClaudeCompanionSettings {
+export interface ClaudianSettings {
   language: 'auto' | Locale;
   apiKey: string;
   model: string;  // Deprecated: kept for migration
@@ -32,7 +32,7 @@ export interface ClaudeCompanionSettings {
   maxActiveContextMessages: number;
 }
 
-export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
+export const DEFAULT_SETTINGS: ClaudianSettings = {
   language: 'auto',
   apiKey: '',
   model: 'claude-sonnet-4-20250514',  // Deprecated: kept for migration
@@ -59,10 +59,10 @@ export const DEFAULT_SETTINGS: ClaudeCompanionSettings = {
   maxActiveContextMessages: 50
 };
 
-export class ClaudeCompanionSettingTab extends PluginSettingTab {
-  plugin: ClaudeCompanionPlugin;
+export class ClaudianSettingTab extends PluginSettingTab {
+  plugin: ClaudianPlugin;
 
-  constructor(app: App, plugin: ClaudeCompanionPlugin) {
+  constructor(app: App, plugin: ClaudianPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }

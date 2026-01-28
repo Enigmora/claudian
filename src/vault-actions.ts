@@ -1,5 +1,5 @@
 import { TFile, TFolder, TAbstractFile, Notice, MarkdownView, Editor, ItemView } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { t } from './i18n';
 import { logger } from './logger';
 
@@ -53,9 +53,9 @@ export interface ActionProgress {
 export type ProgressCallback = (progress: ActionProgress) => void;
 
 export class VaultActionExecutor {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
 
-  constructor(plugin: ClaudeCompanionPlugin) {
+  constructor(plugin: ClaudianPlugin) {
     this.plugin = plugin;
   }
 

@@ -1,11 +1,11 @@
 import { Modal, TFile, Setting } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { NoteProcessor, ValidatedSuggestions, ValidatedWikilink } from './note-processor';
 import { AtomicConcept } from './claude-client';
 import { t } from './i18n';
 
 export class SuggestionsModal extends Modal {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private processor: NoteProcessor;
   private suggestions: ValidatedSuggestions;
   private file: TFile;
@@ -13,7 +13,7 @@ export class SuggestionsModal extends Modal {
   private selectedWikilinks: Set<number> = new Set();
 
   constructor(
-    plugin: ClaudeCompanionPlugin,
+    plugin: ClaudianPlugin,
     processor: NoteProcessor,
     suggestions: ValidatedSuggestions,
     file: TFile

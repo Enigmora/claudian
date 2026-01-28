@@ -1,5 +1,5 @@
 import { TFile, Notice } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { ClaudeClient } from './claude-client';
 import { VaultIndexer } from './vault-indexer';
 import { t } from './i18n';
@@ -35,11 +35,11 @@ export interface ConceptMapCallbacks {
 }
 
 export class ConceptMapGenerator {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private claudeClient: ClaudeClient;
   private indexer: VaultIndexer;
 
-  constructor(plugin: ClaudeCompanionPlugin, claudeClient: ClaudeClient, indexer: VaultIndexer) {
+  constructor(plugin: ClaudianPlugin, claudeClient: ClaudeClient, indexer: VaultIndexer) {
     this.plugin = plugin;
     this.claudeClient = claudeClient;
     this.indexer = indexer;
@@ -249,7 +249,7 @@ NOTAS A ANALIZAR:
       content += '```\n\n';
     }
 
-    content += `---\n*Generado con Claude Companion by Enigmora - ${map.generatedAt.split('T')[0]}*\n`;
+    content += `---\n*Generado con Claudian by Enigmora - ${map.generatedAt.split('T')[0]}*\n`;
 
     return content;
   }

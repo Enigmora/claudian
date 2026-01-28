@@ -7,7 +7,7 @@
 
 import { App } from 'obsidian';
 import { t } from './i18n';
-import type ClaudeCompanionPlugin from './main';
+import type ClaudianPlugin from './main';
 import type { TokenUsage, SessionTokenStats } from './token-tracker';
 
 /**
@@ -20,7 +20,7 @@ export class TokenTrackingUI {
 
   constructor(
     private app: App,
-    private plugin: ClaudeCompanionPlugin,
+    private plugin: ClaudianPlugin,
     private containerEl: HTMLElement
   ) {}
 

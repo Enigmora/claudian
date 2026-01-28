@@ -1,5 +1,5 @@
 import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice, setIcon } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { ClaudeClient, Message } from './claude-client';
 import { NoteCreatorModal } from './note-creator';
 import { AgentMode, AgentResponse } from './agent-mode';
@@ -30,7 +30,7 @@ import { WelcomeExamplesGenerator } from './welcome-examples-generator';
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
 export class ChatView extends ItemView {
-  plugin: ClaudeCompanionPlugin;
+  plugin: ClaudianPlugin;
   client: ClaudeClient;
 
   private messagesContainer: HTMLElement;
@@ -71,7 +71,7 @@ export class ChatView extends ItemView {
   // Processing status overlay (replaces input during processing)
   private processingOverlay: HTMLElement | null = null;
 
-  constructor(leaf: WorkspaceLeaf, plugin: ClaudeCompanionPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: ClaudianPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.client = new ClaudeClient(plugin.settings);

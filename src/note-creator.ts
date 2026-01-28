@@ -1,18 +1,18 @@
 import { App, Modal, Setting, Notice, TFolder } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { generateNoteContent, extractSuggestedTags, suggestTitle } from './templates/default';
 import { t } from './i18n';
 import { logger } from './logger';
 
 export class NoteCreatorModal extends Modal {
-  plugin: ClaudeCompanionPlugin;
+  plugin: ClaudianPlugin;
   content: string;
 
   private title: string;
   private tags: string;
   private folder: string;
 
-  constructor(app: App, plugin: ClaudeCompanionPlugin, content: string) {
+  constructor(app: App, plugin: ClaudianPlugin, content: string) {
     super(app);
     this.plugin = plugin;
     this.content = content;

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { ClaudeCompanionSettings } from './settings';
+import { ClaudianSettings } from './settings';
 import { VaultContext } from './vault-indexer';
 import { ExtractionTemplate } from './extraction-templates';
 import { t } from './i18n';
@@ -42,7 +42,7 @@ export interface NoteSuggestions {
 
 export class ClaudeClient {
   private client: Anthropic | null = null;
-  private settings: ClaudeCompanionSettings;
+  private settings: ClaudianSettings;
   private conversationHistory: Message[] = [];
   private currentStream: ReturnType<Anthropic['messages']['stream']> | null = null;
   private abortController: AbortController | null = null;
@@ -51,7 +51,7 @@ export class ClaudeClient {
   private contextManager: ContextManager | null = null;
   private contextManagementEnabled: boolean = false;
 
-  constructor(settings: ClaudeCompanionSettings) {
+  constructor(settings: ClaudianSettings) {
     this.settings = settings;
     this.initClient();
   }
@@ -112,7 +112,7 @@ export class ClaudeClient {
     }
   }
 
-  updateSettings(settings: ClaudeCompanionSettings): void {
+  updateSettings(settings: ClaudianSettings): void {
     this.settings = settings;
     this.initClient();
   }

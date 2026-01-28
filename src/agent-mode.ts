@@ -1,5 +1,5 @@
 import { Notice } from 'obsidian';
-import ClaudeCompanionPlugin from './main';
+import ClaudianPlugin from './main';
 import { VaultActionExecutor, VaultAction, ActionResult, ProgressCallback } from './vault-actions';
 import { VaultIndexer } from './vault-indexer';
 import { t } from './i18n';
@@ -22,12 +22,12 @@ export interface AgentExecutionResult {
 }
 
 export class AgentMode {
-  private plugin: ClaudeCompanionPlugin;
+  private plugin: ClaudianPlugin;
   private executor: VaultActionExecutor;
   private indexer: VaultIndexer;
 
   constructor(
-    plugin: ClaudeCompanionPlugin,
+    plugin: ClaudianPlugin,
     executor: VaultActionExecutor,
     indexer: VaultIndexer
   ) {

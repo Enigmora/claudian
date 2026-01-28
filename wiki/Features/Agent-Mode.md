@@ -37,7 +37,7 @@ When Agent Mode executes actions, you'll see real-time progress indicators showi
 
 Click the agent mode toggle in the chat header to enable/disable:
 
-![Agent Mode Toggle](../images/agent-mode-toggle.svg)
+![Agent Mode Toggle](../images/agent-mode-toggle.png)
 
 ### Default Setting
 
@@ -150,7 +150,7 @@ When you explicitly request to **translate**, **summarize**, **rewrite**, or **t
 
 Destructive actions require your confirmation before executing:
 
-![Confirmation Modal](../images/confirmation-modal.svg)
+![Confirmation Modal](../images/confirmation-modal.png)
 
 ### Actions Requiring Confirmation
 

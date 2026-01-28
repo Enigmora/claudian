@@ -10,7 +10,7 @@ import { t } from './i18n';
 import type { ClaudeClient } from './claude-client';
 import type { AgentMode, AgentResponse } from './agent-mode';
 import type { ContextManager } from './context-manager';
-import type { ClaudeCompanionSettings } from './settings';
+import type { ClaudianSettings } from './settings';
 import type { TokenUsage } from './token-tracker';
 import type { ModelId, RouteResult } from './model-orchestrator';
 import type { StreamingUIManager } from './streaming-ui-manager';
@@ -44,7 +44,7 @@ export class RobustnessHandler {
     private client: ClaudeClient,
     private agentMode: AgentMode,
     private getContextManager: () => ContextManager | null,
-    private settings: ClaudeCompanionSettings
+    private settings: ClaudianSettings
   ) {}
 
   /**

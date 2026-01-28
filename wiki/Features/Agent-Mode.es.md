@@ -37,7 +37,7 @@ Cuando el Modo Agente ejecuta acciones, verás indicadores de progreso en tiempo
 
 Haz clic en el toggle de modo agente en el encabezado del chat para activar/desactivar:
 
-![Toggle de Modo Agente](../images/agent-mode-toggle.svg)
+![Toggle de Modo Agente](../images/agent-mode-toggle.png)
 
 ### Ajuste por Defecto
 
@@ -150,7 +150,7 @@ Cuando solicitas explícitamente **traducir**, **resumir**, **reescribir** o **t
 
 Las acciones destructivas requieren tu confirmación antes de ejecutarse:
 
-![Modal de Confirmación](../images/confirmation-modal.svg)
+![Modal de Confirmación](../images/confirmation-modal.png)
 
 ### Acciones que Requieren Confirmación
 

@@ -65,7 +65,7 @@ Temas que aparecen en múltiples notas.
 
 Un grafo visual renderizado en Obsidian:
 
-![Resultado del Mapa Conceptual](../images/concept-map-result.svg)
+![Resultado del Mapa Conceptual](../images/concept-map-result.png)
 
 ---
 
@@ -90,7 +90,7 @@ graph TD
 | Flechas | Relaciones |
 | Etiquetas en flechas | Tipo de relación |
 
-![Diagrama Mermaid](../images/concept-map-mermaid.svg)
+![Diagrama Mermaid](../images/concept-map-mermaid.png)
 
 ---
 

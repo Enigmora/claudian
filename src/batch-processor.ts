@@ -1,4 +1,4 @@
-import { TFile, Notice } from 'obsidian';
+import { TFile } from 'obsidian';
 import ClaudianPlugin from './main';
 import { ClaudeClient } from './claude-client';
 import { ExtractionTemplate, TemplateResult, buildTemplatePrompt } from './extraction-templates';
@@ -87,15 +87,15 @@ export class BatchProcessor {
     const prompt = buildTemplatePrompt(template, content, file.basename);
 
     return new Promise((resolve, reject) => {
-      let fullResponse = '';
+      let _fullResponse = '';
 
-      this.claudeClient.processWithTemplate(
+      void this.claudeClient.processWithTemplate(
         prompt,
         template,
         {
           onStart: () => {},
           onToken: (token) => {
-            fullResponse += token;
+            _fullResponse += token;
           },
           onComplete: (response) => {
             resolve({

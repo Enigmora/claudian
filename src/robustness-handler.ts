@@ -8,12 +8,11 @@
 import { MarkdownRenderer, App, Component } from 'obsidian';
 import { t } from './i18n';
 import type { ClaudeClient } from './claude-client';
-import type { AgentMode, AgentResponse } from './agent-mode';
+import type { AgentMode } from './agent-mode';
 import type { ContextManager } from './context-manager';
 import type { ClaudianSettings } from './settings';
 import type { TokenUsage } from './token-tracker';
-import type { ModelId, RouteResult } from './model-orchestrator';
-import type { StreamingUIManager } from './streaming-ui-manager';
+import type { RouteResult } from './model-orchestrator';
 import { TruncationDetector, TruncationDetectionResult } from './truncation-detector';
 import { ResponseValidator, ValidationResult } from './response-validator';
 

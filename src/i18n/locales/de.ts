@@ -51,7 +51,7 @@ const translations: Translations = {
   'settings.confirmDestructive.desc': 'Bestätigung anfordern, bevor Dateien gelöscht oder Inhalte ersetzt werden.',
   'settings.protectedFolders.name': 'Geschützte Ordner',
   'settings.protectedFolders.desc': 'Ordner, die der Agent nicht ändern kann (kommagetrennt).',
-  'settings.protectedFolders.placeholder': '.obsidian, templates',
+  'settings.protectedFolders.placeholder': 'templates, privat',
   'settings.maxActions.name': 'Max. Aktionen pro Nachricht',
   'settings.maxActions.desc': 'Limit der Aktionen, die Claude in einer einzelnen Nachricht ausführen kann (1-20).',
   'settings.footer.license': 'Lizenziert unter MIT-Lizenz',

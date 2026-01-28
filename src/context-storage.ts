@@ -100,7 +100,7 @@ export class ContextStorage {
         const content = await adapter.read(indexPath);
         this.index = JSON.parse(content);
       }
-    } catch (error) {
+    } catch {
       logger.warn(' Could not load temp index, creating new one');
       this.index = { version: 1, files: [], lastPurge: Date.now() };
     }
@@ -124,7 +124,7 @@ export class ContextStorage {
    * Generate unique ID
    */
   private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**
@@ -146,7 +146,7 @@ export class ContextStorage {
    */
   async save(
     type: TempFileMetadata['type'],
-    data: any,
+    data: unknown,
     options?: {
       relatedSessionId?: string;
       description?: string;
@@ -228,7 +228,7 @@ export class ContextStorage {
   async update(
     type: TempFileMetadata['type'],
     id: string,
-    data: any
+    data: unknown
   ): Promise<boolean> {
     if (!this.initialized) {
       await this.initialize();

@@ -115,19 +115,19 @@ export class ContextSessionManager {
    * Generate a summary of messages using Claude
    */
   private async generateSummary(messages: Message[]): Promise<string> {
-    return new Promise((resolve, reject) => {
-      // Format conversation for summarization
-      const conversation = messages.map(m =>
-        `${m.role.toUpperCase()}: ${m.content}`
-      ).join('\n\n');
+    // Format conversation for summarization
+    const conversation = messages.map(m =>
+      `${m.role.toUpperCase()}: ${m.content}`
+    ).join('\n\n');
 
-      const prompt = t('context.summaryPrompt', { conversation });
+    const prompt = t('context.summaryPrompt', { conversation });
 
-      // Create a temporary client for summarization
-      const tempSettings = { ...this.plugin.settings, maxTokens: 1024 };
-      const { ClaudeClient } = require('./claude-client');
-      const summaryClient = new ClaudeClient(tempSettings);
+    // Create a temporary client for summarization (dynamic import to avoid circular dependency)
+    const tempSettings = { ...this.plugin.settings, maxTokens: 1024 };
+    const { ClaudeClient } = await import('./claude-client');
+    const summaryClient = new ClaudeClient(tempSettings);
 
+    return new Promise<string>((resolve) => {
       let summary = '';
 
       summaryClient.sendMessageStream(prompt, {
@@ -137,7 +137,7 @@ export class ContextSessionManager {
         onComplete: () => {
           resolve(summary);
         },
-        onError: (error: Error) => {
+        onError: () => {
           // Fallback to simple summary on error
           const fallback = JSON.stringify({
             keyTopics: [],

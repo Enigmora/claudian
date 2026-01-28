@@ -57,13 +57,13 @@ export default class ClaudianPlugin extends Plugin {
     await setLocale(locale);
 
     // Migration: convert old systemPrompt to customInstructions if needed
-    if ((this.settings as any).systemPrompt !== undefined) {
+    if ((this.settings as unknown).systemPrompt !== undefined) {
       // If user had custom content (not the default), preserve it
-      const oldPrompt = (this.settings as any).systemPrompt;
+      const oldPrompt = (this.settings as unknown).systemPrompt;
       if (oldPrompt && oldPrompt !== '' && !oldPrompt.includes('You are an intelligent assistant integrated into Obsidian')) {
         this.settings.customInstructions = oldPrompt;
       }
-      delete (this.settings as any).systemPrompt;
+      delete (this.settings as unknown).systemPrompt;
       await this.saveSettings();
     }
 
@@ -190,7 +190,7 @@ export default class ClaudianPlugin extends Plugin {
 
   async onunload() {
     // Clean up views when disabling plugin
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_CHAT);
+    
 
     // Phase 3: Final purge of expired temp files
     if (this.contextStorage) {

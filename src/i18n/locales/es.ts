@@ -51,7 +51,7 @@ const translations: Translations = {
   'settings.confirmDestructive.desc': 'Solicitar confirmación antes de eliminar archivos o reemplazar contenido.',
   'settings.protectedFolders.name': 'Carpetas protegidas',
   'settings.protectedFolders.desc': 'Carpetas que el agente no puede modificar (separadas por comas).',
-  'settings.protectedFolders.placeholder': '.obsidian, templates',
+  'settings.protectedFolders.placeholder': 'templates, privado',
   'settings.maxActions.name': 'Máximo de acciones por mensaje',
   'settings.maxActions.desc': 'Límite de acciones que Claude puede ejecutar en un solo mensaje (1-20).',
   'settings.footer.license': 'Licenciado bajo MIT License',

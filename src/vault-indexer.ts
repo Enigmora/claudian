@@ -1,4 +1,4 @@
-import { TFile, MetadataCache, Vault, Events } from 'obsidian';
+import { TFile, MetadataCache, Vault } from 'obsidian';
 import ClaudianPlugin from './main';
 
 export interface NoteMetadata {

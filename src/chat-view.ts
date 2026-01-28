@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice, setIcon } from 'obsidian';
 import ClaudianPlugin from './main';
-import { ClaudeClient, Message } from './claude-client';
+import { ClaudeClient } from './claude-client';
 import { NoteCreatorModal } from './note-creator';
 import { AgentMode, AgentResponse } from './agent-mode';
 import { VaultActionExecutor, VaultAction, ActionProgress, ActionResult } from './vault-actions';
@@ -8,16 +8,12 @@ import { ConfirmationModal } from './confirmation-modal';
 import { t } from './i18n';
 import { logger, isDev } from './logger';
 // Phase 2: Enhanced Agent Mode
-import { TruncationDetector, TruncationDetectionResult } from './truncation-detector';
-import { ContextReinforcer, ConversationAnalysis } from './context-reinforcer';
-import { ResponseValidator, ValidationResult } from './response-validator';
-import { TaskPlanner, TaskPlan, TaskAnalysis } from './task-planner';
-// Phase 5: Token Tracking
-import type { TokenUsage, SessionTokenStats } from './token-tracker';
-// Phase 6: Context Management
-import type { ContextManager } from './context-manager';
+import { TruncationDetector } from './truncation-detector';
+import { ContextReinforcer } from './context-reinforcer';
+import { ResponseValidator } from './response-validator';
+import { TaskPlanner, TaskPlan } from './task-planner';
 // Model Orchestrator
-import { ModelOrchestrator, ExecutionMode, ModelId, RouteResult } from './model-orchestrator';
+import { ModelOrchestrator, ExecutionMode, RouteResult } from './model-orchestrator';
 // Extracted components
 import { StreamingUIManager } from './streaming-ui-manager';
 import { ContinuationHandler } from './continuation-handler';
@@ -26,6 +22,35 @@ import { ContextSessionManager } from './context-session-manager';
 import { RobustnessHandler, RobustnessCallbacks } from './robustness-handler';
 import { AgentLoopManager } from './agent-loop-manager';
 import { WelcomeExamplesGenerator } from './welcome-examples-generator';
+
+/**
+ * Creates the Claudian logo SVG element programmatically
+ */
+function createClaudianLogo(container: HTMLElement, size: number): void {
+  const svg = container.createSvg('svg', {
+    attr: {
+      width: String(size),
+      height: String(size),
+      viewBox: '0 0 300 300',
+      fill: 'none',
+      xmlns: 'http://www.w3.org/2000/svg'
+    }
+  });
+  svg.createSvg('path', {
+    attr: {
+      d: 'M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z',
+      stroke: '#7F52FF',
+      'stroke-width': '24',
+      'stroke-linejoin': 'round'
+    }
+  });
+  svg.createSvg('path', {
+    attr: {
+      d: 'M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z',
+      fill: '#E95D3C'
+    }
+  });
+}
 
 export const VIEW_TYPE_CHAT = 'claudian-chat';
 
@@ -127,14 +152,7 @@ export class ChatView extends ItemView {
     // Logo and title
     const headerTitle = header.createDiv({ cls: 'claudian-header-title' });
     const logoContainer = headerTitle.createDiv({ cls: 'claudian-logo' });
-    logoContainer.innerHTML = `<svg width="24" height="24" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
-            stroke="#7F52FF"
-            stroke-width="24"
-            stroke-linejoin="round"/>
-      <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
-            fill="#E95D3C"/>
-    </svg>`;
+    createClaudianLogo(logoContainer, 24);
     headerTitle.createEl('h4', { text: 'Claudian' });
 
     // Dev mode indicator
@@ -147,7 +165,7 @@ export class ChatView extends ItemView {
 
     // Agent mode toggle
     this.agentToggle = headerControls.createDiv({ cls: 'claudian-agent-toggle' });
-    const agentLabel = this.agentToggle.createSpan({ cls: 'agent-toggle-label', text: t('chat.agentLabel') });
+    this.agentToggle.createSpan({ cls: 'agent-toggle-label', text: t('chat.agentLabel') });
     const toggleSwitch = this.agentToggle.createDiv({ cls: 'agent-toggle-switch' });
     if (this.isAgentModeActive) {
       toggleSwitch.addClass('is-active');
@@ -300,14 +318,7 @@ export class ChatView extends ItemView {
 
     // Logo SVG
     const logoEl = this.welcomeScreen.createDiv({ cls: 'claudian-welcome-logo' });
-    logoEl.innerHTML = `<svg width="64" height="64" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
-            stroke="#7F52FF"
-            stroke-width="24"
-            stroke-linejoin="round"/>
-      <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
-            fill="#E95D3C"/>
-    </svg>`;
+    createClaudianLogo(logoEl, 64);
 
     // Title
     this.welcomeScreen.createEl('h2', {
@@ -424,8 +435,6 @@ export class ChatView extends ItemView {
 
     this.isStreaming = true;
     this.setButtonToStop();
-
-    let fullResponse = '';
 
     // Choose method based on mode
     if (this.isAgentModeActive) {
@@ -1161,7 +1170,7 @@ export class ChatView extends ItemView {
     const progressBar = progressBarTrack.createDiv({ cls: 'agent-progress-bar' });
 
     // Track completed results for final summary
-    const completedResults: Map<number, { element: HTMLElement, result: any }> = new Map();
+    const completedResults: Map<number, { element: HTMLElement, result: unknown }> = new Map();
 
     try {
       const results = await this.agentMode.executeActions(actions, (progress: ActionProgress) => {

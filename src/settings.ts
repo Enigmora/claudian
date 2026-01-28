@@ -3,7 +3,36 @@ import ClaudianPlugin from './main';
 import { t, getSupportedLocales, setLocale, resolveLocale } from './i18n';
 import type { Locale } from './i18n';
 import { VIEW_TYPE_CHAT, ChatView } from './chat-view';
-import { ExecutionMode, EXECUTION_MODES, MODELS } from './model-orchestrator';
+import { ExecutionMode, EXECUTION_MODES } from './model-orchestrator';
+
+/**
+ * Creates the Claudian logo SVG element programmatically
+ */
+function createClaudianLogo(container: HTMLElement, size: number): void {
+  const svg = container.createSvg('svg', {
+    attr: {
+      width: String(size),
+      height: String(size),
+      viewBox: '0 0 300 300',
+      fill: 'none',
+      xmlns: 'http://www.w3.org/2000/svg'
+    }
+  });
+  svg.createSvg('path', {
+    attr: {
+      d: 'M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z',
+      stroke: '#7F52FF',
+      'stroke-width': '24',
+      'stroke-linejoin': 'round'
+    }
+  });
+  svg.createSvg('path', {
+    attr: {
+      d: 'M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z',
+      fill: '#E95D3C'
+    }
+  });
+}
 
 export interface ClaudianSettings {
   language: 'auto' | Locale;
@@ -45,7 +74,7 @@ export const DEFAULT_SETTINGS: ClaudianSettings = {
   // Agent Mode
   agentModeEnabled: false,
   confirmDestructiveActions: true,
-  protectedFolders: ['.obsidian', 'templates', '_templates'],
+  protectedFolders: ['templates', '_templates'],
   maxActionsPerMessage: 25,
   // Phase 2: Advanced Agent Mode
   autoContinueOnTruncation: true,
@@ -75,15 +104,8 @@ export class ClaudianSettingTab extends PluginSettingTab {
     // Header with logo and title
     const headerEl = containerEl.createDiv({ cls: 'claudian-settings-header' });
     const logoEl = headerEl.createDiv({ cls: 'claudian-settings-logo' });
-    logoEl.innerHTML = `<svg width="32" height="32" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M150 35L236.6 75V185L150 265L63.4 185V75L150 35Z"
-            stroke="#7F52FF"
-            stroke-width="24"
-            stroke-linejoin="round"/>
-      <path d="M150 85C153.9 115 175 136.1 205 140C175 143.9 153.9 165 150 195C146.1 165 125 143.9 95 140C125 136.1 146.1 115 150 85Z"
-            fill="#E95D3C"/>
-    </svg>`;
-    headerEl.createEl('h2', { text: t('settings.title') });
+    createClaudianLogo(logoEl, 32);
+    new Setting(headerEl).setName("").setHeading();
 
     // Description paragraph
     containerEl.createEl('p', {
@@ -231,7 +253,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     // Note Processing Section
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: t('settings.section.noteProcessing') });
+    new Setting(containerEl).setName("").setHeading();
 
     // Max notes in context
     new Setting(containerEl)
@@ -263,7 +285,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     // Agent Mode Section
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: t('settings.section.agentMode') });
+    new Setting(containerEl).setName("").setHeading();
 
     // Enable agent mode by default
     new Setting(containerEl)
@@ -321,7 +343,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     // Advanced Section (Phase 2)
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: t('settings.section.advanced') });
+    new Setting(containerEl).setName("").setHeading();
 
     // Auto-continue on truncation
     new Setting(containerEl)
@@ -361,7 +383,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     // Token Tracking Section (Phase 5)
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: t('settings.section.tokenTracking') });
+    new Setting(containerEl).setName("").setHeading();
 
     // Show token indicator
     new Setting(containerEl)
@@ -385,7 +407,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     // Context Management Section (Phase 6)
     containerEl.createEl('hr');
-    containerEl.createEl('h3', { text: t('settings.section.contextManagement') });
+    new Setting(containerEl).setName("").setHeading();
 
     // Auto context management
     new Setting(containerEl)

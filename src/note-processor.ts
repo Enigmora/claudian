@@ -46,7 +46,7 @@ export class NoteProcessor {
 
     callbacks.onProgress?.(t('processor.analyzing'));
 
-    let fullResponse = '';
+    let _fullResponse = '';
 
     await this.claudeClient.processNoteStream(
       content,
@@ -55,7 +55,7 @@ export class NoteProcessor {
       {
         onStart: () => {},
         onToken: (token) => {
-          fullResponse += token;
+          _fullResponse += token;
         },
         onComplete: (response) => {
           try {
@@ -88,7 +88,7 @@ export class NoteProcessor {
         atomicConcepts: Array.isArray(parsed.atomicConcepts) ? parsed.atomicConcepts : [],
         reasoning: parsed.reasoning || ''
       };
-    } catch (error) {
+    } catch {
       throw new Error(t('error.parseResponse'));
     }
   }

@@ -11,8 +11,6 @@ declare const __DEV__: boolean;
 
 const PREFIX = '[Claudian]';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
 /**
  * Check if we're in development mode
  */
@@ -35,7 +33,7 @@ export const logger = {
    */
   debug: (message: string, ...args: unknown[]) => {
     if (isDev()) {
-      console.log(`${PREFIX} ${message}`, ...args);
+      console.debug(`${PREFIX} ${message}`, ...args);
     }
   },
 
@@ -45,7 +43,7 @@ export const logger = {
    */
   info: (message: string, ...args: unknown[]) => {
     if (isDev()) {
-      console.log(`${PREFIX} ${message}`, ...args);
+      console.debug(`${PREFIX} ${message}`, ...args);
     }
   },
 

@@ -193,7 +193,7 @@ export class TaskPlanner {
     // Numbered lists: "create notes about: 1. Topic A, 2. Topic B, 3. Topic C"
     {
       pattern: /(?:notas?|notes?|archivos?|files?)\s*(?:sobre|about|de|for|:)\s*(.+)/i,
-      extractor: (match, request) => {
+      extractor: (match, _request) => {
         const content = match[1];
         // Try to extract items from numbered lists or comma-separated
         const items = content.split(/(?:\d+\.\s*|,\s*|\s+y\s+|\s+and\s+)/).filter(s => s.trim().length > 2);
@@ -221,7 +221,7 @@ export class TaskPlanner {
     // Count-based: "create 5 notes about..."
     {
       pattern: /(?:crear?|create?|genera?r?)\s+(\d+)\s+(?:notas?|notes?|archivos?|files?)/i,
-      extractor: (match, request) => {
+      extractor: (match, _request) => {
         const count = parseInt(match[1], 10);
         // Can't extract specific items, but we know the count
         return Array(Math.min(count, 10)).fill('').map((_, i) => `Item ${i + 1}`);
@@ -575,7 +575,7 @@ export class TaskPlanner {
         return null;
       }
 
-      const subtasks: Subtask[] = parsed.subtasks.map((st: any, idx: number) => ({
+      const subtasks: Subtask[] = parsed.subtasks.map((st: unknown, idx: number) => ({
         id: st.id || `subtask-${idx + 1}`,
         index: idx,
         description: st.description || `Subtask ${idx + 1}`,

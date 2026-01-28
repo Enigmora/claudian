@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TFolder } from 'obsidian';
+import { App, Modal, Setting, Notice } from 'obsidian';
 import ClaudianPlugin from './main';
 import { generateNoteContent, extractSuggestedTags, suggestTitle } from './templates/default';
 import { t } from './i18n';

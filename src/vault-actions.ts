@@ -2,6 +2,7 @@ import { TFile, TFolder, MarkdownView, Editor, ItemView } from 'obsidian';
 import ClaudianPlugin from './main';
 import { t } from './i18n';
 import { logger } from './logger';
+import type { ObsidianAppInternal } from './obsidian-internals';
 
 export type ActionType =
   // === Existing (16 actions) ===
@@ -947,20 +948,29 @@ export class VaultActionExecutor {
 
   // ==================== Commands API ====================
 
+  /**
+   * Get the internal app reference with proper typing
+   */
+  private getInternalApp(): ObsidianAppInternal {
+    return this.plugin.app as unknown as ObsidianAppInternal;
+  }
+
   private async executeCommand(commandId: string): Promise<{ executed: boolean; commandId: string }> {
-    const command = (this.plugin.app as unknown).commands?.commands?.[commandId];
+    const app = this.getInternalApp();
+    const command = app.commands?.commands?.[commandId];
     if (!command) {
       throw new Error(t('error.commandNotFound', { commandId }));
     }
-    await (this.plugin.app as unknown).commands.executeCommandById(commandId);
+    app.commands.executeCommandById(commandId);
     return { executed: true, commandId };
   }
 
   private async listCommands(filter?: string): Promise<{ commands: Array<{ id: string; name: string }> }> {
-    const commands = (this.plugin.app as unknown).commands?.commands || {};
-    let commandList = Object.entries(commands).map(([id, cmd]: [string, unknown]) => ({
+    const app = this.getInternalApp();
+    const commands = app.commands?.commands ?? {};
+    let commandList = Object.entries(commands).map(([id, cmd]) => ({
       id,
-      name: cmd.name || id
+      name: cmd.name ?? id
     }));
 
     if (filter) {
@@ -979,16 +989,17 @@ export class VaultActionExecutor {
     name: string;
     hotkeys?: string[];
   }> {
-    const command = (this.plugin.app as unknown).commands?.commands?.[commandId];
+    const app = this.getInternalApp();
+    const command = app.commands?.commands?.[commandId];
     if (!command) {
       throw new Error(t('error.commandNotFound', { commandId }));
     }
 
-    const hotkeys = (this.plugin.app as unknown).hotkeyManager?.getHotkeys?.(commandId) || [];
+    const hotkeys = app.hotkeyManager?.getHotkeys?.(commandId) ?? [];
     return {
       id: commandId,
-      name: command.name || commandId,
-      hotkeys: hotkeys.map((h: unknown) => h.modifiers?.join('+') + '+' + h.key)
+      name: command.name ?? commandId,
+      hotkeys: hotkeys.map((h) => (h.modifiers?.join('+') ?? '') + '+' + h.key)
     };
   }
 

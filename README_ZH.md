@@ -97,6 +97,8 @@ Claudian 将 **Claude AI** 直接带入您的 Obsidian 知识库。在专用侧�
 3. 点击功能区中的 Claudian 图标或使用命令面板
 4. 开始聊天！
 
+> **注意：** 此插件需要 Anthropic 提供的 API 密钥。API 使用可能会根据 [Anthropic 的定价](https://www.anthropic.com/pricing)产生费用。Claudian 与 Anthropic 无关联。
+
 有关详细配置选项，请参阅[配置指南](https://github.com/Enigmora/claudian/wiki/Configuration)。
 
 ---
@@ -115,9 +117,10 @@ Claudian 将 **Claude AI** 直接带入您的 Obsidian 知识库。在专用侧�
 
 ## 隐私与安全
 
-- **本地存储**：您的 API 密钥仅存储在您的设备上
-- **无遥测**：我们不收集任何使用数据
-- **开源**：100% 可审计的代码
+- **网络使用**：此插件连接到 [Anthropic API](https://api.anthropic.com) 来处理您的请求。只有当您明确要求 Claude 分析笔记时，笔记内容才会被发送。
+- **本地存储**：您的 API 密钥仅存储在您的设备上，保存在 Obsidian 的插件数据中
+- **无遥测**：我们不收集任何使用数据或分析信息
+- **开源**：100% 可审计的代码，采用 [MIT 许可证](LICENSE)
 
 ---
 

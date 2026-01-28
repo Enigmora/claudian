@@ -97,6 +97,8 @@ Volle Unterstützung für **Englisch**, **Spanisch**, **Chinesisch**, **Deutsch*
 3. Klicken Sie auf das Claudian-Symbol im Ribbon oder nutzen Sie die Befehlspalette
 4. Beginnen Sie zu chatten!
 
+> **Hinweis:** Dieses Plugin erfordert einen API-Schlüssel von Anthropic. Die API-Nutzung kann Kosten gemäß [Anthropics Preisgestaltung](https://www.anthropic.com/pricing) verursachen. Claudian ist nicht mit Anthropic verbunden.
+
 Für detaillierte Konfigurationsoptionen siehe die [Konfigurationsanleitung](https://github.com/Enigmora/claudian/wiki/Configuration).
 
 ---
@@ -115,9 +117,10 @@ Besuchen Sie das **[Wiki](https://github.com/Enigmora/claudian/wiki)** für voll
 
 ## Datenschutz und Sicherheit
 
-- **Lokale Speicherung**: Ihr API-Schlüssel wird nur auf Ihrem Gerät gespeichert
-- **Keine Telemetrie**: Wir sammeln keine Nutzungsdaten
-- **Open Source**: 100% überprüfbarer Code
+- **Netzwerknutzung**: Dieses Plugin verbindet sich mit der [Anthropic API](https://api.anthropic.com), um Ihre Anfragen zu verarbeiten. Notizinhalte werden nur gesendet, wenn Sie Claude ausdrücklich bitten, sie zu analysieren.
+- **Lokale Speicherung**: Ihr API-Schlüssel wird nur auf Ihrem Gerät in Obsidians Plugin-Daten gespeichert
+- **Keine Telemetrie**: Wir sammeln keine Nutzungsdaten oder Analysen
+- **Open Source**: 100% überprüfbarer Code unter [MIT-Lizenz](LICENSE)
 
 ---
 

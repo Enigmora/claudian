@@ -4,13 +4,13 @@ const translations: Translations = {
   // ═══════════════════════════════════════════════════════════════════════════
   // SETTINGS
   // ═══════════════════════════════════════════════════════════════════════════
-  'settings.title': 'Claudian - Settings',
-  'settings.description': 'Obsidian plugin for Claude AI integration developed by Enigmora. Chat with Claude, process notes for smart tag and wikilink suggestions, and manage your vault with natural language using Agent Mode. Privacy-first: API key stored locally.',
+  'settings.title': 'Claudian',
+  'settings.description': 'Obsidian plugin for Claude AI integration developed by Enigmora. Chat with Claude, process notes for smart tag and wikilink suggestions, and manage your vault with natural language using agent mode. Privacy-first: API key stored locally.',
   'settings.language.name': 'Language',
-  'settings.language.desc': 'Plugin interface language. "Auto" detects from Obsidian settings.',
+  'settings.language.desc': 'Plugin interface language. Auto detects from Obsidian settings.',
   'settings.language.auto': 'Auto (detect from Obsidian)',
-  'settings.apiKey.name': 'API Key',
-  'settings.apiKey.descPart1': 'Get your Anthropic API Key at ',
+  'settings.apiKey.name': 'API key',
+  'settings.apiKey.descPart1': 'Get your Anthropic API key at ',
   'settings.apiKey.descPart2': '. Stored locally in your vault.',
   'settings.apiKey.placeholder': 'sk-ant-...',
   'settings.model.name': 'Model',
@@ -36,7 +36,7 @@ const translations: Translations = {
   'settings.maxTokens.desc': 'Maximum number of tokens in responses (1000-8192).',
   'settings.customInstructions.name': 'Custom instructions',
   'settings.customInstructions.desc': 'Additional instructions to personalize Claude\'s behavior. These are added to the base instructions (not replaced).',
-  'settings.customInstructions.placeholder': 'E.g.: Always respond in formal English, use bullet points...',
+  'settings.customInstructions.placeholder': 'e.g.: Always respond in formal English, use bullet points...',
   'settings.customInstructions.clear': 'Clear',
   'settings.customInstructions.cleared': 'Custom instructions cleared',
   'settings.section.noteProcessing': 'Note processing',
@@ -54,7 +54,7 @@ const translations: Translations = {
   'settings.protectedFolders.placeholder': 'templates, private',
   'settings.maxActions.name': 'Max actions per message',
   'settings.maxActions.desc': 'Limit of actions Claude can execute in a single message (1-20).',
-  'settings.footer.license': 'Licensed under MIT License',
+  'settings.footer.license': 'Licensed under MIT license',
   'settings.footer.developedBy': 'Developed by',
   'settings.footer.sourceCode': 'Source code',
 
@@ -82,8 +82,8 @@ const translations: Translations = {
   // ═══════════════════════════════════════════════════════════════════════════
   // ERRORS
   // ═══════════════════════════════════════════════════════════════════════════
-  'error.apiKeyMissing': 'API key not configured. Go to Settings > Claudian.',
-  'error.apiKeyInvalid': 'Invalid API key. Check your key in Settings.',
+  'error.apiKeyMissing': 'API key not configured. Go to settings.',
+  'error.apiKeyInvalid': 'Invalid API key. Check your key in settings.',
   'error.rateLimit': 'Rate limit exceeded. Try again in a few seconds.',
   'error.connection': 'Connection error. Check your internet connection.',
   'error.unknown': 'Unknown error communicating with Claude.',
@@ -295,10 +295,10 @@ const translations: Translations = {
   'agent.generatingResponse': 'Generating response...',
   'agent.streamingChars': 'Characters: ',
   'agent.streamingActions': 'Actions detected: ',
-  'agent.showRawResponse': '▶ Show raw response',
-  'agent.hideRawResponse': '▼ Hide raw response',
+  'agent.showRawResponse': '▶ show raw response',
+  'agent.hideRawResponse': '▼ hide raw response',
   'agent.warningTitle': 'Agent mode required',
-  'agent.warningDescription': 'It looks like you want to create, modify, or organize files in your vault. This requires Agent Mode to be enabled.',
+  'agent.warningDescription': 'It looks like you want to create, modify, or organize files in your vault. This requires agent mode to be enabled.',
   'agent.enableAgentMode': 'Enable agent mode',
   'agent.continueAnyway': 'Continue without it',
   'agent.continuing': 'Continuing response...',
@@ -308,8 +308,8 @@ const translations: Translations = {
   'agent.subtask.preparation': 'Prepare structure',
   'agent.subtask.execution': 'Execute main task',
   'agent.planSummary.header': 'Task completed: {{completed}}/{{total}} subtasks',
-  'agent.planSummary.successful': '**Successful:**',
-  'agent.planSummary.failed': '**Failed:**',
+  'agent.planSummary.successful': '**successful:**',
+  'agent.planSummary.failed': '**failed:**',
   'agent.planningPrompt': `Break down this complex task into subtasks that can each be completed with at most {{maxActions}} actions.
 
 TASK: {{request}}
@@ -334,19 +334,19 @@ IMPORTANT:
 - Each subtask should be independent or have clear dependencies
 - Order subtasks logically (e.g., create folders before creating files in them)
 - Keep prompts specific and actionable`,
-  'agent.reinforcement.reminder': 'You are in AGENT MODE. Use JSON format for vault actions.',
-  'agent.reinforcement.canPerformActions': 'You CAN create, modify, and delete files in this vault. Do NOT say you cannot - use the actions system.',
+  'agent.reinforcement.reminder': 'You are in agent mode. Use JSON format for vault actions.',
+  'agent.reinforcement.canPerformActions': 'You can create, modify, and delete files in this vault. Do not say you cannot - use the actions system.',
   'agent.reinforcement.useJsonFormat': 'When the user requests vault actions, respond with JSON containing "actions" array.',
-  'agent.reinforcement.dontForget': 'Remember: You have full capability to manage this Obsidian vault through the actions system.',
+  'agent.reinforcement.dontForget': 'Remember: you have full capability to manage this Obsidian vault through the actions system.',
   'agent.reinforcement.recoveryPrompt': `The user asked: "{{message}}"
 
-You are in AGENT MODE and CAN perform vault actions. Please respond with the appropriate JSON format:
+You are in agent mode and can perform vault actions. Please respond with the appropriate JSON format:
 {
   "actions": [{"action": "...", "params": {...}}],
   "message": "...",
   "requiresConfirmation": false
 }`,
-  'agent.retryPrompt.confusion': 'You ARE able to create and modify files in this vault. Please provide the actions in JSON format as specified in your instructions.',
+  'agent.retryPrompt.confusion': 'You are able to create and modify files in this vault. Please provide the actions in JSON format as specified in your instructions.',
   'agent.retryPrompt.missingJson': `You described actions but didn't provide the JSON format. Based on what you said: "{{context}}..."
 
 Please provide the EXACT actions as JSON:
@@ -374,12 +374,12 @@ Please provide the EXACT actions as JSON:
   // ═══════════════════════════════════════════════════════════════════════════
   // WARNINGS AND VALIDATION
   // ═══════════════════════════════════════════════════════════════════════════
-  'warning.modelConfusion': 'The model seems confused about its capabilities. It can perform vault actions in Agent Mode.',
+  'warning.modelConfusion': 'The model seems confused about its capabilities. It can perform vault actions in agent mode.',
   'warning.actionClaimsNoJson': 'The response claims to have performed actions but no executable actions were found.',
   'warning.emptyActionsArray': 'The response contains an empty actions array.',
   'warning.incompleteJson': 'The JSON response appears to be incomplete or truncated.',
   'warning.actionMismatch': 'Claimed actions don\'t match provided actions: {{mismatches}}',
-  'suggestion.remindAgentMode': 'Try reminding the model that Agent Mode is active.',
+  'suggestion.remindAgentMode': 'Try reminding the model that agent mode is active.',
   'suggestion.requestJsonFormat': 'Request the response in proper JSON format.',
   'suggestion.requestContinuation': 'Request the model to continue and complete its response.',
   'validation.valid': 'Response validated successfully.',
@@ -394,7 +394,7 @@ Please provide the EXACT actions as JSON:
   'settings.autoPlan.name': 'Auto-plan complex tasks',
   'settings.autoPlan.desc': 'Automatically break down complex tasks into smaller subtasks.',
   'settings.contextReinforce.name': 'Reinforce agent context',
-  'settings.contextReinforce.desc': 'Add reminders to prevent the model from forgetting Agent Mode in long conversations.',
+  'settings.contextReinforce.desc': 'Add reminders to prevent the model from forgetting agent mode in long conversations.',
 
   // ═══════════════════════════════════════════════════════════════════════════
   // EXTRACTION TEMPLATES
@@ -417,10 +417,10 @@ Please provide the EXACT actions as JSON:
   // ═══════════════════════════════════════════════════════════════════════════
   'prompt.baseIdentity': `Claude integrated in Obsidian via Claudian (by Enigmora). Use Markdown and wikilinks ([[Note]]) when appropriate. Be concise.`,
 
-  'prompt.chatMode': `IMPORTANT - AGENT MODE:
-If the user asks you to perform actions on the vault (create, move, delete, rename notes or folders, modify content, etc.), and Agent Mode is NOT currently enabled, you must inform them:
-"To perform actions on your vault, please enable **Agent Mode** using the toggle in the chat header."
-Do NOT attempt to describe or simulate vault actions without Agent Mode enabled.`,
+  'prompt.chatMode': `Important - agent mode:
+If the user asks you to perform actions on the vault (create, move, delete, rename notes or folders, modify content, etc.), and agent mode is not currently enabled, you must inform them:
+"To perform actions on your vault, please enable **agent mode** using the toggle in the chat header."
+Do not attempt to describe or simulate vault actions without agent mode enabled.`,
 
   'prompt.noteProcessor': `You are an assistant specialized in knowledge organization for Obsidian. Your task is to analyze notes and suggest improvements to better integrate them into the user's vault.
 
@@ -468,7 +468,7 @@ Respond in a structured and clear manner according to the provided instructions.
 
   'prompt.conceptMapGenerator': `You are an assistant specialized in knowledge analysis and concept map creation.
 Your task is to identify concepts, relationships, and cross-cutting themes in sets of notes.
-IMPORTANT: Respond ONLY with valid JSON according to the requested format.`,
+Important: respond only with valid JSON according to the requested format.`,
 
   'prompt.agentMode': `Obsidian vault assistant. Execute actions via JSON responses.
 
@@ -660,14 +660,14 @@ CONVERSATION:
   // WELCOME SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   'welcome.title': 'Claudian',
-  'welcome.developedBy': 'Developed by Enigmora',
+  'welcome.developedBy': 'developed by Enigmora',
   'welcome.greeting': 'How can I help you today?',
   'welcome.examplesHeader': 'Examples of what I can do:',
-  'welcome.example1': '"What notes do I have about artificial intelligence?"',
-  'welcome.example2': '"Create a note with a summary of this week\'s meetings"',
-  'welcome.example3': '"Read my Ideas.md note and suggest wikilinks to related notes"',
-  'welcome.example4': '"Find all notes with the #project tag and generate a concept map with their connections"',
-  'welcome.example5': '"Organize my productivity notes into folders by topic and create a linked index"',
+  'welcome.example1': '"what notes do I have about artificial intelligence?"',
+  'welcome.example2': '"create a note with a summary of this week\'s meetings"',
+  'welcome.example3': '"read my Ideas.md note and suggest wikilinks to related notes"',
+  'welcome.example4': '"find all notes with the #project tag and generate a concept map with their connections"',
+  'welcome.example5': '"organize my productivity notes into folders by topic and create a linked index"',
   'welcome.agentModeHint': 'Enable agent mode to create, modify and organize notes automatically.',
   // Personalized example templates
   'welcome.template.search': '"What notes do I have about {{topic}}?"',

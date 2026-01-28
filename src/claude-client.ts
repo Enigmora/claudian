@@ -4,7 +4,7 @@ import { VaultContext } from './vault-indexer';
 import { ExtractionTemplate } from './extraction-templates';
 import { t } from './i18n';
 import { logger } from './logger';
-import type { TokenUsage, UsageMethod } from './token-tracker';
+import type { TokenUsage } from './token-tracker';
 import type { ContextManager } from './context-manager';
 import type { ModelId } from './model-orchestrator';
 
@@ -85,7 +85,7 @@ export class ClaudeClient {
     if (this.currentStream) {
       try {
         this.currentStream.abort();
-      } catch (e) {
+      } catch {
         // Stream may already be closed
       }
       this.currentStream = null;

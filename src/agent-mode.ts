@@ -1,4 +1,3 @@
-import { Notice } from 'obsidian';
 import ClaudianPlugin from './main';
 import { VaultActionExecutor, VaultAction, ActionResult, ProgressCallback } from './vault-actions';
 import { VaultIndexer } from './vault-indexer';
@@ -75,7 +74,7 @@ export class AgentMode {
    * Extract the first valid JSON object from a string that may contain
    * multiple JSONs or markdown code blocks with JSON
    */
-  private extractFirstValidJson(content: string): any | null {
+  private extractFirstValidJson(content: string): unknown | null {
     // First, try to find JSON in markdown code blocks
     const codeBlockMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (codeBlockMatch) {
@@ -115,7 +114,7 @@ export class AgentMode {
   /**
    * Extract a JSON object starting from a specific position
    */
-  private extractJsonFromPosition(content: string, startIndex: number): any | null {
+  private extractJsonFromPosition(content: string, startIndex: number): unknown | null {
     // Find the matching closing brace by counting
     let depth = 0;
     let inString = false;
@@ -178,14 +177,14 @@ export class AgentMode {
    * Attempt to recover a valid response from truncated JSON
    * by extracting complete actions
    */
-  private attemptTruncatedJsonRecovery(truncated: string): any | null {
+  private attemptTruncatedJsonRecovery(truncated: string): unknown | null {
     try {
       // Try to find complete actions within the truncated JSON
       const actionsMatch = truncated.match(/"actions"\s*:\s*\[/);
       if (!actionsMatch) return null;
 
       const actionsStart = actionsMatch.index! + actionsMatch[0].length;
-      const completeActions: any[] = [];
+      const completeActions: unknown[] = [];
 
       let depth = 1; // Inside actions array
       let actionStart = actionsStart;

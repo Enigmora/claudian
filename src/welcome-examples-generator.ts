@@ -1,4 +1,4 @@
-import { App, TFile } from 'obsidian';
+import { App } from 'obsidian';
 import { VaultIndexer } from './vault-indexer';
 import { t } from './i18n';
 import { logger } from './logger';

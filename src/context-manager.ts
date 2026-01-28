@@ -6,7 +6,7 @@
 
 import { Message } from './claude-client';
 import { ContextStorage } from './context-storage';
-import { TaskPlan, Subtask } from './task-planner';
+import { TaskPlan } from './task-planner';
 import { logger } from './logger';
 
 export interface SessionData {

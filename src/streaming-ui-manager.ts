@@ -49,7 +49,7 @@ export class StreamingUIManager {
     previewToggle.setText(t('agent.showRawResponse'));
 
     const previewContainer = indicator.createDiv({ cls: 'agent-streaming-preview hidden' });
-    const previewContent = previewContainer.createEl('pre', { cls: 'agent-streaming-preview-content' });
+    previewContainer.createEl('pre', { cls: 'agent-streaming-preview-content' });
 
     previewToggle.onclick = () => {
       previewContainer.classList.toggle('hidden');
@@ -126,7 +126,7 @@ export class StreamingUIManager {
     // Build combined message: "Waiting for response from Haiku 4.5..."
     const statusText = overlay.querySelector('.processing-text');
     if (statusText) {
-      const baseStatus = t(statusKey as any);
+      const baseStatus = t(statusKey as unknown);
       const fullStatus = modelName
         ? `${baseStatus.replace('...', '')} (${modelName})...`
         : baseStatus;

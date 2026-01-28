@@ -6,8 +6,7 @@
 import { App, Modal } from 'obsidian';
 import ClaudianPlugin from './main';
 import { t } from './i18n';
-import type { TokenStats, ModelStats } from './token-tracker';
-import { MODELS } from './model-orchestrator';
+import type { TokenStats } from './token-tracker';
 
 interface HistoryItem {
   label: string;

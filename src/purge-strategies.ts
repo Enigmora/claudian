@@ -235,8 +235,8 @@ export class PurgeManager {
       }
 
       // Reset stateful strategies
-      if ('reset' in strategy && typeof (strategy as any).reset === 'function') {
-        (strategy as any).reset();
+      if ('reset' in strategy && typeof (strategy as unknown).reset === 'function') {
+        (strategy as unknown).reset();
       }
     }
 
@@ -274,7 +274,7 @@ export class PurgeManager {
   updateActiveSessions(sessions: string[]): void {
     const orphanStrategy = this.strategies.find(
       s => s instanceof OrphanedPurgeStrategy
-    ) as OrphanedPurgeStrategy | undefined;
+    );
 
     if (orphanStrategy) {
       orphanStrategy.updateActiveSessions(sessions);

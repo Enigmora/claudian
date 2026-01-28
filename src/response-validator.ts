@@ -162,7 +162,7 @@ export class ResponseValidator {
       parsedResponse.actions.length > 0;
 
     const actualActions = hasActionJson
-      ? parsedResponse!.actions.map(a => a.action)
+      ? parsedResponse.actions.map(a => a.action)
       : [];
 
     // Check for confusion patterns

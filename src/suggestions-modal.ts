@@ -1,7 +1,6 @@
-import { Modal, TFile, Setting } from 'obsidian';
+import { Modal, TFile } from 'obsidian';
 import ClaudianPlugin from './main';
-import { NoteProcessor, ValidatedSuggestions, ValidatedWikilink } from './note-processor';
-import { AtomicConcept } from './claude-client';
+import { NoteProcessor, ValidatedSuggestions } from './note-processor';
 import { t } from './i18n';
 
 export class SuggestionsModal extends Modal {
@@ -109,7 +108,7 @@ export class SuggestionsModal extends Modal {
     this.suggestions.wikilinks.forEach((wl, index) => {
       const row = wikilinksContainer.createDiv({ cls: 'suggestions-wikilink-row' });
 
-      const checkbox = row.createEl('input', { type: 'checkbox' }) as HTMLInputElement;
+      const checkbox = row.createEl('input', { type: 'checkbox' });
       checkbox.id = `wikilink-${index}`;
       checkbox.addEventListener('change', () => {
         if (checkbox.checked) {

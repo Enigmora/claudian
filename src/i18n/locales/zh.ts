@@ -51,7 +51,7 @@ const translations: Translations = {
   'settings.confirmDestructive.desc': '在删除文件或替换内容前请求确认。',
   'settings.protectedFolders.name': '受保护的文件夹',
   'settings.protectedFolders.desc': '代理无法修改的文件夹（用逗号分隔）。',
-  'settings.protectedFolders.placeholder': '.obsidian, templates',
+  'settings.protectedFolders.placeholder': 'templates, private',
   'settings.maxActions.name': '每条消息的最大操作数',
   'settings.maxActions.desc': 'Claude 在单条消息中可执行的操作限制（1-20）。',
   'settings.footer.license': '基于 MIT 许可证',

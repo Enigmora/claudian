@@ -1,5 +1,6 @@
 import type { Locale, Translations, TranslationKey } from './types';
 import { logger } from '../logger';
+import enLocale from './locales/en';
 
 // Lazy-loaded translations
 let translations: Translations | null = null;
@@ -142,9 +143,8 @@ export function t(key: TranslationKey, params?: Record<string, string | number>)
  * This loads English as default, then the proper locale can be set later
  */
 export function initSync(): void {
-  // Import English synchronously as it's the default
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  translations = require('./locales/en').default;
+  // Use the statically imported English locale
+  translations = enLocale;
   currentLocale = 'en';
 }
 

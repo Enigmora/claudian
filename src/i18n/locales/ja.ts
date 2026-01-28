@@ -51,7 +51,7 @@ const translations: Translations = {
   'settings.confirmDestructive.desc': 'ファイルの削除やコンテンツの置き換え前に確認を要求します。',
   'settings.protectedFolders.name': '保護フォルダ',
   'settings.protectedFolders.desc': 'エージェントが変更できないフォルダ（カンマ区切り）。',
-  'settings.protectedFolders.placeholder': '.obsidian, templates',
+  'settings.protectedFolders.placeholder': 'templates, private',
   'settings.maxActions.name': 'メッセージあたりの最大アクション数',
   'settings.maxActions.desc': '1つのメッセージでClaudeが実行できるアクションの制限（1-20）。',
   'settings.footer.license': 'MITライセンスの下でライセンスされています',

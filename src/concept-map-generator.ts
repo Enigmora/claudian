@@ -1,4 +1,4 @@
-import { TFile, Notice } from 'obsidian';
+import { TFile } from 'obsidian';
 import ClaudianPlugin from './main';
 import { ClaudeClient } from './claude-client';
 import { VaultIndexer } from './vault-indexer';
@@ -65,14 +65,14 @@ export class ConceptMapGenerator {
     const prompt = this.buildConceptMapPrompt(notesContent);
 
     return new Promise((resolve, reject) => {
-      let fullResponse = '';
+      let _fullResponse = '';
 
-      this.claudeClient.generateConceptMap(
+      void this.claudeClient.generateConceptMap(
         prompt,
         {
           onStart: () => {},
           onToken: (token) => {
-            fullResponse += token;
+            _fullResponse += token;
           },
           onComplete: (response) => {
             try {

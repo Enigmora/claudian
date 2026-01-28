@@ -194,8 +194,9 @@ export class TokenTrackingUI {
   /**
    * Open the token history modal with animated bar chart
    */
-  private openTokenHistoryModal(): void {
-    const { TokenHistoryModal } = require('./token-history-modal');
+  private async openTokenHistoryModal(): Promise<void> {
+    // Dynamic import to avoid circular dependency
+    const { TokenHistoryModal } = await import('./token-history-modal');
     new TokenHistoryModal(this.app, this.plugin).open();
   }
 }

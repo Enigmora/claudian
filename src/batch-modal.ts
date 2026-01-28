@@ -1,7 +1,7 @@
-import { Modal, TFile, TFolder, Notice, setIcon } from 'obsidian';
+import { Modal, TFile, Notice, setIcon } from 'obsidian';
 import ClaudianPlugin from './main';
 import { ExtractionTemplate, getAllTemplates } from './extraction-templates';
-import { BatchProcessor, BatchProgress } from './batch-processor';
+import { BatchProcessor } from './batch-processor';
 import { ConceptMapGenerator } from './concept-map-generator';
 import { t } from './i18n';
 
@@ -128,7 +128,7 @@ export class BatchModal extends Modal {
       const folderDiv = this.filesContainer.createDiv({ cls: 'batch-folder' });
 
       const folderHeader = folderDiv.createDiv({ cls: 'batch-folder-header' });
-      const folderCheckbox = folderHeader.createEl('input', { type: 'checkbox' }) as HTMLInputElement;
+      const folderCheckbox = folderHeader.createEl('input', { type: 'checkbox' });
       folderHeader.createSpan({ text: folder === '/' ? t('batch.rootFolder') : folder });
 
       folderCheckbox.addEventListener('change', () => {
@@ -146,7 +146,7 @@ export class BatchModal extends Modal {
       const filesList = folderDiv.createDiv({ cls: 'batch-files-list' });
       for (const file of folderFiles) {
         const fileRow = filesList.createDiv({ cls: 'batch-file-row' });
-        const checkbox = fileRow.createEl('input', { type: 'checkbox' }) as HTMLInputElement;
+        const checkbox = fileRow.createEl('input', { type: 'checkbox' });
         checkbox.checked = this.selectedFiles.has(file);
         fileRow.createSpan({ text: file.basename });
 
@@ -205,7 +205,7 @@ export class BatchModal extends Modal {
     const input = inputContainer.createEl('input', {
       type: 'text',
       placeholder: t('batch.mapTitlePlaceholder')
-    }) as HTMLInputElement;
+    });
     input.value = this.conceptMapTitle;
     input.addEventListener('input', () => {
       this.conceptMapTitle = input.value;
@@ -307,7 +307,7 @@ export class BatchModal extends Modal {
     progressText.textContent = t('batch.starting');
 
     try {
-      const results = await this.batchProcessor.processNotes(
+      const _results = await this.batchProcessor.processNotes(
         files,
         this.selectedTemplate!,
         {
@@ -358,7 +358,7 @@ export class BatchModal extends Modal {
     progressFill.style.width = '30%';
 
     try {
-      const map = await this.conceptMapGenerator.generateFromNotes(
+      const _map = await this.conceptMapGenerator.generateFromNotes(
         files,
         this.conceptMapTitle,
         {

@@ -155,7 +155,7 @@ export class ModelOrchestrator {
    * Route a request to the appropriate model
    * Uses Haiku (via ClaudeClient) to classify in automatic mode
    */
-  async routeRequest(message: string, isAgentMode: boolean = false): Promise<RouteResult> {
+  async routeRequest(message: string, _isAgentMode: boolean = false): Promise<RouteResult> {
     // In non-automatic modes, skip classification (no API call needed)
     if (this.mode === 'economic') {
       return this.createResult('simple', 'Economic mode: all requests routed to Haiku', 'fallback');

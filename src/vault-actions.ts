@@ -343,10 +343,10 @@ export class VaultActionExecutor {
     return { deleted: true };
   }
 
-  private async listFolder(path: string, recursive: boolean = false): Promise<{
+  private listFolder(path: string, recursive: boolean = false): {
     folders: string[];
     files: string[];
-  }> {
+  } {
     const normalizedPath = path ? this.normalizePath(path) : '';
     const folder = normalizedPath
       ? this.plugin.app.vault.getAbstractFileByPath(normalizedPath)
@@ -659,7 +659,7 @@ export class VaultActionExecutor {
     return { matches };
   }
 
-  private async getNoteInfo(path: string): Promise<{
+  private getNoteInfo(path: string): {
     path: string;
     title: string;
     size: number;
@@ -668,7 +668,7 @@ export class VaultActionExecutor {
     frontmatter: unknown;
     tags: string[];
     links: string[];
-  }> {
+  } {
     const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
@@ -699,9 +699,9 @@ export class VaultActionExecutor {
     };
   }
 
-  private async findLinks(target: string): Promise<{
+  private findLinks(target: string): {
     backlinks: Array<{ path: string; title: string }>
-  }> {
+  } {
     const files = this.plugin.app.vault.getMarkdownFiles();
     const backlinks: Array<{ path: string; title: string }> = [];
     const targetLower = target.toLowerCase();
@@ -871,7 +871,7 @@ export class VaultActionExecutor {
     return view?.editor || null;
   }
 
-  private async editorGetContent(): Promise<{ content: string }> {
+  private editorGetContent(): { content: string } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -879,7 +879,7 @@ export class VaultActionExecutor {
     return { content: editor.getValue() };
   }
 
-  private async editorSetContent(content: string): Promise<{ set: boolean }> {
+  private editorSetContent(content: string): { set: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -888,7 +888,7 @@ export class VaultActionExecutor {
     return { set: true };
   }
 
-  private async editorGetSelection(): Promise<{ selection: string; hasSelection: boolean }> {
+  private editorGetSelection(): { selection: string; hasSelection: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -897,7 +897,7 @@ export class VaultActionExecutor {
     return { selection, hasSelection: selection.length > 0 };
   }
 
-  private async editorReplaceSelection(text: string): Promise<{ replaced: boolean }> {
+  private editorReplaceSelection(text: string): { replaced: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -906,7 +906,7 @@ export class VaultActionExecutor {
     return { replaced: true };
   }
 
-  private async editorInsertAtCursor(text: string): Promise<{ inserted: boolean }> {
+  private editorInsertAtCursor(text: string): { inserted: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -916,7 +916,7 @@ export class VaultActionExecutor {
     return { inserted: true };
   }
 
-  private async editorGetLine(line: number): Promise<{ line: number; text: string }> {
+  private editorGetLine(line: number): { line: number; text: string } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -925,7 +925,7 @@ export class VaultActionExecutor {
     return { line, text };
   }
 
-  private async editorSetLine(line: number, text: string): Promise<{ set: boolean }> {
+  private editorSetLine(line: number, text: string): { set: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -934,7 +934,7 @@ export class VaultActionExecutor {
     return { set: true };
   }
 
-  private async editorGoToLine(line: number): Promise<{ navigated: boolean }> {
+  private editorGoToLine(line: number): { navigated: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -943,7 +943,7 @@ export class VaultActionExecutor {
     return { navigated: true };
   }
 
-  private async editorUndo(): Promise<{ undone: boolean }> {
+  private editorUndo(): { undone: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -953,7 +953,7 @@ export class VaultActionExecutor {
     return { undone: true };
   }
 
-  private async editorRedo(): Promise<{ redone: boolean }> {
+  private editorRedo(): { redone: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -972,7 +972,7 @@ export class VaultActionExecutor {
     return this.plugin.app as unknown as ObsidianAppInternal;
   }
 
-  private async executeCommand(commandId: string): Promise<{ executed: boolean; commandId: string }> {
+  private executeCommand(commandId: string): { executed: boolean; commandId: string } {
     const app = this.getInternalApp();
     const command = app.commands?.commands?.[commandId];
     if (!command) {
@@ -982,7 +982,7 @@ export class VaultActionExecutor {
     return { executed: true, commandId };
   }
 
-  private async listCommands(filter?: string): Promise<{ commands: Array<{ id: string; name: string }> }> {
+  private listCommands(filter?: string): { commands: Array<{ id: string; name: string }> } {
     const app = this.getInternalApp();
     const commands = app.commands?.commands ?? {};
     let commandList = Object.entries(commands).map(([id, cmd]) => ({
@@ -1001,11 +1001,11 @@ export class VaultActionExecutor {
     return { commands: commandList };
   }
 
-  private async getCommandInfo(commandId: string): Promise<{
+  private getCommandInfo(commandId: string): {
     id: string;
     name: string;
     hotkeys?: string[];
-  }> {
+  } {
     const app = this.getInternalApp();
     const command = app.commands?.commands?.[commandId];
     if (!command) {
@@ -1149,7 +1149,7 @@ export class VaultActionExecutor {
     }
   }
 
-  private async listTemplates(): Promise<{ templates: string[]; folder: string }> {
+  private listTemplates(): { templates: string[]; folder: string } {
     const templatesPlugin = this.getTemplatesPlugin();
     const templateFolder = templatesPlugin?.options?.folder ?? 'templates';
 
@@ -1200,7 +1200,7 @@ export class VaultActionExecutor {
     return { added: true, path: normalizedPath };
   }
 
-  private async removeBookmark(path: string): Promise<{ removed: boolean; path: string }> {
+  private removeBookmark(path: string): { removed: boolean; path: string } {
     const bookmarks = this.getBookmarksPlugin();
     if (!bookmarks) {
       throw new Error(t('error.pluginNotEnabled', { plugin: 'Bookmarks' }));
@@ -1234,7 +1234,7 @@ export class VaultActionExecutor {
     throw new Error(t('error.bookmarkNotFound', { path: normalizedPath }));
   }
 
-  private async listBookmarks(): Promise<{ bookmarks: Array<{ type: string; path?: string; title?: string }> }> {
+  private listBookmarks(): { bookmarks: Array<{ type: string; path?: string; title?: string }> } {
     const bookmarksPlugin = this.getBookmarksPlugin();
     if (!bookmarksPlugin) {
       throw new Error(t('error.pluginNotEnabled', { plugin: 'Bookmarks' }));
@@ -1270,11 +1270,11 @@ export class VaultActionExecutor {
     return null;
   }
 
-  private async canvasCreateTextNode(
+  private canvasCreateTextNode(
     text: string,
     x?: number,
     y?: number
-  ): Promise<{ created: boolean; nodeId: string }> {
+  ): { created: boolean; nodeId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1289,11 +1289,11 @@ export class VaultActionExecutor {
     return { created: true, nodeId: node.id };
   }
 
-  private async canvasCreateFileNode(
+  private canvasCreateFileNode(
     file: string,
     x?: number,
     y?: number
-  ): Promise<{ created: boolean; nodeId: string }> {
+  ): { created: boolean; nodeId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1314,11 +1314,11 @@ export class VaultActionExecutor {
     return { created: true, nodeId: node.id };
   }
 
-  private async canvasCreateLinkNode(
+  private canvasCreateLinkNode(
     url: string,
     x?: number,
     y?: number
-  ): Promise<{ created: boolean; nodeId: string }> {
+  ): { created: boolean; nodeId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1333,7 +1333,7 @@ export class VaultActionExecutor {
     return { created: true, nodeId: node.id };
   }
 
-  private async canvasCreateGroup(label?: string): Promise<{ created: boolean; groupId: string }> {
+  private canvasCreateGroup(label?: string): { created: boolean; groupId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1348,10 +1348,10 @@ export class VaultActionExecutor {
     return { created: true, groupId: group.id };
   }
 
-  private async canvasAddEdge(
+  private canvasAddEdge(
     fromNode: string,
     toNode: string
-  ): Promise<{ created: boolean }> {
+  ): { created: boolean } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1378,7 +1378,7 @@ export class VaultActionExecutor {
     return { created: true };
   }
 
-  private async canvasSelectAll(): Promise<{ selected: number }> {
+  private canvasSelectAll(): { selected: number } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1389,7 +1389,7 @@ export class VaultActionExecutor {
     return { selected: selectedCount };
   }
 
-  private async canvasZoomToFit(): Promise<{ zoomed: boolean }> {
+  private canvasZoomToFit(): { zoomed: boolean } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1401,10 +1401,10 @@ export class VaultActionExecutor {
 
   // ==================== Enhanced Search ====================
 
-  private async searchByHeading(
+  private searchByHeading(
     heading: string,
     folder?: string
-  ): Promise<{ matches: Array<{ path: string; title: string; heading: string; level: number }> }> {
+  ): { matches: Array<{ path: string; title: string; heading: string; level: number }> } {
     const files = this.plugin.app.vault.getMarkdownFiles();
     const matches: Array<{ path: string; title: string; heading: string; level: number }> = [];
     const headingLower = heading.toLowerCase();
@@ -1432,11 +1432,11 @@ export class VaultActionExecutor {
     return { matches };
   }
 
-  private async searchByBlock(blockId: string): Promise<{
+  private searchByBlock(blockId: string): {
     found: boolean;
     path?: string;
     title?: string;
-  }> {
+  } {
     const files = this.plugin.app.vault.getMarkdownFiles();
 
     for (const file of files) {
@@ -1453,7 +1453,7 @@ export class VaultActionExecutor {
     return { found: false };
   }
 
-  private async getAllTags(): Promise<{ tags: string[]; count: number }> {
+  private getAllTags(): { tags: string[]; count: number } {
     const tags = new Set<string>();
 
     const files = this.plugin.app.vault.getMarkdownFiles();
@@ -1535,7 +1535,7 @@ export class VaultActionExecutor {
     return { opened: true, path: normalizedPath };
   }
 
-  private async revealInExplorer(path: string): Promise<{ revealed: boolean; path: string }> {
+  private revealInExplorer(path: string): { revealed: boolean; path: string } {
     const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
@@ -1554,11 +1554,11 @@ export class VaultActionExecutor {
     return { revealed: true, path: normalizedPath };
   }
 
-  private async getActiveFile(): Promise<{
+  private getActiveFile(): {
     path: string | null;
     title: string | null;
     isMarkdown: boolean;
-  }> {
+  } {
     const activeFile = this.plugin.app.workspace.getActiveFile();
 
     if (!activeFile) {
@@ -1572,7 +1572,7 @@ export class VaultActionExecutor {
     };
   }
 
-  private async closeActiveLeaf(): Promise<{ closed: boolean }> {
+  private closeActiveLeaf(): { closed: boolean } {
     const activeLeaf = this.plugin.app.workspace.getMostRecentLeaf();
     if (activeLeaf) {
       activeLeaf.detach();
@@ -1581,10 +1581,10 @@ export class VaultActionExecutor {
     return { closed: false };
   }
 
-  private async splitLeaf(direction: 'horizontal' | 'vertical'): Promise<{
+  private splitLeaf(direction: 'horizontal' | 'vertical'): {
     split: boolean;
     direction: string;
-  }> {
+  } {
     const activeLeaf = this.plugin.app.workspace.getMostRecentLeaf();
     if (!activeLeaf) {
       throw new Error(t('error.noActiveLeafToSplit'));

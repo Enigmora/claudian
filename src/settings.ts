@@ -160,7 +160,6 @@ export class ClaudianSettingTab extends PluginSettingTab {
     const apiKeyDescEl = apiKeySetting.descEl;
     apiKeyDescEl.createSpan({ text: t('settings.apiKey.descPart1') });
     const consoleLink = apiKeyDescEl.createEl('a', {
-      // eslint-disable-next-line obsidianmd/ui/sentence-case -- URL domain name
       text: 'console.anthropic.com',
       href: 'https://console.anthropic.com'
     });
@@ -484,7 +483,6 @@ export class ClaudianSettingTab extends PluginSettingTab {
     licenseLine.createSpan({ text: `${t('settings.footer.license')} · ` });
     licenseLine.createSpan({ text: `${t('settings.footer.developedBy')} ` });
     const enigmoraLink = licenseLine.createEl('a', {
-      // eslint-disable-next-line obsidianmd/ui/sentence-case -- Company name is proper noun
       text: 'Enigmora SC',
       href: 'https://enigmora.com'
     });

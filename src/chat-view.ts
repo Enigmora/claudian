@@ -289,10 +289,10 @@ export class ChatView extends ItemView {
     this.tokenTrackingUI.cleanup();
 
     // Phase 6: End context session
-    await this.contextSession.end();
+    this.contextSession.end();
   }
 
-  private async restoreHistory(): Promise<void> {
+  private restoreHistory(): void {
     const history = this.client.getHistory();
     if (history.length === 0) {
       this.showWelcomeScreen();

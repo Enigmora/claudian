@@ -65,7 +65,7 @@ export class ContextSessionManager {
   /**
    * End context session when chat view closes
    */
-  async end(): Promise<void> {
+  end(): void {
     const contextManager = this.plugin.contextManager;
 
     if (!contextManager) {

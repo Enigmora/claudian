@@ -86,7 +86,7 @@ export default class ClaudianPlugin extends Plugin {
 
     // Initialize vault indexer
     this.indexer = new VaultIndexer(this);
-    await this.indexer.initialize();
+    this.indexer.initialize();
 
     // Initialize note processor
     this.noteProcessor = new NoteProcessor(this, this.claudeClient, this.indexer);
@@ -170,7 +170,7 @@ export default class ClaudianPlugin extends Plugin {
     this.addSettingTab(new ClaudianSettingTab(this.app, this));
   }
 
-  private async processActiveNote(file: TFile): Promise<void> {
+  private processActiveNote(file: TFile): void {
     const notice = new Notice(t('processor.processing'), 0);
 
     void this.noteProcessor.processActiveNote({

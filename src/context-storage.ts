@@ -320,7 +320,7 @@ export class ContextStorage {
    * Purge oldest files if storage limit exceeded
    */
   private async checkStorageLimit(): Promise<void> {
-    const stats = await this.getStats();
+    const stats = this.getStats();
 
     if (stats.totalSize > ContextStorage.MAX_STORAGE_SIZE) {
       // Sort by last accessed (oldest first)
@@ -343,7 +343,7 @@ export class ContextStorage {
   /**
    * Get storage statistics
    */
-  async getStats(): Promise<StorageStats> {
+  getStats(): StorageStats {
     const stats: StorageStats = {
       totalFiles: this.index.files.length,
       totalSize: 0,

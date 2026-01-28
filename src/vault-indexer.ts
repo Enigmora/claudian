@@ -26,12 +26,12 @@ export class VaultIndexer {
     this.metadataCache = plugin.app.metadataCache;
   }
 
-  async initialize(): Promise<void> {
-    await this.buildIndex();
+  initialize(): void {
+    this.buildIndex();
     this.registerEventHandlers();
   }
 
-  private async buildIndex(): Promise<void> {
+  private buildIndex(): void {
     this.noteIndex.clear();
     this.allTags.clear();
 

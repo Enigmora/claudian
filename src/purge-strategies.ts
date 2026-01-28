@@ -200,7 +200,7 @@ export class PurgeManager {
       errors: []
     };
 
-    const stats = await this.storage.getStats();
+    const stats = this.storage.getStats();
     const now = Date.now();
 
     // Sort strategies by priority (highest first)

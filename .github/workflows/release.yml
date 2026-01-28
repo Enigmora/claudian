@@ -44,7 +44,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "v${{ steps.get_version.outputs.VERSION }}"
+          name: "${{ steps.get_version.outputs.VERSION }}"
           draft: false
           prerelease: false
           files: |

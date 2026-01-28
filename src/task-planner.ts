@@ -48,6 +48,21 @@ export interface TaskPlan {
   summary?: string;
 }
 
+/**
+ * Raw JSON structure from planning response
+ */
+interface RawPlanningResponse {
+  subtasks?: RawSubtask[];
+  estimatedTotalActions?: number;
+}
+
+interface RawSubtask {
+  id?: string;
+  description?: string;
+  prompt?: string;
+  dependencies?: string[];
+}
+
 export interface PlanningConfig {
   maxActionsPerSubtask: number;
   maxSubtasks: number;
@@ -569,17 +584,17 @@ export class TaskPlanner {
         return null;
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]) as RawPlanningResponse;
 
       if (!Array.isArray(parsed.subtasks) || parsed.subtasks.length === 0) {
         return null;
       }
 
-      const subtasks: Subtask[] = parsed.subtasks.map((st: unknown, idx: number) => ({
-        id: st.id || `subtask-${idx + 1}`,
+      const subtasks: Subtask[] = parsed.subtasks.map((st: RawSubtask, idx: number) => ({
+        id: st.id ?? `subtask-${idx + 1}`,
         index: idx,
-        description: st.description || `Subtask ${idx + 1}`,
-        prompt: st.prompt || st.description,
+        description: st.description ?? `Subtask ${idx + 1}`,
+        prompt: st.prompt ?? st.description ?? `Subtask ${idx + 1}`,
         dependencies: Array.isArray(st.dependencies) ? st.dependencies : [],
         status: 'pending' as const
       }));
@@ -592,7 +607,7 @@ export class TaskPlanner {
         originalRequest,
         createdAt: Date.now(),
         subtasks: limitedSubtasks,
-        totalEstimatedActions: parsed.estimatedTotalActions || limitedSubtasks.length * 5,
+        totalEstimatedActions: parsed.estimatedTotalActions ?? limitedSubtasks.length * 5,
         currentSubtaskIndex: 0,
         status: 'planning'
       };

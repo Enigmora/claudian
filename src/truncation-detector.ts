@@ -17,6 +17,17 @@ export interface TruncationContext {
   isAgentMode: boolean;
 }
 
+/**
+ * Structure of recovered agent response JSON
+ */
+interface RecoveredAgentJson {
+  thinking?: string;
+  actions?: unknown[];
+  message?: string;
+  requiresConfirmation?: boolean;
+  awaitResults?: boolean;
+}
+
 export class TruncationDetector {
   // Patterns indicating truncated response (incomplete structures)
   private static readonly TRUNCATION_PATTERNS: Array<{ pattern: RegExp; weight: number; description: string }> = [
@@ -395,15 +406,15 @@ export class TruncationDetector {
     const recovered = this.attemptJsonRecovery(truncated);
     if (recovered) {
       try {
-        const parsed = JSON.parse(recovered);
+        const parsed = JSON.parse(recovered) as RecoveredAgentJson;
         if (parsed.actions && Array.isArray(parsed.actions) && parsed.actions.length > 0) {
           // Reconstruct with a message about truncation
           return JSON.stringify({
-            thinking: parsed.thinking || '',
+            thinking: parsed.thinking ?? '',
             actions: parsed.actions,
-            message: (parsed.message || '') + ' [Nota: Respuesta truncada, se procesaron las acciones completas]',
-            requiresConfirmation: parsed.requiresConfirmation || false,
-            awaitResults: parsed.awaitResults || false
+            message: (parsed.message ?? '') + ' [Nota: Respuesta truncada, se procesaron las acciones completas]',
+            requiresConfirmation: parsed.requiresConfirmation ?? false,
+            awaitResults: parsed.awaitResults ?? false
           });
         }
       } catch {

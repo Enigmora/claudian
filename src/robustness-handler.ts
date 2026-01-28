@@ -131,64 +131,68 @@ export class RobustnessHandler {
         callbacks.updateStreamingIndicator(streamingIndicator, continuationResponse);
         callbacks.scrollToBottom();
       },
-      onComplete: async (response) => {
+      onComplete: (response) => {
         cursorEl.remove();
         indicator.remove();
 
-        // Merge and process complete response
-        const fullResponse = TruncationDetector.mergeResponses(partialResponse, response);
-        contentEl.empty();
+        void (async () => {
+          // Merge and process complete response
+          const fullResponse = TruncationDetector.mergeResponses(partialResponse, response);
+          contentEl.empty();
 
-        // Update partial in storage
-        if (this.currentPartialId && contextManager) {
-          await contextManager.appendToPartialResponse(this.currentPartialId, response);
-        }
-
-        // Check if still truncated
-        const newTruncation = TruncationDetector.detect({
-          response: fullResponse,
-          isAgentMode: true,
-          history: this.client.getHistory()
-        });
-
-        if (newTruncation.isTruncated && this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
-          this.autoContinueCount++;
-          await this.handleTruncatedResponse(fullResponse, newTruncation, responseEl, contentEl, callbacks, component);
-          return;
-        }
-
-        // Complete partial and clean up
-        if (this.currentPartialId && contextManager) {
-          try {
-            await contextManager.completePartialResponse(this.currentPartialId);
-          } finally {
-            this.currentPartialId = null;
+          // Update partial in storage
+          if (this.currentPartialId && contextManager) {
+            await contextManager.appendToPartialResponse(this.currentPartialId, response);
           }
-        }
 
-        // Process complete response
-        if (this.agentMode.isAgentResponse(fullResponse)) {
-          await callbacks.handleAgentResponse(fullResponse, responseEl, contentEl);
-        } else {
-          MarkdownRenderer.render(this.app, fullResponse, contentEl, '', component);
-          callbacks.addMessageActions(responseEl, fullResponse);
-        }
+          // Check if still truncated
+          const newTruncation = TruncationDetector.detect({
+            response: fullResponse,
+            isAgentMode: true,
+            history: this.client.getHistory()
+          });
 
-        this.autoContinueCount = 0;
-        callbacks.resetButton();
-        callbacks.scrollToBottom();
+          if (newTruncation.isTruncated && this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
+            this.autoContinueCount++;
+            await this.handleTruncatedResponse(fullResponse, newTruncation, responseEl, contentEl, callbacks, component);
+            return;
+          }
+
+          // Complete partial and clean up
+          if (this.currentPartialId && contextManager) {
+            try {
+              await contextManager.completePartialResponse(this.currentPartialId);
+            } finally {
+              this.currentPartialId = null;
+            }
+          }
+
+          // Process complete response
+          if (this.agentMode.isAgentResponse(fullResponse)) {
+            await callbacks.handleAgentResponse(fullResponse, responseEl, contentEl);
+          } else {
+            void MarkdownRenderer.render(this.app, fullResponse, contentEl, '', component);
+            callbacks.addMessageActions(responseEl, fullResponse);
+          }
+
+          this.autoContinueCount = 0;
+          callbacks.resetButton();
+          callbacks.scrollToBottom();
+        })();
       },
-      onError: async (error) => {
+      onError: (error) => {
         cursorEl.remove();
 
-        // Clean up partial on error
-        if (this.currentPartialId && contextManager) {
-          try {
-            await contextManager.completePartialResponse(this.currentPartialId);
-          } finally {
-            this.currentPartialId = null;
+        void (async () => {
+          // Clean up partial on error
+          if (this.currentPartialId && contextManager) {
+            try {
+              await contextManager.completePartialResponse(this.currentPartialId);
+            } finally {
+              this.currentPartialId = null;
+            }
           }
-        }
+        })();
 
         contentEl.createEl('span', {
           text: t('chat.error', { message: error.message }),
@@ -246,33 +250,35 @@ export class RobustnessHandler {
         callbacks.updateStreamingIndicator(streamingIndicator, retryResponse);
         callbacks.scrollToBottom();
       },
-      onComplete: async (response) => {
+      onComplete: (response) => {
         cursorEl.remove();
         indicator.remove();
         contentEl.empty();
 
-        // Validate retry response
-        const retryParsed = this.agentMode.parseAgentResponse(response);
-        const retryValidation = ResponseValidator.validate(response, retryParsed);
+        void (async () => {
+          // Validate retry response
+          const retryParsed = this.agentMode.parseAgentResponse(response);
+          const retryValidation = ResponseValidator.validate(response, retryParsed);
 
-        if (!retryValidation.isValid && ResponseValidator.shouldRetry(retryValidation) &&
-            this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
-          this.autoContinueCount++;
-          await this.handleValidationRetry(response, retryValidation, responseEl, contentEl, callbacks, component);
-          return;
-        }
+          if (!retryValidation.isValid && ResponseValidator.shouldRetry(retryValidation) &&
+              this.autoContinueCount < this.MAX_AUTO_CONTINUES) {
+            this.autoContinueCount++;
+            await this.handleValidationRetry(response, retryValidation, responseEl, contentEl, callbacks, component);
+            return;
+          }
 
-        // Process response
-        if (this.agentMode.isAgentResponse(response)) {
-          await callbacks.handleAgentResponse(response, responseEl, contentEl);
-        } else {
-          MarkdownRenderer.render(this.app, response, contentEl, '', component);
-          callbacks.addMessageActions(responseEl, response);
-        }
+          // Process response
+          if (this.agentMode.isAgentResponse(response)) {
+            await callbacks.handleAgentResponse(response, responseEl, contentEl);
+          } else {
+            void MarkdownRenderer.render(this.app, response, contentEl, '', component);
+            callbacks.addMessageActions(responseEl, response);
+          }
 
-        this.autoContinueCount = 0;
-        callbacks.resetButton();
-        callbacks.scrollToBottom();
+          this.autoContinueCount = 0;
+          callbacks.resetButton();
+          callbacks.scrollToBottom();
+        })();
       },
       onError: (error) => {
         cursorEl.remove();

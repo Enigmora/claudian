@@ -130,7 +130,7 @@ export class ContextSessionManager {
     return new Promise<string>((resolve) => {
       let summary = '';
 
-      summaryClient.sendMessageStream(prompt, {
+      void summaryClient.sendMessageStream(prompt, {
         onToken: (token: string) => {
           summary += token;
         },

@@ -57,13 +57,14 @@ export default class ClaudianPlugin extends Plugin {
     await setLocale(locale);
 
     // Migration: convert old systemPrompt to customInstructions if needed
-    if ((this.settings as unknown).systemPrompt !== undefined) {
+    const settingsWithLegacy = this.settings as ClaudianSettings & { systemPrompt?: string };
+    if (settingsWithLegacy.systemPrompt !== undefined) {
       // If user had custom content (not the default), preserve it
-      const oldPrompt = (this.settings as unknown).systemPrompt;
+      const oldPrompt = settingsWithLegacy.systemPrompt;
       if (oldPrompt && oldPrompt !== '' && !oldPrompt.includes('You are an intelligent assistant integrated into Obsidian')) {
         this.settings.customInstructions = oldPrompt;
       }
-      delete (this.settings as unknown).systemPrompt;
+      delete settingsWithLegacy.systemPrompt;
       await this.saveSettings();
     }
 
@@ -78,7 +79,7 @@ export default class ClaudianPlugin extends Plugin {
     // Phase 5: Initialize token tracker
     this.tokenUsageHistory = await this.loadTokenHistory();
     this.tokenTracker = new TokenUsageTracker(this.tokenUsageHistory);
-    this.tokenTracker.setSaveCallback((history) => this.saveTokenHistory(history));
+    this.tokenTracker.setSaveCallback((history) => { void this.saveTokenHistory(history); });
 
     // Initialize Claude client
     this.claudeClient = new ClaudeClient(this.settings);
@@ -106,7 +107,7 @@ export default class ClaudianPlugin extends Plugin {
 
     // Schedule periodic purge of temp files (every 30 minutes)
     this.purgeIntervalId = window.setInterval(
-      () => this.runScheduledPurge(),
+      () => void this.runScheduledPurge(),
       30 * 60 * 1000
     );
     this.registerInterval(this.purgeIntervalId);
@@ -119,7 +120,7 @@ export default class ClaudianPlugin extends Plugin {
 
     // Add ribbon icon
     this.addRibbonIcon('claudian', 'Claudian', () => {
-      this.activateChatView();
+      void this.activateChatView();
     });
 
     // Register command to open chat
@@ -127,7 +128,7 @@ export default class ClaudianPlugin extends Plugin {
       id: 'open-claude-chat',
       name: t('command.openChat'),
       callback: () => {
-        this.activateChatView();
+        void this.activateChatView();
       }
     });
 
@@ -139,7 +140,7 @@ export default class ClaudianPlugin extends Plugin {
         const file = this.app.workspace.getActiveFile();
         if (file?.extension === 'md') {
           if (!checking) {
-            this.processActiveNote(file);
+            void this.processActiveNote(file);
           }
           return true;
         }
@@ -172,7 +173,7 @@ export default class ClaudianPlugin extends Plugin {
   private async processActiveNote(file: TFile): Promise<void> {
     const notice = new Notice(t('processor.processing'), 0);
 
-    this.noteProcessor.processActiveNote({
+    void this.noteProcessor.processActiveNote({
       onStart: () => {},
       onProgress: (message) => {
         notice.setMessage(message);
@@ -188,13 +189,12 @@ export default class ClaudianPlugin extends Plugin {
     });
   }
 
-  async onunload() {
+  onunload() {
     // Clean up views when disabling plugin
-    
 
     // Phase 3: Final purge of expired temp files
     if (this.contextStorage) {
-      await this.contextStorage.purgeExpired();
+      void this.contextStorage.purgeExpired();
     }
 
     // Clear purge interval
@@ -234,8 +234,8 @@ export default class ClaudianPlugin extends Plugin {
    */
   private async loadTokenHistory(): Promise<TokenUsageHistory> {
     try {
-      const data = await this.loadData();
-      if (data && data.tokenUsageHistory) {
+      const data = await this.loadData() as { tokenUsageHistory?: TokenUsageHistory } | null;
+      if (data?.tokenUsageHistory) {
         return data.tokenUsageHistory;
       }
     } catch (e) {
@@ -249,7 +249,7 @@ export default class ClaudianPlugin extends Plugin {
    */
   private async saveTokenHistory(history: TokenUsageHistory): Promise<void> {
     try {
-      const data = await this.loadData() || {};
+      const data = (await this.loadData() || {}) as { tokenUsageHistory?: TokenUsageHistory };
       data.tokenUsageHistory = history;
       await this.saveData(data);
     } catch (e) {
@@ -276,7 +276,7 @@ export default class ClaudianPlugin extends Plugin {
 
     // Reveal the view
     if (leaf) {
-      workspace.revealLeaf(leaf);
+      void workspace.revealLeaf(leaf);
     }
   }
 }

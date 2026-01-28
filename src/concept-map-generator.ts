@@ -65,15 +65,11 @@ export class ConceptMapGenerator {
     const prompt = this.buildConceptMapPrompt(notesContent);
 
     return new Promise((resolve, reject) => {
-      let _fullResponse = '';
-
       void this.claudeClient.generateConceptMap(
         prompt,
         {
           onStart: () => {},
-          onToken: (token) => {
-            _fullResponse += token;
-          },
+          onToken: () => {},
           onComplete: (response) => {
             try {
               const parsed = this.parseConceptMapResponse(response);

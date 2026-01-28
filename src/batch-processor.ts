@@ -87,16 +87,12 @@ export class BatchProcessor {
     const prompt = buildTemplatePrompt(template, content, file.basename);
 
     return new Promise((resolve, reject) => {
-      let _fullResponse = '';
-
       void this.claudeClient.processWithTemplate(
         prompt,
         template,
         {
           onStart: () => {},
-          onToken: (token) => {
-            _fullResponse += token;
-          },
+          onToken: () => {},
           onComplete: (response) => {
             resolve({
               templateId: template.id,

@@ -337,7 +337,7 @@ export class BatchModal extends Modal {
     progressText.textContent = t('batch.starting');
 
     try {
-      const _results = await this.batchProcessor.processNotes(
+      await this.batchProcessor.processNotes(
         files,
         this.selectedTemplate!,
         {
@@ -390,7 +390,7 @@ export class BatchModal extends Modal {
     progressFill.setCssStyles({ width: '30%' });
 
     try {
-      const _map = await this.conceptMapGenerator.generateFromNotes(
+      await this.conceptMapGenerator.generateFromNotes(
         files,
         this.conceptMapTitle,
         {

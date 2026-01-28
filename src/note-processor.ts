@@ -56,17 +56,13 @@ export class NoteProcessor {
 
     callbacks.onProgress?.(t('processor.analyzing'));
 
-    let _fullResponse = '';
-
     await this.claudeClient.processNoteStream(
       content,
       file.basename,
       vaultContext,
       {
         onStart: () => {},
-        onToken: (token) => {
-          _fullResponse += token;
-        },
+        onToken: () => {},
         onComplete: (response) => {
           try {
             const suggestions = this.parseSuggestions(response);

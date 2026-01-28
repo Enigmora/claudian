@@ -97,6 +97,8 @@ Full support for **English**, **Spanish**, **Chinese**, **German**, **French**, 
 3. Click the Claudian icon in the ribbon or use the command palette
 4. Start chatting!
 
+> **Note:** This plugin requires an API key from Anthropic. API usage may incur costs based on [Anthropic's pricing](https://www.anthropic.com/pricing). Claudian is not affiliated with Anthropic.
+
 For detailed configuration options, see the [Configuration Guide](https://github.com/Enigmora/claudian/wiki/Configuration).
 
 ---
@@ -115,9 +117,10 @@ Visit the **[Wiki](https://github.com/Enigmora/claudian/wiki)** for complete doc
 
 ## Privacy & Security
 
-- **Local storage**: Your API key is stored only on your device
-- **No telemetry**: We don't collect any usage data
-- **Open source**: 100% auditable code
+- **Network usage**: This plugin connects to [Anthropic's API](https://api.anthropic.com) to process your requests. Note content is only sent when you explicitly ask Claude to analyze it.
+- **Local storage**: Your API key is stored only on your device in Obsidian's plugin data
+- **No telemetry**: We don't collect any usage data or analytics
+- **Open source**: 100% auditable code under [MIT License](LICENSE)
 
 ---
 

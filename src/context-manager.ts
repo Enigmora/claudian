@@ -248,7 +248,7 @@ export class ContextManager {
     // Parse summary or use as-is
     let parsedSummary: { keyTopics?: string[]; lastActions?: string[]; summary?: string };
     try {
-      parsedSummary = JSON.parse(summaryText);
+      parsedSummary = JSON.parse(summaryText) as { keyTopics?: string[]; lastActions?: string[]; summary?: string };
     } catch {
       parsedSummary = { summary: summaryText };
     }

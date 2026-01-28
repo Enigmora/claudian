@@ -159,7 +159,7 @@ export class AgentLoopManager {
           } else if (typeof r.result === 'string' && r.result.length > 200) {
             // Truncate long content (like read-note)
             resultStr = `\n  Resultado: "${r.result.substring(0, 200)}..." (${r.result.length} caracteres)`;
-          } else if (r.result !== true) {
+          } else if (r.result !== true && (typeof r.result === 'string' || typeof r.result === 'number' || typeof r.result === 'boolean')) {
             resultStr = `\n  Resultado: ${r.result}`;
           }
         }

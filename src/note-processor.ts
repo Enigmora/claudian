@@ -19,6 +19,16 @@ export interface ValidatedSuggestions extends Omit<NoteSuggestions, 'wikilinks'>
   wikilinks: ValidatedWikilink[];
 }
 
+/**
+ * Raw JSON structure from Claude's suggestions response
+ */
+interface RawSuggestionsJson {
+  tags?: unknown[];
+  wikilinks?: unknown[];
+  atomicConcepts?: unknown[];
+  reasoning?: string;
+}
+
 export class NoteProcessor {
   private plugin: ClaudianPlugin;
   private claudeClient: ClaudeClient;
@@ -80,13 +90,13 @@ export class NoteProcessor {
     }
 
     try {
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]) as RawSuggestionsJson;
 
       return {
-        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
-        wikilinks: Array.isArray(parsed.wikilinks) ? parsed.wikilinks : [],
-        atomicConcepts: Array.isArray(parsed.atomicConcepts) ? parsed.atomicConcepts : [],
-        reasoning: parsed.reasoning || ''
+        tags: Array.isArray(parsed.tags) ? parsed.tags as string[] : [],
+        wikilinks: Array.isArray(parsed.wikilinks) ? parsed.wikilinks as WikilinkSuggestion[] : [],
+        atomicConcepts: Array.isArray(parsed.atomicConcepts) ? parsed.atomicConcepts as AtomicConcept[] : [],
+        reasoning: parsed.reasoning ?? ''
       };
     } catch {
       throw new Error(t('error.parseResponse'));
@@ -108,10 +118,11 @@ export class NoteProcessor {
   async applyTags(file: TFile, tags: string[]): Promise<void> {
     if (tags.length === 0) return;
 
-    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-      const existingTags: string[] = Array.isArray(frontmatter.tags)
-        ? frontmatter.tags
-        : (frontmatter.tags ? [frontmatter.tags] : []);
+    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+      const rawTags = frontmatter.tags;
+      const existingTags: string[] = Array.isArray(rawTags)
+        ? rawTags.filter((t): t is string => typeof t === 'string')
+        : (typeof rawTags === 'string' ? [rawTags] : []);
 
       const mergedTags = [...new Set([...existingTags, ...tags])];
       frontmatter.tags = mergedTags;
@@ -173,7 +184,7 @@ export class NoteProcessor {
     const bodyContent = `# ${concept.title}\n\n${concept.summary}\n\n${concept.content}`;
     const file = await this.plugin.app.vault.create(filePath, bodyContent);
 
-    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
       frontmatter.created = new Date().toISOString().split('T')[0];
       frontmatter.source = 'atomic-concept';
     });

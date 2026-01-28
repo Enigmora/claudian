@@ -153,11 +153,11 @@ Task: ${message}`;
         return null;
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]) as { c?: string; complexity?: string; k?: string; reasoning?: string };
       // Map compact keys to full names
       return {
-        complexity: parsed.c || parsed.complexity,
-        reasoning: parsed.k || parsed.reasoning || ''
+        complexity: parsed.c ?? parsed.complexity ?? 'moderate',
+        reasoning: parsed.k ?? parsed.reasoning ?? ''
       };
     } catch (error) {
       logger.warn('Task classification failed:', error);
@@ -732,11 +732,11 @@ ${noteContent}`;
       const jsonMatch = errorString.match(/\{[\s\S]*"type"\s*:\s*"error"[\s\S]*\}/);
       if (!jsonMatch) return null;
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]) as { type?: string; error?: { type?: string; message?: string } };
 
       if (parsed.type === 'error' && parsed.error?.message) {
         return {
-          type: parsed.error.type || 'unknown_error',
+          type: parsed.error.type ?? 'unknown_error',
           message: parsed.error.message,
         };
       }

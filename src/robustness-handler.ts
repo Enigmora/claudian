@@ -106,7 +106,7 @@ export class RobustnessHandler {
     await this.delay(delayMs);
 
     // Generate continuation prompt
-    const continuePrompt = truncationResult.suggestedContinuation || t('agent.retryWithJson');
+    const continuePrompt = truncationResult.suggestedContinuationPrompt ?? t('agent.retryWithJson');
 
     // Create new cursor for continuation
     const cursorEl = contentEl.createSpan({ cls: 'claudian-cursor' });

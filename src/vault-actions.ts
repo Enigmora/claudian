@@ -2,7 +2,19 @@ import { TFile, TFolder, MarkdownView, Editor, ItemView } from 'obsidian';
 import ClaudianPlugin from './main';
 import { t } from './i18n';
 import { logger } from './logger';
-import type { ObsidianAppInternal } from './obsidian-internals';
+import type {
+  ObsidianAppInternal,
+  DailyNotesInstance,
+  TemplatesInstance,
+  BookmarksInstance,
+  BookmarkItem,
+  MomentInstance,
+  ObsidianCanvas,
+  ObsidianCanvasView,
+  ObsidianSearchView,
+  ObsidianExplorerView,
+  ObsidianEditorInternal
+} from './obsidian-internals';
 
 export type ActionType =
   // === Existing (16 actions) ===
@@ -331,10 +343,10 @@ export class VaultActionExecutor {
     return { deleted: true };
   }
 
-  private async listFolder(path: string, recursive: boolean = false): Promise<{
+  private listFolder(path: string, recursive: boolean = false): {
     folders: string[];
     files: string[];
-  }> {
+  } {
     const normalizedPath = path ? this.normalizePath(path) : '';
     const folder = normalizedPath
       ? this.plugin.app.vault.getAbstractFileByPath(normalizedPath)
@@ -395,7 +407,7 @@ export class VaultActionExecutor {
         await this.plugin.app.vault.modify(existing, content || '');
         // Update frontmatter if provided
         if (frontmatter && Object.keys(frontmatter).length > 0) {
-          await this.plugin.app.fileManager.processFrontMatter(existing, (fm) => {
+          await this.plugin.app.fileManager.processFrontMatter(existing, (fm: Record<string, unknown>) => {
             // Clear existing and set new
             Object.keys(fm).forEach(key => delete fm[key]);
             Object.assign(fm, frontmatter);
@@ -416,7 +428,7 @@ export class VaultActionExecutor {
 
     // Aplicar frontmatter si se proporciona
     if (frontmatter && Object.keys(frontmatter).length > 0) {
-      await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+      await this.plugin.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
         Object.assign(fm, frontmatter);
       });
     }
@@ -630,9 +642,10 @@ export class VaultActionExecutor {
         case 'tags': {
           const cache = this.plugin.app.metadataCache.getFileCache(file);
           const tags = cache?.tags?.map(t => t.tag.toLowerCase()) || [];
-          const fmTags = (cache?.frontmatter?.tags || []).map((t: string) =>
-            t.toLowerCase()
-          );
+          const rawFmTags = cache?.frontmatter?.tags as string | string[] | undefined;
+          const fmTags: string[] = Array.isArray(rawFmTags)
+            ? rawFmTags.map((t: string) => t.toLowerCase())
+            : (typeof rawFmTags === 'string' ? [rawFmTags.toLowerCase()] : []);
           isMatch = [...tags, ...fmTags].some(t => t.includes(queryLower));
           break;
         }
@@ -646,7 +659,7 @@ export class VaultActionExecutor {
     return { matches };
   }
 
-  private async getNoteInfo(path: string): Promise<{
+  private getNoteInfo(path: string): {
     path: string;
     title: string;
     size: number;
@@ -655,7 +668,7 @@ export class VaultActionExecutor {
     frontmatter: unknown;
     tags: string[];
     links: string[];
-  }> {
+  } {
     const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
@@ -664,9 +677,13 @@ export class VaultActionExecutor {
     }
 
     const cache = this.plugin.app.metadataCache.getFileCache(file);
+    const rawFmTags = cache?.frontmatter?.tags as string | string[] | undefined;
+    const fmTagsArray: string[] = Array.isArray(rawFmTags)
+      ? rawFmTags
+      : (typeof rawFmTags === 'string' ? [rawFmTags] : []);
     const tags = [
       ...(cache?.tags?.map(t => t.tag) || []),
-      ...(cache?.frontmatter?.tags || [])
+      ...fmTagsArray
     ];
     const links = cache?.links?.map(l => l.link) || [];
 
@@ -682,9 +699,9 @@ export class VaultActionExecutor {
     };
   }
 
-  private async findLinks(target: string): Promise<{
+  private findLinks(target: string): {
     backlinks: Array<{ path: string; title: string }>
-  }> {
+  } {
     const files = this.plugin.app.vault.getMarkdownFiles();
     const backlinks: Array<{ path: string; title: string }> = [];
     const targetLower = target.toLowerCase();
@@ -854,7 +871,7 @@ export class VaultActionExecutor {
     return view?.editor || null;
   }
 
-  private async editorGetContent(): Promise<{ content: string }> {
+  private editorGetContent(): { content: string } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -862,7 +879,7 @@ export class VaultActionExecutor {
     return { content: editor.getValue() };
   }
 
-  private async editorSetContent(content: string): Promise<{ set: boolean }> {
+  private editorSetContent(content: string): { set: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -871,7 +888,7 @@ export class VaultActionExecutor {
     return { set: true };
   }
 
-  private async editorGetSelection(): Promise<{ selection: string; hasSelection: boolean }> {
+  private editorGetSelection(): { selection: string; hasSelection: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -880,7 +897,7 @@ export class VaultActionExecutor {
     return { selection, hasSelection: selection.length > 0 };
   }
 
-  private async editorReplaceSelection(text: string): Promise<{ replaced: boolean }> {
+  private editorReplaceSelection(text: string): { replaced: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -889,7 +906,7 @@ export class VaultActionExecutor {
     return { replaced: true };
   }
 
-  private async editorInsertAtCursor(text: string): Promise<{ inserted: boolean }> {
+  private editorInsertAtCursor(text: string): { inserted: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -899,7 +916,7 @@ export class VaultActionExecutor {
     return { inserted: true };
   }
 
-  private async editorGetLine(line: number): Promise<{ line: number; text: string }> {
+  private editorGetLine(line: number): { line: number; text: string } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -908,7 +925,7 @@ export class VaultActionExecutor {
     return { line, text };
   }
 
-  private async editorSetLine(line: number, text: string): Promise<{ set: boolean }> {
+  private editorSetLine(line: number, text: string): { set: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -917,7 +934,7 @@ export class VaultActionExecutor {
     return { set: true };
   }
 
-  private async editorGoToLine(line: number): Promise<{ navigated: boolean }> {
+  private editorGoToLine(line: number): { navigated: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
@@ -926,23 +943,23 @@ export class VaultActionExecutor {
     return { navigated: true };
   }
 
-  private async editorUndo(): Promise<{ undone: boolean }> {
+  private editorUndo(): { undone: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
     }
     // Access the CodeMirror editor instance for undo
-    (editor as unknown).undo();
+    (editor as unknown as ObsidianEditorInternal).undo();
     return { undone: true };
   }
 
-  private async editorRedo(): Promise<{ redone: boolean }> {
+  private editorRedo(): { redone: boolean } {
     const editor = this.getActiveEditor();
     if (!editor) {
       throw new Error(t('error.noActiveEditor'));
     }
     // Access the CodeMirror editor instance for redo
-    (editor as unknown).redo();
+    (editor as unknown as ObsidianEditorInternal).redo();
     return { redone: true };
   }
 
@@ -955,7 +972,7 @@ export class VaultActionExecutor {
     return this.plugin.app as unknown as ObsidianAppInternal;
   }
 
-  private async executeCommand(commandId: string): Promise<{ executed: boolean; commandId: string }> {
+  private executeCommand(commandId: string): { executed: boolean; commandId: string } {
     const app = this.getInternalApp();
     const command = app.commands?.commands?.[commandId];
     if (!command) {
@@ -965,7 +982,7 @@ export class VaultActionExecutor {
     return { executed: true, commandId };
   }
 
-  private async listCommands(filter?: string): Promise<{ commands: Array<{ id: string; name: string }> }> {
+  private listCommands(filter?: string): { commands: Array<{ id: string; name: string }> } {
     const app = this.getInternalApp();
     const commands = app.commands?.commands ?? {};
     let commandList = Object.entries(commands).map(([id, cmd]) => ({
@@ -984,11 +1001,11 @@ export class VaultActionExecutor {
     return { commands: commandList };
   }
 
-  private async getCommandInfo(commandId: string): Promise<{
+  private getCommandInfo(commandId: string): {
     id: string;
     name: string;
     hotkeys?: string[];
-  }> {
+  } {
     const app = this.getInternalApp();
     const command = app.commands?.commands?.[commandId];
     if (!command) {
@@ -1005,10 +1022,17 @@ export class VaultActionExecutor {
 
   // ==================== Internal Plugins: Daily Notes ====================
 
-  private getDailyNotesPlugin(): unknown {
-    const internalPlugins = (this.plugin.app as unknown).internalPlugins;
-    const plugin = internalPlugins?.plugins?.['daily-notes'];
-    return plugin?.enabled ? plugin.instance : null;
+  /**
+   * Get moment.js instance from window (available in Obsidian)
+   */
+  private getMoment(): MomentInstance | null {
+    return (window as unknown as { moment?: MomentInstance }).moment ?? null;
+  }
+
+  private getDailyNotesPlugin(): DailyNotesInstance | null {
+    const app = this.getInternalApp();
+    const plugin = app.internalPlugins?.plugins?.['daily-notes'];
+    return plugin?.enabled ? (plugin.instance as DailyNotesInstance) : null;
   }
 
   private async openDailyNote(): Promise<{ opened: boolean; path?: string }> {
@@ -1018,13 +1042,13 @@ export class VaultActionExecutor {
     }
 
     // Try to get today's daily note
-    const moment = (window as unknown).moment;
+    const moment = this.getMoment();
     if (!moment) {
       throw new Error(t('error.momentNotAvailable'));
     }
 
-    const format = dailyNotes.options?.format || 'YYYY-MM-DD';
-    const folder = dailyNotes.options?.folder || '';
+    const format = dailyNotes.options?.format ?? 'YYYY-MM-DD';
+    const folder = dailyNotes.options?.folder ?? '';
     const filename = moment().format(format) + '.md';
     const path = folder ? `${folder}/${filename}` : filename;
 
@@ -1049,13 +1073,13 @@ export class VaultActionExecutor {
       throw new Error(t('error.pluginNotEnabled', { plugin: 'Daily Notes' }));
     }
 
-    const moment = (window as unknown).moment;
+    const moment = this.getMoment();
     if (!moment) {
       throw new Error(t('error.momentNotAvailable'));
     }
 
-    const format = dailyNotes.options?.format || 'YYYY-MM-DD';
-    const folder = dailyNotes.options?.folder || '';
+    const format = dailyNotes.options?.format ?? 'YYYY-MM-DD';
+    const folder = dailyNotes.options?.folder ?? '';
     const dateObj = date ? moment(date) : moment();
     const filename = dateObj.format(format) + '.md';
     const path = folder ? `${folder}/${filename}` : filename;
@@ -1087,10 +1111,10 @@ export class VaultActionExecutor {
 
   // ==================== Internal Plugins: Templates ====================
 
-  private getTemplatesPlugin(): unknown {
-    const internalPlugins = (this.plugin.app as unknown).internalPlugins;
-    const plugin = internalPlugins?.plugins?.['templates'];
-    return plugin?.enabled ? plugin.instance : null;
+  private getTemplatesPlugin(): TemplatesInstance | null {
+    const app = this.getInternalApp();
+    const plugin = app.internalPlugins?.plugins?.['templates'];
+    return plugin?.enabled ? (plugin.instance as TemplatesInstance) : null;
   }
 
   private async insertTemplate(templateName?: string): Promise<{ inserted: boolean; templateName?: string }> {
@@ -1104,7 +1128,7 @@ export class VaultActionExecutor {
       throw new Error(t('error.noActiveEditor'));
     }
 
-    const templateFolder = templates.options?.folder || 'templates';
+    const templateFolder = templates.options?.folder ?? 'templates';
 
     if (templateName) {
       // Find specific template
@@ -1119,14 +1143,15 @@ export class VaultActionExecutor {
       return { inserted: true, templateName };
     } else {
       // Open template picker (execute the insert template command)
-      await (this.plugin.app as unknown).commands.executeCommandById('templates:insert-template');
+      const app = this.getInternalApp();
+      app.commands.executeCommandById('templates:insert-template');
       return { inserted: true };
     }
   }
 
-  private async listTemplates(): Promise<{ templates: string[]; folder: string }> {
+  private listTemplates(): { templates: string[]; folder: string } {
     const templatesPlugin = this.getTemplatesPlugin();
-    const templateFolder = templatesPlugin?.options?.folder || 'templates';
+    const templateFolder = templatesPlugin?.options?.folder ?? 'templates';
 
     const folder = this.plugin.app.vault.getAbstractFileByPath(templateFolder);
     if (!folder || !(folder instanceof TFolder)) {
@@ -1145,10 +1170,10 @@ export class VaultActionExecutor {
 
   // ==================== Internal Plugins: Bookmarks ====================
 
-  private getBookmarksPlugin(): unknown {
-    const internalPlugins = (this.plugin.app as unknown).internalPlugins;
-    const plugin = internalPlugins?.plugins?.['bookmarks'];
-    return plugin?.enabled ? plugin.instance : null;
+  private getBookmarksPlugin(): BookmarksInstance | null {
+    const app = this.getInternalApp();
+    const plugin = app.internalPlugins?.plugins?.['bookmarks'];
+    return plugin?.enabled ? (plugin.instance as BookmarksInstance) : null;
   }
 
   private async addBookmark(path: string): Promise<{ added: boolean; path: string }> {
@@ -1168,13 +1193,14 @@ export class VaultActionExecutor {
       await bookmarks.addItem({ type: 'file', path: normalizedPath });
     } else {
       // Fallback: use command
-      await (this.plugin.app as unknown).commands.executeCommandById('bookmarks:bookmark-current-view');
+      const app = this.getInternalApp();
+      app.commands.executeCommandById('bookmarks:bookmark-current-view');
     }
 
     return { added: true, path: normalizedPath };
   }
 
-  private async removeBookmark(path: string): Promise<{ removed: boolean; path: string }> {
+  private removeBookmark(path: string): { removed: boolean; path: string } {
     const bookmarks = this.getBookmarksPlugin();
     if (!bookmarks) {
       throw new Error(t('error.pluginNotEnabled', { plugin: 'Bookmarks' }));
@@ -1185,7 +1211,7 @@ export class VaultActionExecutor {
     // Find and remove bookmark
     if (bookmarks.items) {
       const items = bookmarks.items;
-      const findAndRemove = (itemList: unknown[]): boolean => {
+      const findAndRemove = (itemList: BookmarkItem[]): boolean => {
         for (let i = 0; i < itemList.length; i++) {
           const item = itemList[i];
           if (item.type === 'file' && item.path === normalizedPath) {
@@ -1200,7 +1226,7 @@ export class VaultActionExecutor {
       };
 
       if (findAndRemove(items)) {
-        bookmarks.saveData();
+        bookmarks.saveData?.();
         return { removed: true, path: normalizedPath };
       }
     }
@@ -1208,21 +1234,21 @@ export class VaultActionExecutor {
     throw new Error(t('error.bookmarkNotFound', { path: normalizedPath }));
   }
 
-  private async listBookmarks(): Promise<{ bookmarks: Array<{ type: string; path?: string; title?: string }> }> {
+  private listBookmarks(): { bookmarks: Array<{ type: string; path?: string; title?: string }> } {
     const bookmarksPlugin = this.getBookmarksPlugin();
     if (!bookmarksPlugin) {
       throw new Error(t('error.pluginNotEnabled', { plugin: 'Bookmarks' }));
     }
 
-    const items = bookmarksPlugin.items || [];
+    const items = bookmarksPlugin.items ?? [];
     const result: Array<{ type: string; path?: string; title?: string }> = [];
 
-    const extractBookmarks = (itemList: unknown[]) => {
+    const extractBookmarks = (itemList: BookmarkItem[]) => {
       for (const item of itemList) {
         if (item.type === 'file') {
-          result.push({ type: 'file', path: item.path, title: item.title });
+          result.push({ type: 'file', path: item.path });
         } else if (item.type === 'group') {
-          result.push({ type: 'group', title: item.title });
+          result.push({ type: 'group' });
           if (item.items) {
             extractBookmarks(item.items);
           }
@@ -1236,19 +1262,19 @@ export class VaultActionExecutor {
 
   // ==================== Canvas API ====================
 
-  private getActiveCanvas(): unknown {
+  private getActiveCanvas(): ObsidianCanvas | null {
     const view = this.plugin.app.workspace.getActiveViewOfType(ItemView);
     if (view?.getViewType() === 'canvas') {
-      return (view as unknown).canvas;
+      return (view as unknown as ObsidianCanvasView).canvas ?? null;
     }
     return null;
   }
 
-  private async canvasCreateTextNode(
+  private canvasCreateTextNode(
     text: string,
     x?: number,
     y?: number
-  ): Promise<{ created: boolean; nodeId: string }> {
+  ): { created: boolean; nodeId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1263,11 +1289,11 @@ export class VaultActionExecutor {
     return { created: true, nodeId: node.id };
   }
 
-  private async canvasCreateFileNode(
+  private canvasCreateFileNode(
     file: string,
     x?: number,
     y?: number
-  ): Promise<{ created: boolean; nodeId: string }> {
+  ): { created: boolean; nodeId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1288,11 +1314,11 @@ export class VaultActionExecutor {
     return { created: true, nodeId: node.id };
   }
 
-  private async canvasCreateLinkNode(
+  private canvasCreateLinkNode(
     url: string,
     x?: number,
     y?: number
-  ): Promise<{ created: boolean; nodeId: string }> {
+  ): { created: boolean; nodeId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1307,7 +1333,7 @@ export class VaultActionExecutor {
     return { created: true, nodeId: node.id };
   }
 
-  private async canvasCreateGroup(label?: string): Promise<{ created: boolean; groupId: string }> {
+  private canvasCreateGroup(label?: string): { created: boolean; groupId: string } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1322,10 +1348,10 @@ export class VaultActionExecutor {
     return { created: true, groupId: group.id };
   }
 
-  private async canvasAddEdge(
+  private canvasAddEdge(
     fromNode: string,
     toNode: string
-  ): Promise<{ created: boolean }> {
+  ): { created: boolean } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1352,7 +1378,7 @@ export class VaultActionExecutor {
     return { created: true };
   }
 
-  private async canvasSelectAll(): Promise<{ selected: number }> {
+  private canvasSelectAll(): { selected: number } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1363,7 +1389,7 @@ export class VaultActionExecutor {
     return { selected: selectedCount };
   }
 
-  private async canvasZoomToFit(): Promise<{ zoomed: boolean }> {
+  private canvasZoomToFit(): { zoomed: boolean } {
     const canvas = this.getActiveCanvas();
     if (!canvas) {
       throw new Error(t('error.noActiveCanvas'));
@@ -1375,10 +1401,10 @@ export class VaultActionExecutor {
 
   // ==================== Enhanced Search ====================
 
-  private async searchByHeading(
+  private searchByHeading(
     heading: string,
     folder?: string
-  ): Promise<{ matches: Array<{ path: string; title: string; heading: string; level: number }> }> {
+  ): { matches: Array<{ path: string; title: string; heading: string; level: number }> } {
     const files = this.plugin.app.vault.getMarkdownFiles();
     const matches: Array<{ path: string; title: string; heading: string; level: number }> = [];
     const headingLower = heading.toLowerCase();
@@ -1406,11 +1432,11 @@ export class VaultActionExecutor {
     return { matches };
   }
 
-  private async searchByBlock(blockId: string): Promise<{
+  private searchByBlock(blockId: string): {
     found: boolean;
     path?: string;
     title?: string;
-  }> {
+  } {
     const files = this.plugin.app.vault.getMarkdownFiles();
 
     for (const file of files) {
@@ -1427,7 +1453,7 @@ export class VaultActionExecutor {
     return { found: false };
   }
 
-  private async getAllTags(): Promise<{ tags: string[]; count: number }> {
+  private getAllTags(): { tags: string[]; count: number } {
     const tags = new Set<string>();
 
     const files = this.plugin.app.vault.getMarkdownFiles();
@@ -1443,7 +1469,7 @@ export class VaultActionExecutor {
 
       // Tags in frontmatter
       if (cache?.frontmatter?.tags) {
-        const fmTags = cache.frontmatter.tags;
+        const fmTags = cache.frontmatter.tags as string | string[];
         if (Array.isArray(fmTags)) {
           fmTags.forEach((t: string) => tags.add(t.replace(/^#/, '')));
         } else if (typeof fmTags === 'string') {
@@ -1462,21 +1488,18 @@ export class VaultActionExecutor {
 
     if (searchLeaf) {
       void this.plugin.app.workspace.revealLeaf(searchLeaf);
-      const searchView = searchLeaf.view as unknown;
-      if (searchView?.setQuery) {
-        searchView.setQuery(query);
-      }
+      const searchView = searchLeaf.view as unknown as ObsidianSearchView | undefined;
+      searchView?.setQuery?.(query);
     } else {
       // Execute the search command and set query
-      await (this.plugin.app as unknown).commands.executeCommandById('global-search:open');
+      const app = this.getInternalApp();
+      app.commands.executeCommandById('global-search:open');
       // Small delay to let the search pane open
       await new Promise(resolve => setTimeout(resolve, 100));
       const newSearchLeaf = this.plugin.app.workspace.getLeavesOfType('search')[0];
       if (newSearchLeaf) {
-        const searchView = newSearchLeaf.view as unknown;
-        if (searchView?.setQuery) {
-          searchView.setQuery(query);
-        }
+        const searchView = newSearchLeaf.view as unknown as ObsidianSearchView | undefined;
+        searchView?.setQuery?.(query);
       }
     }
 
@@ -1512,7 +1535,7 @@ export class VaultActionExecutor {
     return { opened: true, path: normalizedPath };
   }
 
-  private async revealInExplorer(path: string): Promise<{ revealed: boolean; path: string }> {
+  private revealInExplorer(path: string): { revealed: boolean; path: string } {
     const normalizedPath = this.normalizeNotePath(path);
     const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 
@@ -1524,20 +1547,18 @@ export class VaultActionExecutor {
     const explorerLeaf = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
     if (explorerLeaf) {
       void this.plugin.app.workspace.revealLeaf(explorerLeaf);
-      const explorerView = explorerLeaf.view as unknown;
-      if (explorerView?.revealInFolder) {
-        explorerView.revealInFolder(file);
-      }
+      const explorerView = explorerLeaf.view as unknown as ObsidianExplorerView | undefined;
+      explorerView?.revealInFolder?.(file);
     }
 
     return { revealed: true, path: normalizedPath };
   }
 
-  private async getActiveFile(): Promise<{
+  private getActiveFile(): {
     path: string | null;
     title: string | null;
     isMarkdown: boolean;
-  }> {
+  } {
     const activeFile = this.plugin.app.workspace.getActiveFile();
 
     if (!activeFile) {
@@ -1551,7 +1572,7 @@ export class VaultActionExecutor {
     };
   }
 
-  private async closeActiveLeaf(): Promise<{ closed: boolean }> {
+  private closeActiveLeaf(): { closed: boolean } {
     const activeLeaf = this.plugin.app.workspace.getMostRecentLeaf();
     if (activeLeaf) {
       activeLeaf.detach();
@@ -1560,10 +1581,10 @@ export class VaultActionExecutor {
     return { closed: false };
   }
 
-  private async splitLeaf(direction: 'horizontal' | 'vertical'): Promise<{
+  private splitLeaf(direction: 'horizontal' | 'vertical'): {
     split: boolean;
     direction: string;
-  }> {
+  } {
     const activeLeaf = this.plugin.app.workspace.getMostRecentLeaf();
     if (!activeLeaf) {
       throw new Error(t('error.noActiveLeafToSplit'));

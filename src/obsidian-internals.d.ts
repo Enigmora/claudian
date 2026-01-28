@@ -12,6 +12,72 @@ export interface ObsidianAppInternal extends App {
   commands: ObsidianCommands;
   plugins: ObsidianPlugins;
   hotkeyManager: ObsidianHotkeyManager;
+  internalPlugins: InternalPluginsManager;
+}
+
+/**
+ * Internal plugins manager
+ */
+export interface InternalPluginsManager {
+  plugins: Record<string, InternalPlugin>;
+}
+
+/**
+ * Internal plugin interface
+ */
+export interface InternalPlugin {
+  enabled: boolean;
+  instance?: DailyNotesInstance | TemplatesInstance | BookmarksInstance;
+}
+
+/**
+ * Daily Notes plugin instance
+ */
+export interface DailyNotesInstance {
+  options?: {
+    format?: string;
+    folder?: string;
+    template?: string;
+  };
+}
+
+/**
+ * Templates plugin instance
+ */
+export interface TemplatesInstance {
+  options?: {
+    folder?: string;
+  };
+}
+
+/**
+ * Bookmarks plugin instance
+ */
+export interface BookmarksInstance {
+  items?: BookmarkItem[];
+  addItem?(item: { type: string; path: string }): Promise<void>;
+  saveData?(): void;
+}
+
+/**
+ * Bookmark item
+ */
+export interface BookmarkItem {
+  type: 'file' | 'group';
+  path?: string;
+  items?: BookmarkItem[];
+}
+
+/**
+ * Moment.js type (available globally in Obsidian)
+ */
+export interface MomentInstance {
+  (): MomentObject;
+  (date: string): MomentObject;
+}
+
+export interface MomentObject {
+  format(formatString: string): string;
 }
 
 /**
@@ -81,6 +147,7 @@ export interface ObsidianCanvasView extends View {
 export interface ObsidianCanvas {
   nodes: Map<string, CanvasNode>;
   edges: Map<string, CanvasEdge>;
+  selection?: Set<CanvasNode>;
   requestSave(): void;
   selectAll(): void;
   zoomToFit(): void;
@@ -89,6 +156,17 @@ export interface ObsidianCanvas {
   createLinkNode(options: CanvasLinkNodeOptions): CanvasNode;
   createGroupNode(options: CanvasGroupNodeOptions): CanvasNode;
   addEdge(edge: CanvasEdgeData): CanvasEdge;
+  createEdge(options: CanvasEdgeCreateOptions): CanvasEdge;
+}
+
+/**
+ * Canvas edge creation options (uses node objects)
+ */
+export interface CanvasEdgeCreateOptions {
+  fromNode: CanvasNode;
+  toNode: CanvasNode;
+  fromSide?: 'top' | 'right' | 'bottom' | 'left';
+  toSide?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 /**

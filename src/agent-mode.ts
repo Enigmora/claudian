@@ -20,6 +20,35 @@ export interface AgentExecutionResult {
   summary: string;
 }
 
+/**
+ * Raw JSON structure parsed from Claude's response
+ */
+interface RawAgentJson {
+  thinking?: string;
+  actions?: unknown[];
+  message?: string;
+  requiresConfirmation?: boolean;
+  awaitResults?: boolean;
+  action?: string;
+  params?: Record<string, unknown>;
+}
+
+/**
+ * Type guard to check if parsed JSON has valid agent response structure
+ */
+function isValidAgentJson(obj: unknown): obj is RawAgentJson {
+  return typeof obj === 'object' && obj !== null && 'actions' in obj;
+}
+
+/**
+ * Type guard to check if an object is a valid VaultAction
+ */
+function isValidAction(obj: unknown): obj is VaultAction {
+  return typeof obj === 'object' && obj !== null &&
+         'action' in obj && typeof (obj as Record<string, unknown>).action === 'string' &&
+         'params' in obj && typeof (obj as Record<string, unknown>).params === 'object';
+}
+
 export class AgentMode {
   private plugin: ClaudianPlugin;
   private executor: VaultActionExecutor;
@@ -59,10 +88,10 @@ export class AgentMode {
 
       return {
         thinking: jsonObj.thinking,
-        actions: Array.isArray(jsonObj.actions) ? jsonObj.actions : [],
-        message: jsonObj.message || t('agent.actionsExecuted'),
-        requiresConfirmation: jsonObj.requiresConfirmation || false,
-        awaitResults: jsonObj.awaitResults || false
+        actions: Array.isArray(jsonObj.actions) ? jsonObj.actions as VaultAction[] : [],
+        message: jsonObj.message ?? t('agent.actionsExecuted'),
+        requiresConfirmation: jsonObj.requiresConfirmation ?? false,
+        awaitResults: jsonObj.awaitResults ?? false
       };
     } catch (error) {
       logger.error('Error parsing agent response:', error);
@@ -74,13 +103,13 @@ export class AgentMode {
    * Extract the first valid JSON object from a string that may contain
    * multiple JSONs or markdown code blocks with JSON
    */
-  private extractFirstValidJson(content: string): unknown | null {
+  private extractFirstValidJson(content: string): RawAgentJson | null {
     // First, try to find JSON in markdown code blocks
     const codeBlockMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
     if (codeBlockMatch) {
       try {
-        const parsed = JSON.parse(codeBlockMatch[1]);
-        if (parsed.actions) {
+        const parsed: unknown = JSON.parse(codeBlockMatch[1]);
+        if (isValidAgentJson(parsed)) {
           return parsed;
         }
       } catch {
@@ -114,7 +143,7 @@ export class AgentMode {
   /**
    * Extract a JSON object starting from a specific position
    */
-  private extractJsonFromPosition(content: string, startIndex: number): unknown | null {
+  private extractJsonFromPosition(content: string, startIndex: number): RawAgentJson | null {
     // Find the matching closing brace by counting
     let depth = 0;
     let inString = false;
@@ -147,8 +176,8 @@ export class AgentMode {
             // Found complete JSON object
             const jsonStr = content.substring(startIndex, i + 1);
             try {
-              const parsed = JSON.parse(jsonStr);
-              if (parsed.actions) {
+              const parsed: unknown = JSON.parse(jsonStr);
+              if (isValidAgentJson(parsed)) {
                 return parsed;
               }
             } catch {
@@ -177,14 +206,14 @@ export class AgentMode {
    * Attempt to recover a valid response from truncated JSON
    * by extracting complete actions
    */
-  private attemptTruncatedJsonRecovery(truncated: string): unknown | null {
+  private attemptTruncatedJsonRecovery(truncated: string): RawAgentJson | null {
     try {
       // Try to find complete actions within the truncated JSON
       const actionsMatch = truncated.match(/"actions"\s*:\s*\[/);
       if (!actionsMatch) return null;
 
       const actionsStart = actionsMatch.index! + actionsMatch[0].length;
-      const completeActions: unknown[] = [];
+      const completeActions: VaultAction[] = [];
 
       let depth = 1; // Inside actions array
       let actionStart = actionsStart;
@@ -225,8 +254,8 @@ export class AgentMode {
             // Completed an action object
             const actionStr = truncated.substring(actionStart, i + 1);
             try {
-              const action = JSON.parse(actionStr);
-              if (action.action && action.params) {
+              const action: unknown = JSON.parse(actionStr);
+              if (isValidAction(action)) {
                 completeActions.push(action);
               }
             } catch {
@@ -350,10 +379,14 @@ export class AgentMode {
         return t('agent.editorSetContent');
       case 'editor-get-selection':
         return t('agent.editorGetSelection');
-      case 'editor-replace-selection':
-        return t('agent.editorReplaceSelection', { text: params.text?.substring(0, 30) + '...' });
-      case 'editor-insert-at-cursor':
-        return t('agent.editorInsertAtCursor', { text: params.text?.substring(0, 30) + '...' });
+      case 'editor-replace-selection': {
+        const text = typeof params.text === 'string' ? params.text : '';
+        return t('agent.editorReplaceSelection', { text: text.substring(0, 30) + '...' });
+      }
+      case 'editor-insert-at-cursor': {
+        const text = typeof params.text === 'string' ? params.text : '';
+        return t('agent.editorInsertAtCursor', { text: text.substring(0, 30) + '...' });
+      }
       case 'editor-get-line':
         return t('agent.editorGetLine', { line: params.line });
       case 'editor-set-line':
@@ -394,8 +427,10 @@ export class AgentMode {
         return t('agent.listBookmarks');
 
       // Canvas API actions
-      case 'canvas-create-text-node':
-        return t('agent.canvasCreateTextNode', { text: params.text?.substring(0, 30) + '...' });
+      case 'canvas-create-text-node': {
+        const text = typeof params.text === 'string' ? params.text : '';
+        return t('agent.canvasCreateTextNode', { text: text.substring(0, 30) + '...' });
+      }
       case 'canvas-create-file-node':
         return t('agent.canvasCreateFileNode', { file: params.file });
       case 'canvas-create-link-node':

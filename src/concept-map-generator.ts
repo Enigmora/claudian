@@ -151,7 +151,7 @@ NOTAS A ANALIZAR:
       throw new Error(t('error.noValidJsonInResponse'));
     }
 
-    return JSON.parse(jsonMatch[0]);
+    return JSON.parse(jsonMatch[0]) as Partial<ConceptMap>;
   }
 
   async saveAsNote(map: ConceptMap, outputPath?: string): Promise<TFile> {
@@ -167,7 +167,7 @@ NOTAS A ANALIZAR:
     const content = this.formatConceptMap(map);
     const file = await this.plugin.app.vault.create(filePath, content);
 
-    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
       frontmatter.created = timestamp;
       frontmatter.type = 'concept-map';
       frontmatter.source = 'claude-analysis';

@@ -98,7 +98,7 @@ export class ContextStorage {
     try {
       if (await adapter.exists(indexPath)) {
         const content = await adapter.read(indexPath);
-        this.index = JSON.parse(content);
+        this.index = JSON.parse(content) as TempIndex;
       }
     } catch {
       logger.warn(' Could not load temp index, creating new one');

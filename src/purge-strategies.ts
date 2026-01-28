@@ -235,8 +235,8 @@ export class PurgeManager {
       }
 
       // Reset stateful strategies
-      if ('reset' in strategy && typeof (strategy as unknown).reset === 'function') {
-        (strategy as unknown).reset();
+      if ('reset' in strategy && typeof (strategy as { reset?: () => void }).reset === 'function') {
+        (strategy as { reset: () => void }).reset();
       }
     }
 

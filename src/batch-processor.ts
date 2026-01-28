@@ -136,7 +136,7 @@ export class BatchProcessor {
     const content = this.formatBatchResults(results, template);
     const file = await this.plugin.app.vault.create(filePath, content);
 
-    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+    await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
       frontmatter.created = timestamp;
       frontmatter.template = template.id;
       frontmatter.source = 'batch-processing';

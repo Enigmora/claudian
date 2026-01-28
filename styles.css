@@ -2435,3 +2435,33 @@
   color: var(--text-faint);
   max-width: 300px;
 }
+
+/* ==================== */
+/* Utility Classes      */
+/* ==================== */
+
+/* Dynamic height auto (for auto-resizing textareas) */
+.claudian-height-auto {
+  height: auto;
+}
+
+/* Resize cursor */
+.claudian-resize-cursor {
+  cursor: ns-resize;
+}
+
+/* No user select (during resize) */
+.claudian-no-select {
+  user-select: none;
+}
+
+/* Full width */
+.claudian-width-full {
+  width: 100%;
+}
+
+/* Width percentage classes for progress bars */
+.claudian-progress-width {
+  /* Width set via CSS custom property --progress-width */
+  width: var(--progress-width, 0%);
+}

@@ -207,17 +207,17 @@ export class ChatView extends ItemView {
     this.inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        this.sendMessage();
+        void this.sendMessage();
       }
     });
 
     // Auto-resize textarea based on content (respecting wrapper limits)
     this.inputEl.addEventListener('input', () => {
-      this.inputEl.style.height = 'auto';
+      this.inputEl.setCssStyles({ height: 'auto' });
       // Calculate available height: input-area height minus padding
       const inputAreaHeight = inputArea.clientHeight;
       const maxHeight = inputAreaHeight - 16; // account for padding
-      this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, maxHeight) + 'px';
+      this.inputEl.setCssStyles({ height: Math.min(this.inputEl.scrollHeight, maxHeight) + 'px' });
     });
 
     this.sendButton = inputArea.createEl('button', {
@@ -247,7 +247,7 @@ export class ChatView extends ItemView {
       this.resetButtonToSend(true); // Force reset
     } else {
       // Send new message
-      this.sendMessage();
+      void this.sendMessage();
     }
   }
 
@@ -418,7 +418,7 @@ export class ChatView extends ItemView {
 
     // Clear input
     this.inputEl.value = '';
-    this.inputEl.style.height = 'auto';
+    this.inputEl.setCssStyles({ height: 'auto' });
 
     // Hide welcome screen if visible
     this.hideWelcomeScreen();
@@ -599,7 +599,7 @@ export class ChatView extends ItemView {
         contentEl.empty();
 
         // Render markdown
-        MarkdownRenderer.render(
+        void MarkdownRenderer.render(
           this.app,
           fullResponse,
           contentEl,
@@ -619,7 +619,7 @@ export class ChatView extends ItemView {
         contentEl.empty();
 
         // Render final markdown
-        MarkdownRenderer.render(
+        void MarkdownRenderer.render(
           this.app,
           response,
           contentEl,
@@ -737,85 +737,87 @@ export class ChatView extends ItemView {
         this.streamingUI.updateStreamingIndicator(streamingIndicator, fullResponse);
         this.scrollToBottom();
       },
-      onComplete: async (response: string) => {
+      onComplete: (response: string) => {
         cursorEl.remove();
         contentEl.empty();
 
-        // Phase 2: Truncation detection - CHECK FIRST before parsing
-        const history = this.client.getHistory();
-        const truncationResult = TruncationDetector.detect({
-          response,
-          isAgentMode: true,
-          history
-        });
-
-        // Handle truncation with auto-continue - BEFORE attempting to parse
-        if (truncationResult.isTruncated &&
-            this.plugin.settings.autoContinueOnTruncation &&
-            this.robustnessHandler.getAutoContinueCount() < this.robustnessHandler.MAX_AUTO_CONTINUES) {
-
-          this.robustnessHandler.incrementAutoContinueCount();
-
-          // Show continuation indicator instead of partial JSON response
-          // This prevents the "JSON flash" when response is truncated agent JSON
-          const continueIndicator = this.streamingUI.createStreamingIndicator(contentEl);
-          this.streamingUI.updateStreamingIndicator(continueIndicator, response);
-
-          await this.robustnessHandler.handleTruncatedResponse(
+        void (async () => {
+          // Phase 2: Truncation detection - CHECK FIRST before parsing
+          const history = this.client.getHistory();
+          const truncationResult = TruncationDetector.detect({
             response,
-            truncationResult,
-            responseEl,
-            contentEl,
-            this.getRobustnessCallbacks(),
-            this
-          );
-          return;
-        }
+            isAgentMode: true,
+            history
+          });
 
-        // Only parse and validate AFTER confirming response is complete
-        const parsedResponse = this.agentMode.parseAgentResponse(response);
-        const validation = ResponseValidator.validate(response, parsedResponse);
+          // Handle truncation with auto-continue - BEFORE attempting to parse
+          if (truncationResult.isTruncated &&
+              this.plugin.settings.autoContinueOnTruncation &&
+              this.robustnessHandler.getAutoContinueCount() < this.robustnessHandler.MAX_AUTO_CONTINUES) {
 
-        // Handle validation issues (model confusion, missing JSON)
-        if (!validation.isValid && ResponseValidator.shouldRetry(validation) &&
-            this.robustnessHandler.getAutoContinueCount() < this.robustnessHandler.MAX_AUTO_CONTINUES) {
+            this.robustnessHandler.incrementAutoContinueCount();
 
-          this.robustnessHandler.incrementAutoContinueCount();
-          await this.robustnessHandler.handleValidationRetry(
-            response,
-            validation,
-            responseEl,
-            contentEl,
-            this.getRobustnessCallbacks(),
-            this
-          );
-          return;
-        }
+            // Show continuation indicator instead of partial JSON response
+            // This prevents the "JSON flash" when response is truncated agent JSON
+            const continueIndicator = this.streamingUI.createStreamingIndicator(contentEl);
+            this.streamingUI.updateStreamingIndicator(continueIndicator, response);
 
-        // Normal processing
-        if (parsedResponse && parsedResponse.actions.length > 0) {
-          // Pass already-parsed response to avoid double parsing
-          await this.handleAgentResponse(response, responseEl, contentEl, 0, parsedResponse);
-        } else if (this.agentMode.isAgentResponse(response)) {
-          await this.handleAgentResponse(response, responseEl, contentEl);
-        } else {
-          // Normal response (conversation)
-          MarkdownRenderer.render(
-            this.app,
-            response,
-            contentEl,
-            '',
-            this
-          );
-          this.addMessageActions(responseEl, response);
-        }
+            await this.robustnessHandler.handleTruncatedResponse(
+              response,
+              truncationResult,
+              responseEl,
+              contentEl,
+              this.getRobustnessCallbacks(),
+              this
+            );
+            return;
+          }
 
-        // Reset state after successful completion
-        this.robustnessHandler.resetCounters();
-        this.currentPlan = null;
+          // Only parse and validate AFTER confirming response is complete
+          const parsedResponse = this.agentMode.parseAgentResponse(response);
+          const validation = ResponseValidator.validate(response, parsedResponse);
 
-        this.resetButtonToSend();
-        this.scrollToBottom();
+          // Handle validation issues (model confusion, missing JSON)
+          if (!validation.isValid && ResponseValidator.shouldRetry(validation) &&
+              this.robustnessHandler.getAutoContinueCount() < this.robustnessHandler.MAX_AUTO_CONTINUES) {
+
+            this.robustnessHandler.incrementAutoContinueCount();
+            await this.robustnessHandler.handleValidationRetry(
+              response,
+              validation,
+              responseEl,
+              contentEl,
+              this.getRobustnessCallbacks(),
+              this
+            );
+            return;
+          }
+
+          // Normal processing
+          if (parsedResponse && parsedResponse.actions.length > 0) {
+            // Pass already-parsed response to avoid double parsing
+            await this.handleAgentResponse(response, responseEl, contentEl, 0, parsedResponse);
+          } else if (this.agentMode.isAgentResponse(response)) {
+            await this.handleAgentResponse(response, responseEl, contentEl);
+          } else {
+            // Normal response (conversation)
+            void MarkdownRenderer.render(
+              this.app,
+              response,
+              contentEl,
+              '',
+              this
+            );
+            this.addMessageActions(responseEl, response);
+          }
+
+          // Reset state after successful completion
+          this.robustnessHandler.resetCounters();
+          this.currentPlan = null;
+
+          this.resetButtonToSend();
+          this.scrollToBottom();
+        })();
       },
       onError: (error) => {
         cursorEl.remove();
@@ -851,7 +853,7 @@ export class ChatView extends ItemView {
 
     if (!agentResponse || agentResponse.actions.length === 0) {
       // No actions, show normal message
-      MarkdownRenderer.render(
+      void MarkdownRenderer.render(
         this.app,
         agentResponse?.message || response,
         contentEl,
@@ -884,7 +886,7 @@ export class ChatView extends ItemView {
 
     if (actionsNeedingConfirmation.length > 0 && this.plugin.settings.confirmDestructiveActions) {
       // Show message before confirmation modal
-      MarkdownRenderer.render(this.app, agentResponse.message, contentEl, '', this);
+      void MarkdownRenderer.render(this.app, agentResponse.message, contentEl, '', this);
       // Show confirmation modal (including overwrite warnings)
       actionResults = await this.showConfirmationAndExecuteWithResults(agentResponse, responseEl, contentEl, overwriteActions.length > 0);
     } else {
@@ -1039,7 +1041,7 @@ export class ChatView extends ItemView {
         this.streamingUI.updateStreamingIndicator(streamingIndicator, fullResponse);
         this.scrollToBottom();
       },
-      onComplete: async (response) => {
+      onComplete: (response) => {
         // Remove streaming elements
         loopIndicator.remove();
         streamingIndicator.remove();
@@ -1054,19 +1056,21 @@ export class ChatView extends ItemView {
         }
 
         // Process the new response (may have more actions or be final)
-        if (this.agentMode.isAgentResponse(response)) {
-          await this.handleAgentResponse(response, responseEl, contentEl, loopCount + 1);
-        } else {
-          // Final response without actions - end the loop
-          this.endAgenticLoop();
-          // Render final response in the main content area
-          contentEl.empty();
-          MarkdownRenderer.render(this.app, response, contentEl, '', this);
-          this.addMessageActions(responseEl, response);
-        }
+        void (async () => {
+          if (this.agentMode.isAgentResponse(response)) {
+            await this.handleAgentResponse(response, responseEl, contentEl, loopCount + 1);
+          } else {
+            // Final response without actions - end the loop
+            this.endAgenticLoop();
+            // Render final response in the main content area
+            contentEl.empty();
+            void MarkdownRenderer.render(this.app, response, contentEl, '', this);
+            this.addMessageActions(responseEl, response);
+          }
 
-        this.resetButtonToSend();
-        this.scrollToBottom();
+          this.resetButtonToSend();
+          this.scrollToBottom();
+        })();
       },
       onError: (error) => {
         loopIndicator.remove();
@@ -1116,19 +1120,21 @@ export class ChatView extends ItemView {
       new ConfirmationModal(
         this.plugin,
         allConfirmActions,
-        async () => {
-          // Confirmed: mark overwrite actions and execute
-          let actionsToExecute = agentResponse.actions;
-          if (hasOverwrites) {
-            actionsToExecute = this.executor.markForOverwrite(agentResponse.actions);
-          }
-          const results = await this.executeAgentActionsWithResults(
-            actionsToExecute,
-            responseEl,
-            contentEl,
-            agentResponse.message
-          );
-          resolve(results);
+        () => {
+          void (async () => {
+            // Confirmed: mark overwrite actions and execute
+            let actionsToExecute = agentResponse.actions;
+            if (hasOverwrites) {
+              actionsToExecute = this.executor.markForOverwrite(agentResponse.actions);
+            }
+            const results = await this.executeAgentActionsWithResults(
+              actionsToExecute,
+              responseEl,
+              contentEl,
+              agentResponse.message
+            );
+            resolve(results);
+          })();
         },
         () => {
           // Cancelled: show message
@@ -1157,7 +1163,7 @@ export class ChatView extends ItemView {
 
     // Show initial message
     const messageEl = progressContainer.createDiv({ cls: 'agent-progress-message' });
-    MarkdownRenderer.render(this.app, originalMessage, messageEl, '', this);
+    void MarkdownRenderer.render(this.app, originalMessage, messageEl, '', this);
 
     // Create progress list for real-time updates
     const progressList = progressContainer.createDiv({ cls: 'agent-progress-list' });
@@ -1221,7 +1227,7 @@ export class ChatView extends ItemView {
       });
 
       // Final summary
-      progressBar.style.width = '100%';
+      progressBar.setCssStyles({ width: '100%' });
       progressBarContainer.addClass('complete');
 
       const successCount = results.filter(r => r.success).length;
@@ -1336,7 +1342,7 @@ export class ChatView extends ItemView {
     const contentEl = messageEl.querySelector('.claudian-message-content') as HTMLElement;
 
     if (role === 'assistant') {
-      MarkdownRenderer.render(
+      void MarkdownRenderer.render(
         this.app,
         content,
         contentEl,
@@ -1466,8 +1472,7 @@ export class ChatView extends ItemView {
       isResizing = true;
       startY = e.clientY;
       startHeight = wrapper.offsetHeight;
-      document.body.style.cursor = 'ns-resize';
-      document.body.style.userSelect = 'none';
+      document.body.setCssStyles({ cursor: 'ns-resize', userSelect: 'none' });
       e.preventDefault();
     };
 
@@ -1478,22 +1483,21 @@ export class ChatView extends ItemView {
       const maxHeight = container.offsetHeight * MAX_RATIO;
       const newHeight = Math.min(Math.max(startHeight + deltaY, MIN_HEIGHT), maxHeight);
 
-      wrapper.style.height = newHeight + 'px';
+      wrapper.setCssStyles({ height: newHeight + 'px' });
 
       // Adjust textarea to new size
       const inputArea = wrapper.querySelector('.claudian-input-area') as HTMLElement;
       if (inputArea) {
-        this.inputEl.style.height = 'auto';
+        this.inputEl.setCssStyles({ height: 'auto' });
         const availableHeight = newHeight - 24; // padding
-        this.inputEl.style.height = Math.min(this.inputEl.scrollHeight, availableHeight) + 'px';
+        this.inputEl.setCssStyles({ height: Math.min(this.inputEl.scrollHeight, availableHeight) + 'px' });
       }
     };
 
     const onMouseUp = () => {
       if (isResizing) {
         isResizing = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
+        document.body.setCssStyles({ cursor: '', userSelect: '' });
       }
     };
 

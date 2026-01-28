@@ -1,9 +1,39 @@
-import { Modal, TFile, Notice, setIcon } from 'obsidian';
+import { Modal, TFile, Notice, setIcon, SuggestModal } from 'obsidian';
 import ClaudianPlugin from './main';
 import { ExtractionTemplate, getAllTemplates } from './extraction-templates';
 import { BatchProcessor } from './batch-processor';
 import { ConceptMapGenerator } from './concept-map-generator';
 import { t } from './i18n';
+
+/**
+ * Modal for selecting a folder from the vault
+ */
+class FolderSuggestModal extends SuggestModal<string> {
+  private folders: string[];
+  private onSelect: (folder: string) => void;
+
+  constructor(app: import('obsidian').App, folders: string[], onSelect: (folder: string) => void) {
+    super(app);
+    this.folders = folders;
+    this.onSelect = onSelect;
+    this.setPlaceholder(t('batch.folderPrompt'));
+  }
+
+  getSuggestions(query: string): string[] {
+    const lowerQuery = query.toLowerCase();
+    return this.folders.filter(folder =>
+      folder.toLowerCase().includes(lowerQuery)
+    );
+  }
+
+  renderSuggestion(folder: string, el: HTMLElement): void {
+    el.createEl('div', { text: folder || '/' });
+  }
+
+  onChooseSuggestion(folder: string): void {
+    this.onSelect(folder);
+  }
+}
 
 type BatchMode = 'extraction' | 'concept-map';
 
@@ -225,7 +255,7 @@ export class BatchModal extends Modal {
       text: this.mode === 'extraction' ? t('batch.processNotes') : t('batch.generateMap'),
       cls: 'batch-btn-primary'
     });
-    processBtn.addEventListener('click', () => this.startProcessing());
+    processBtn.addEventListener('click', () => { void this.startProcessing(); });
   }
 
   private updateCounter() {
@@ -236,23 +266,23 @@ export class BatchModal extends Modal {
   }
 
   private showFolderPicker() {
-    // Show a simple prompt to select folder
+    // Collect all folders from markdown files
     const folders = new Set<string>();
     this.app.vault.getMarkdownFiles().forEach(f => {
       if (f.parent) folders.add(f.parent.path);
     });
 
     const folderList = Array.from(folders).sort();
-    const folder = prompt(t('batch.folderPrompt'), folderList[0] || '');
 
-    if (folder) {
+    // Show folder selection modal
+    new FolderSuggestModal(this.app, folderList, (folder) => {
       const files = this.app.vault.getMarkdownFiles().filter(f =>
         f.parent?.path === folder || f.path.startsWith(folder + '/')
       );
       files.forEach(f => this.selectedFiles.add(f));
       this.renderFilesList();
       this.updateCounter();
-    }
+    }).open();
   }
 
   private selectAllFiles() {
@@ -316,27 +346,29 @@ export class BatchModal extends Modal {
           },
           onProgress: (progress) => {
             const percent = (progress.current / progress.total) * 100;
-            progressFill.style.width = `${percent}%`;
+            progressFill.setCssStyles({ width: `${percent}%` });
             progressText.textContent = t('batch.processing', {
               current: String(progress.current),
               total: String(progress.total),
               note: progress.currentNote
             });
           },
-          onComplete: async (results, errors) => {
-            progressFill.style.width = '100%';
+          onComplete: (results, errors) => {
+            progressFill.setCssStyles({ width: '100%' });
             progressText.textContent = t('batch.completed', {
               success: String(results.length),
               errors: String(errors.length)
             });
 
             if (results.length > 0) {
-              const file = await this.batchProcessor.saveResultsAsNote(results, this.selectedTemplate!);
-              new Notice(t('batch.savedTo', { path: file.path }));
+              void (async () => {
+                const file = await this.batchProcessor.saveResultsAsNote(results, this.selectedTemplate!);
+                new Notice(t('batch.savedTo', { path: file.path }));
 
-              // Open the note
-              const leaf = this.app.workspace.getLeaf(false);
-              await leaf.openFile(file);
+                // Open the note
+                const leaf = this.app.workspace.getLeaf(false);
+                await leaf.openFile(file);
+              })();
             }
 
             setTimeout(() => this.close(), 1500);
@@ -355,7 +387,7 @@ export class BatchModal extends Modal {
     progressText: HTMLElement
   ) {
     progressText.textContent = t('batch.analyzing');
-    progressFill.style.width = '30%';
+    progressFill.setCssStyles({ width: '30%' });
 
     try {
       const _map = await this.conceptMapGenerator.generateFromNotes(
@@ -363,26 +395,28 @@ export class BatchModal extends Modal {
         this.conceptMapTitle,
         {
           onStart: () => {
-            progressFill.style.width = '10%';
+            progressFill.setCssStyles({ width: '10%' });
           },
           onProgress: (message) => {
             progressText.textContent = message;
-            progressFill.style.width = '50%';
+            progressFill.setCssStyles({ width: '50%' });
           },
-          onComplete: async (map) => {
-            progressFill.style.width = '90%';
+          onComplete: (map) => {
+            progressFill.setCssStyles({ width: '90%' });
             progressText.textContent = t('batch.saving');
 
-            const file = await this.conceptMapGenerator.saveAsNote(map);
-            progressFill.style.width = '100%';
-            progressText.textContent = t('batch.mapGenerated');
+            void (async () => {
+              const file = await this.conceptMapGenerator.saveAsNote(map);
+              progressFill.setCssStyles({ width: '100%' });
+              progressText.textContent = t('batch.mapGenerated');
 
-            new Notice(t('batch.savedTo', { path: file.path }));
+              new Notice(t('batch.savedTo', { path: file.path }));
 
-            const leaf = this.app.workspace.getLeaf(false);
-            await leaf.openFile(file);
+              const leaf = this.app.workspace.getLeaf(false);
+              await leaf.openFile(file);
 
-            setTimeout(() => this.close(), 1500);
+              setTimeout(() => this.close(), 1500);
+            })();
           },
           onError: (error) => {
             progressText.textContent = t('chat.error', { message: error.message });

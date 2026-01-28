@@ -83,13 +83,15 @@ export class SuggestionsModal extends Modal {
       text: t('suggestions.applySelected'),
       cls: 'suggestions-btn-primary'
     });
-    applyBtn.addEventListener('click', async () => {
+    applyBtn.addEventListener('click', () => {
       if (this.selectedTags.size > 0) {
-        await this.processor.applyTags(this.file, Array.from(this.selectedTags));
-        this.selectedTags.clear();
-        tagsContainer.querySelectorAll('.suggestions-tag').forEach(el => {
-          el.removeClass('is-selected');
-        });
+        void (async () => {
+          await this.processor.applyTags(this.file, Array.from(this.selectedTags));
+          this.selectedTags.clear();
+          tagsContainer.querySelectorAll('.suggestions-tag').forEach(el => {
+            el.removeClass('is-selected');
+          });
+        })();
       }
     });
   }
@@ -156,15 +158,17 @@ export class SuggestionsModal extends Modal {
       text: t('suggestions.insertSelected'),
       cls: 'suggestions-btn-primary'
     });
-    insertBtn.addEventListener('click', async () => {
+    insertBtn.addEventListener('click', () => {
       if (this.selectedWikilinks.size > 0) {
-        const wikilinks = Array.from(this.selectedWikilinks)
-          .map(idx => this.suggestions.wikilinks[idx]);
-        await this.processor.insertWikilinks(this.file, wikilinks);
-        this.selectedWikilinks.clear();
-        wikilinksContainer.querySelectorAll('input[type="checkbox"]').forEach((el) => {
-          (el as HTMLInputElement).checked = false;
-        });
+        void (async () => {
+          const wikilinks = Array.from(this.selectedWikilinks)
+            .map(idx => this.suggestions.wikilinks[idx]);
+          await this.processor.insertWikilinks(this.file, wikilinks);
+          this.selectedWikilinks.clear();
+          wikilinksContainer.querySelectorAll('input[type="checkbox"]').forEach((el) => {
+            (el as HTMLInputElement).checked = false;
+          });
+        })();
       }
     });
   }
@@ -209,11 +213,13 @@ export class SuggestionsModal extends Modal {
         text: t('suggestions.createNote'),
         cls: 'suggestions-btn-primary'
       });
-      createBtn.addEventListener('click', async () => {
-        await this.processor.createAtomicNote(concept);
-        card.addClass('is-created');
-        createBtn.textContent = t('suggestions.noteCreated');
-        createBtn.disabled = true;
+      createBtn.addEventListener('click', () => {
+        void (async () => {
+          await this.processor.createAtomicNote(concept);
+          card.addClass('is-created');
+          createBtn.textContent = t('suggestions.noteCreated');
+          createBtn.disabled = true;
+        })();
       });
     });
   }

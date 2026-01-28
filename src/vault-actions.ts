@@ -1450,7 +1450,7 @@ export class VaultActionExecutor {
     const searchLeaf = this.plugin.app.workspace.getLeavesOfType('search')[0];
 
     if (searchLeaf) {
-      this.plugin.app.workspace.revealLeaf(searchLeaf);
+      void this.plugin.app.workspace.revealLeaf(searchLeaf);
       const searchView = searchLeaf.view as unknown;
       if (searchView?.setQuery) {
         searchView.setQuery(query);
@@ -1512,7 +1512,7 @@ export class VaultActionExecutor {
     // Get the file explorer leaf
     const explorerLeaf = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
     if (explorerLeaf) {
-      this.plugin.app.workspace.revealLeaf(explorerLeaf);
+      void this.plugin.app.workspace.revealLeaf(explorerLeaf);
       const explorerView = explorerLeaf.view as unknown;
       if (explorerView?.revealInFolder) {
         explorerView.revealInFolder(file);
